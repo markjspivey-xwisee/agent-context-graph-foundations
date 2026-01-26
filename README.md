@@ -17,6 +17,7 @@ This repo is the source of truth for the theory and formal artifacts that the im
 
 ## Start here
 
+- OVERVIEW.md
 - principles/README.md
 - architecture/ARCHITECTURE_INDEX.md
 - protocol/API.md
