@@ -1,0 +1,379 @@
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix ldp: <http://www.w3.org/ns/ldp#> .
+@prefix solid: <http://www.w3.org/ns/solid/terms#> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix acg: <https://agentcontextgraph.dev/ontology#> .
+@prefix id: <https://agentcontextgraph.dev/identity#> .
+@prefix ds: <https://agentcontextgraph.dev/data-space#> .
+
+# =============================================================================
+# Agent Context Graph Data Space Ontology
+# =============================================================================
+# Defines the concept of Data Spaces - user/agent-controlled storage locations
+# where context graphs, traces, and agent data reside.
+# Aligned with Solid Protocol principles and Linked Data Platform.
+# =============================================================================
+
+<https://agentcontextgraph.dev/data-space>
+    a owl:Ontology ;
+    owl:versionIRI <https://agentcontextgraph.dev/data-space/1.0.0> ;
+    dcterms:title "Agent Context Graph Data Space Ontology"@en ;
+    dcterms:description "Defines Data Spaces - controlled storage locations for agent data. Enables user sovereignty over agent traces, contexts, and credentials. Compatible with Solid Pods and Linked Data Platform."@en ;
+    dcterms:created "2026-01-25"^^xsd:date ;
+    owl:imports <https://agentcontextgraph.dev/ontology> ;
+    owl:imports <https://agentcontextgraph.dev/identity> ;
+    owl:imports <http://www.w3.org/ns/ldp#> .
+
+# =============================================================================
+# Data Space Core Classes
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# DataSpace - A controlled storage location
+# -----------------------------------------------------------------------------
+
+ds:DataSpace a owl:Class ;
+    rdfs:label "Data Space"@en ;
+    rdfs:subClassOf ldp:Container, prov:Location ;
+    rdfs:comment "A user or agent-controlled storage location where ACG data resides. Owners control access policies. Similar to Solid Pods but extended for agent provenance."@en ;
+    rdfs:subClassOf [
+        a owl:Restriction ;
+        owl:onProperty ds:owner ;
+        owl:cardinality 1
+    ] ;
+    rdfs:subClassOf [
+        a owl:Restriction ;
+        owl:onProperty ds:storageEndpoint ;
+        owl:minCardinality 1
+    ] .
+
+# -----------------------------------------------------------------------------
+# DataSpaceType - Categories of data spaces
+# -----------------------------------------------------------------------------
+
+ds:DataSpaceType a owl:Class ;
+    rdfs:label "Data Space Type"@en ;
+    rdfs:comment "The type/category of a data space."@en ;
+    owl:oneOf (ds:PersonalDataSpace ds:AgentDataSpace ds:OrganizationalDataSpace ds:SharedDataSpace) .
+
+ds:PersonalDataSpace a ds:DataSpaceType ;
+    rdfs:label "Personal Data Space"@en ;
+    rdfs:comment "A data space owned by a human user. Used for storing personal agent interactions and traces."@en .
+
+ds:AgentDataSpace a ds:DataSpaceType ;
+    rdfs:label "Agent Data Space"@en ;
+    rdfs:comment "A data space owned by an autonomous agent. Used for the agent's own memory and state."@en .
+
+ds:OrganizationalDataSpace a ds:DataSpaceType ;
+    rdfs:label "Organizational Data Space"@en ;
+    rdfs:comment "A data space owned by an organization. Used for shared agent resources within an org."@en .
+
+ds:SharedDataSpace a ds:DataSpaceType ;
+    rdfs:label "Shared Data Space"@en ;
+    rdfs:comment "A data space shared between multiple parties with explicit access control."@en .
+
+# -----------------------------------------------------------------------------
+# DataSpaceResource - Resources stored in a data space
+# -----------------------------------------------------------------------------
+
+ds:DataSpaceResource a owl:Class ;
+    rdfs:label "Data Space Resource"@en ;
+    rdfs:subClassOf ldp:Resource ;
+    rdfs:comment "A resource stored within a data space."@en .
+
+ds:ContextContainer a owl:Class ;
+    rdfs:label "Context Container"@en ;
+    rdfs:subClassOf ds:DataSpaceResource, ldp:Container ;
+    rdfs:comment "A container holding context graphs for an agent."@en .
+
+ds:TraceContainer a owl:Class ;
+    rdfs:label "Trace Container"@en ;
+    rdfs:subClassOf ds:DataSpaceResource, ldp:Container ;
+    rdfs:comment "A container holding provenance traces (append-only)."@en .
+
+ds:CredentialContainer a owl:Class ;
+    rdfs:label "Credential Container"@en ;
+    rdfs:subClassOf ds:DataSpaceResource, ldp:Container ;
+    rdfs:comment "A container holding verifiable credentials for the owner."@en .
+
+ds:PolicyContainer a owl:Class ;
+    rdfs:label "Policy Container"@en ;
+    rdfs:subClassOf ds:DataSpaceResource, ldp:Container ;
+    rdfs:comment "A container holding access control and deontic policies."@en .
+
+ds:StateContainer a owl:Class ;
+    rdfs:label "State Container"@en ;
+    rdfs:subClassOf ds:DataSpaceResource, ldp:Container ;
+    rdfs:comment "A container holding agent state and checkpoints."@en .
+
+# -----------------------------------------------------------------------------
+# AccessControl - Access control mechanisms
+# -----------------------------------------------------------------------------
+
+ds:AccessControlType a owl:Class ;
+    rdfs:label "Access Control Type"@en ;
+    rdfs:comment "The type of access control used for a data space."@en ;
+    owl:oneOf (ds:WebACLControl ds:ODRLControl ds:ACGPolicyControl ds:CapabilityControl) .
+
+ds:WebACLControl a ds:AccessControlType ;
+    rdfs:label "WebACL Control"@en ;
+    rdfs:comment "W3C Web Access Control List-based access control (used by Solid)."@en .
+
+ds:ODRLControl a ds:AccessControlType ;
+    rdfs:label "ODRL Control"@en ;
+    rdfs:comment "Open Digital Rights Language-based access control."@en .
+
+ds:ACGPolicyControl a ds:AccessControlType ;
+    rdfs:label "ACG Policy Control"@en ;
+    rdfs:comment "ACG's native deontic policy-based access control."@en .
+
+ds:CapabilityControl a ds:AccessControlType ;
+    rdfs:label "Capability Control"@en ;
+    rdfs:comment "Object capability-based access control."@en .
+
+# -----------------------------------------------------------------------------
+# StorageProvider - The infrastructure hosting data spaces
+# -----------------------------------------------------------------------------
+
+ds:StorageProvider a owl:Class ;
+    rdfs:label "Storage Provider"@en ;
+    rdfs:subClassOf prov:SoftwareAgent ;
+    rdfs:comment "An infrastructure provider that hosts data spaces. May be self-hosted, cloud, or federated."@en .
+
+ds:ProviderType a owl:Class ;
+    rdfs:label "Provider Type"@en ;
+    rdfs:comment "The type of storage provider."@en ;
+    owl:oneOf (ds:SelfHosted ds:CloudHosted ds:FederatedHosted ds:SolidPodProvider) .
+
+ds:SelfHosted a ds:ProviderType ;
+    rdfs:label "Self Hosted"@en ;
+    rdfs:comment "Data space hosted by the owner themselves."@en .
+
+ds:CloudHosted a ds:ProviderType ;
+    rdfs:label "Cloud Hosted"@en ;
+    rdfs:comment "Data space hosted by a cloud provider."@en .
+
+ds:FederatedHosted a ds:ProviderType ;
+    rdfs:label "Federated Hosted"@en ;
+    rdfs:comment "Data space distributed across federated nodes."@en .
+
+ds:SolidPodProvider a ds:ProviderType ;
+    rdfs:label "Solid Pod Provider"@en ;
+    rdfs:comment "A Solid Protocol-compliant pod provider."@en .
+
+# =============================================================================
+# Object Properties
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Data Space Ownership and Access
+# -----------------------------------------------------------------------------
+
+ds:owner a owl:ObjectProperty, owl:FunctionalProperty ;
+    rdfs:label "owner"@en ;
+    rdfs:domain ds:DataSpace ;
+    rdfs:range id:AgentIdentity ;
+    rdfs:comment "The identity that owns this data space."@en .
+
+ds:hasDataSpace a owl:ObjectProperty ;
+    rdfs:label "has data space"@en ;
+    rdfs:domain acg:Agent ;
+    rdfs:range ds:DataSpace ;
+    rdfs:comment "A data space associated with this agent."@en .
+
+ds:primaryDataSpace a owl:ObjectProperty ;
+    rdfs:label "primary data space"@en ;
+    rdfs:subPropertyOf ds:hasDataSpace ;
+    rdfs:domain acg:Agent ;
+    rdfs:range ds:DataSpace ;
+    owl:maxCardinality 1 ;
+    rdfs:comment "The primary data space for this agent."@en .
+
+ds:grantedAccess a owl:ObjectProperty ;
+    rdfs:label "granted access"@en ;
+    rdfs:domain ds:DataSpace ;
+    rdfs:range id:AgentIdentity ;
+    rdfs:comment "An identity that has been granted access to this data space."@en .
+
+ds:accessControlType a owl:ObjectProperty ;
+    rdfs:label "access control type"@en ;
+    rdfs:domain ds:DataSpace ;
+    rdfs:range ds:AccessControlType ;
+    rdfs:comment "The type of access control used for this data space."@en .
+
+# -----------------------------------------------------------------------------
+# Data Space Structure
+# -----------------------------------------------------------------------------
+
+ds:hasContextContainer a owl:ObjectProperty ;
+    rdfs:label "has context container"@en ;
+    rdfs:domain ds:DataSpace ;
+    rdfs:range ds:ContextContainer ;
+    rdfs:comment "A container for context graphs in this data space."@en .
+
+ds:hasTraceContainer a owl:ObjectProperty ;
+    rdfs:label "has trace container"@en ;
+    rdfs:domain ds:DataSpace ;
+    rdfs:range ds:TraceContainer ;
+    rdfs:comment "A container for provenance traces in this data space."@en .
+
+ds:hasCredentialContainer a owl:ObjectProperty ;
+    rdfs:label "has credential container"@en ;
+    rdfs:domain ds:DataSpace ;
+    rdfs:range ds:CredentialContainer ;
+    rdfs:comment "A container for credentials in this data space."@en .
+
+ds:hasPolicyContainer a owl:ObjectProperty ;
+    rdfs:label "has policy container"@en ;
+    rdfs:domain ds:DataSpace ;
+    rdfs:range ds:PolicyContainer ;
+    rdfs:comment "A container for policies in this data space."@en .
+
+ds:hasStateContainer a owl:ObjectProperty ;
+    rdfs:label "has state container"@en ;
+    rdfs:domain ds:DataSpace ;
+    rdfs:range ds:StateContainer ;
+    rdfs:comment "A container for agent state in this data space."@en .
+
+# -----------------------------------------------------------------------------
+# Storage Provider
+# -----------------------------------------------------------------------------
+
+ds:hostedBy a owl:ObjectProperty ;
+    rdfs:label "hosted by"@en ;
+    rdfs:domain ds:DataSpace ;
+    rdfs:range ds:StorageProvider ;
+    rdfs:comment "The storage provider hosting this data space."@en .
+
+ds:providerType a owl:ObjectProperty ;
+    rdfs:label "provider type"@en ;
+    rdfs:domain ds:StorageProvider ;
+    rdfs:range ds:ProviderType ;
+    rdfs:comment "The type of this storage provider."@en .
+
+# -----------------------------------------------------------------------------
+# Cross-Space References
+# -----------------------------------------------------------------------------
+
+ds:mirroredTo a owl:ObjectProperty ;
+    rdfs:label "mirrored to"@en ;
+    rdfs:domain ds:DataSpace ;
+    rdfs:range ds:DataSpace ;
+    rdfs:comment "A data space where this data space is mirrored for redundancy."@en .
+
+ds:linkedDataSpace a owl:ObjectProperty, owl:SymmetricProperty ;
+    rdfs:label "linked data space"@en ;
+    rdfs:domain ds:DataSpace ;
+    rdfs:range ds:DataSpace ;
+    rdfs:comment "A data space linked for cross-space queries and federation."@en .
+
+# =============================================================================
+# Datatype Properties
+# =============================================================================
+
+ds:storageEndpoint a owl:DatatypeProperty ;
+    rdfs:label "storage endpoint"@en ;
+    rdfs:domain ds:DataSpace ;
+    rdfs:range xsd:anyURI ;
+    rdfs:comment "The HTTP endpoint for accessing this data space."@en .
+
+ds:sparqlEndpoint a owl:DatatypeProperty ;
+    rdfs:label "SPARQL endpoint"@en ;
+    rdfs:domain ds:DataSpace ;
+    rdfs:range xsd:anyURI ;
+    rdfs:comment "Optional SPARQL endpoint for querying this data space."@en .
+
+ds:dataSpaceType a owl:DatatypeProperty ;
+    rdfs:label "data space type"@en ;
+    rdfs:domain ds:DataSpace ;
+    rdfs:range xsd:string ;
+    rdfs:comment "The type of this data space."@en .
+
+ds:quotaBytes a owl:DatatypeProperty ;
+    rdfs:label "quota bytes"@en ;
+    rdfs:domain ds:DataSpace ;
+    rdfs:range xsd:long ;
+    rdfs:comment "Storage quota in bytes for this data space."@en .
+
+ds:usedBytes a owl:DatatypeProperty ;
+    rdfs:label "used bytes"@en ;
+    rdfs:domain ds:DataSpace ;
+    rdfs:range xsd:long ;
+    rdfs:comment "Current storage usage in bytes."@en .
+
+ds:createdAt a owl:DatatypeProperty ;
+    rdfs:label "created at"@en ;
+    rdfs:domain ds:DataSpace ;
+    rdfs:range xsd:dateTime ;
+    rdfs:comment "When this data space was created."@en .
+
+ds:retentionPolicy a owl:DatatypeProperty ;
+    rdfs:label "retention policy"@en ;
+    rdfs:domain ds:DataSpace ;
+    rdfs:range xsd:string ;
+    rdfs:comment "Data retention policy (e.g., 'P90D' for 90 days, 'forever')."@en .
+
+ds:encryptionEnabled a owl:DatatypeProperty ;
+    rdfs:label "encryption enabled"@en ;
+    rdfs:domain ds:DataSpace ;
+    rdfs:range xsd:boolean ;
+    rdfs:comment "Whether data in this space is encrypted at rest."@en .
+
+ds:providerName a owl:DatatypeProperty ;
+    rdfs:label "provider name"@en ;
+    rdfs:domain ds:StorageProvider ;
+    rdfs:range xsd:string ;
+    rdfs:comment "Human-readable name of the storage provider."@en .
+
+ds:providerEndpoint a owl:DatatypeProperty ;
+    rdfs:label "provider endpoint"@en ;
+    rdfs:domain ds:StorageProvider ;
+    rdfs:range xsd:anyURI ;
+    rdfs:comment "Base endpoint for the storage provider."@en .
+
+# =============================================================================
+# Solid Protocol Alignment
+# =============================================================================
+
+# DataSpace is compatible with Solid storage concepts
+ds:DataSpace rdfs:subClassOf solid:Storage .
+
+# Standard container paths (conventions)
+ds:defaultContextPath a owl:DatatypeProperty ;
+    rdfs:label "default context path"@en ;
+    rdfs:domain ds:DataSpace ;
+    rdfs:range xsd:string ;
+    rdfs:comment "Default path for context container (e.g., '/contexts/')."@en ;
+    owl:defaultValue "/contexts/" .
+
+ds:defaultTracePath a owl:DatatypeProperty ;
+    rdfs:label "default trace path"@en ;
+    rdfs:domain ds:DataSpace ;
+    rdfs:range xsd:string ;
+    rdfs:comment "Default path for trace container (e.g., '/traces/')."@en ;
+    owl:defaultValue "/traces/" .
+
+ds:defaultCredentialPath a owl:DatatypeProperty ;
+    rdfs:label "default credential path"@en ;
+    rdfs:domain ds:DataSpace ;
+    rdfs:range xsd:string ;
+    rdfs:comment "Default path for credential container (e.g., '/credentials/')."@en ;
+    owl:defaultValue "/credentials/" .
+
+ds:defaultPolicyPath a owl:DatatypeProperty ;
+    rdfs:label "default policy path"@en ;
+    rdfs:domain ds:DataSpace ;
+    rdfs:range xsd:string ;
+    rdfs:comment "Default path for policy container (e.g., '/policies/')."@en ;
+    owl:defaultValue "/policies/" .
+
+ds:defaultStatePath a owl:DatatypeProperty ;
+    rdfs:label "default state path"@en ;
+    rdfs:domain ds:DataSpace ;
+    rdfs:range xsd:string ;
+    rdfs:comment "Default path for state container (e.g., '/state/')."@en ;
+    owl:defaultValue "/state/" .

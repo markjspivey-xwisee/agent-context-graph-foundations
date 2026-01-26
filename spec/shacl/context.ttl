@@ -1,0 +1,331 @@
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix cg: <https://agentcontextgraph.dev/context#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+
+# =============================================================================
+# Context Graph Shapes - Core structural validation
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Main Context Graph Shape
+# -----------------------------------------------------------------------------
+
+cg:ContextGraphShape a sh:NodeShape ;
+    sh:targetClass cg:ContextGraph ;
+    sh:property [
+        sh:path cg:id ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:nodeKind sh:IRI ;
+        sh:name "Context ID"
+    ] ;
+    sh:property [
+        sh:path cg:agentDID ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:pattern "^did:[a-z0-9]+:.+$" ;
+        sh:name "Agent DID" ;
+        sh:description "Must be a valid DID"
+    ] ;
+    sh:property [
+        sh:path cg:timestamp ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:dateTime ;
+        sh:name "Timestamp"
+    ] ;
+    sh:property [
+        sh:path cg:affordances ;
+        sh:minCount 0 ;
+        sh:node cg:AffordanceShape ;
+        sh:name "Affordances"
+    ] ;
+    sh:property [
+        sh:path cg:verifiedCredentials ;
+        sh:node cg:VerifiedCredentialShape ;
+        sh:name "Verified Credentials"
+    ] ;
+    sh:property [
+        sh:path cg:constraints ;
+        sh:node cg:ConstraintShape ;
+        sh:name "Constraints"
+    ] ;
+    sh:property [
+        sh:path cg:hypergraph ;
+        sh:node cg:HypergraphShape ;
+        sh:name "Hypergraph"
+    ] ;
+    sh:property [
+        sh:path cg:category ;
+        sh:node cg:CategoryShape ;
+        sh:name "Category"
+    ] .
+
+# -----------------------------------------------------------------------------
+# Affordance Shape
+# -----------------------------------------------------------------------------
+
+cg:AffordanceShape a sh:NodeShape ;
+    sh:property [
+        sh:path cg:id ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string
+    ] ;
+    sh:property [
+        sh:path cg:rel ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string
+    ] ;
+    sh:property [
+        sh:path cg:actionType ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string
+    ] ;
+    sh:property [
+        sh:path cg:target ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:node cg:TargetShape
+    ] ;
+    sh:property [
+        sh:path cg:enabled ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:boolean
+    ] ;
+    sh:property [
+        sh:path cg:usageSemantics ;
+        sh:node cg:UsageSemanticsShape
+    ] .
+
+# -----------------------------------------------------------------------------
+# Target Shape
+# -----------------------------------------------------------------------------
+
+cg:TargetShape a sh:NodeShape ;
+    sh:property [
+        sh:path cg:type ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:in ( "HTTP" "DIDComm" "OID4VCI" "Internal" "EventEmit" "Federated" )
+    ] ;
+    sh:property [
+        sh:path cg:href ;
+        sh:maxCount 1 ;
+        sh:nodeKind sh:IRI
+    ] ;
+    sh:property [
+        sh:path cg:method ;
+        sh:maxCount 1 ;
+        sh:in ( "GET" "POST" "PUT" "DELETE" "PATCH" )
+    ] .
+
+# -----------------------------------------------------------------------------
+# Verified Credential Reference Shape
+# -----------------------------------------------------------------------------
+
+cg:VerifiedCredentialShape a sh:NodeShape ;
+    sh:property [
+        sh:path cg:credentialId ;
+        sh:minCount 1 ;
+        sh:nodeKind sh:IRI
+    ] ;
+    sh:property [
+        sh:path cg:type ;
+        sh:minCount 1
+    ] ;
+    sh:property [
+        sh:path cg:issuer ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string
+    ] ;
+    sh:property [
+        sh:path cg:validUntil ;
+        sh:minCount 1 ;
+        sh:datatype xsd:dateTime
+    ] .
+
+# -----------------------------------------------------------------------------
+# Constraint Shape
+# -----------------------------------------------------------------------------
+
+cg:ConstraintShape a sh:NodeShape ;
+    sh:property [
+        sh:path cg:type ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:in ( "deontic" "outcome" "temporal" "resource" )
+    ] ;
+    sh:property [
+        sh:path cg:rule ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string
+    ] ;
+    sh:property [
+        sh:path cg:enforcementLevel ;
+        sh:maxCount 1 ;
+        sh:in ( "strict" "advisory" "audit-only" )
+    ] .
+
+# -----------------------------------------------------------------------------
+# Trace Policy Shape
+# -----------------------------------------------------------------------------
+
+cg:TracePolicyShape a sh:NodeShape ;
+    sh:property [
+        sh:path cg:mustEmitProvActivity ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:boolean ;
+        sh:hasValue true
+    ] ;
+    sh:property [
+        sh:path cg:includeContextSnapshot ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:boolean
+    ] ;
+    sh:property [
+        sh:path cg:includeOutcomes ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:boolean
+    ] .
+
+# -----------------------------------------------------------------------------
+# Hypergraph Shapes
+# -----------------------------------------------------------------------------
+
+cg:HypergraphShape a sh:NodeShape ;
+    sh:property [
+        sh:path cg:nodes ;
+        sh:node cg:HypernodeShape ;
+        sh:name "Hypernodes"
+    ] ;
+    sh:property [
+        sh:path cg:hyperedges ;
+        sh:node cg:HyperedgeShape ;
+        sh:name "Hyperedges"
+    ] .
+
+cg:HypernodeShape a sh:NodeShape ;
+    sh:property [
+        sh:path cg:id ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string
+    ] ;
+    sh:property [
+        sh:path cg:kind ;
+        sh:datatype xsd:string
+    ] ;
+    sh:property [
+        sh:path cg:ref ;
+        sh:nodeKind sh:IRI
+    ] .
+
+cg:HyperedgeShape a sh:NodeShape ;
+    sh:property [
+        sh:path cg:id ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string
+    ] ;
+    sh:property [
+        sh:path cg:connects ;
+        sh:minCount 2 ;
+        sh:datatype xsd:string
+    ] ;
+    sh:property [
+        sh:path cg:affordanceRef ;
+        sh:datatype xsd:string
+    ] .
+
+# -----------------------------------------------------------------------------
+# Category Shapes
+# -----------------------------------------------------------------------------
+
+cg:CategoryShape a sh:NodeShape ;
+    sh:property [
+        sh:path cg:objects ;
+        sh:node cg:CategoryObjectShape
+    ] ;
+    sh:property [
+        sh:path cg:morphisms ;
+        sh:node cg:MorphismShape
+    ] ;
+    sh:property [
+        sh:path cg:composition ;
+        sh:node cg:CompositionShape
+    ] .
+
+cg:CategoryObjectShape a sh:NodeShape ;
+    sh:property [
+        sh:path cg:id ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string
+    ] ;
+    sh:property [
+        sh:path cg:ref ;
+        sh:datatype xsd:string
+    ] .
+
+cg:MorphismShape a sh:NodeShape ;
+    sh:property [
+        sh:path cg:id ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string
+    ] ;
+    sh:property [
+        sh:path cg:domain ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string
+    ] ;
+    sh:property [
+        sh:path cg:codomain ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string
+    ] .
+
+cg:CompositionShape a sh:NodeShape ;
+    sh:property [
+        sh:path cg:of ;
+        sh:minCount 2 ;
+        sh:datatype xsd:string
+    ] ;
+    sh:property [
+        sh:path cg:composite ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string
+    ] .
+
+# -----------------------------------------------------------------------------
+# Usage Semantics Shape
+# -----------------------------------------------------------------------------
+
+cg:UsageSemanticsShape a sh:NodeShape ;
+    sh:property [
+        sh:path cg:stability ;
+        sh:datatype xsd:decimal
+    ] ;
+    sh:property [
+        sh:path cg:drift ;
+        sh:datatype xsd:decimal
+    ] ;
+    sh:property [
+        sh:path cg:polysemy ;
+        sh:datatype xsd:decimal
+    ] ;
+    sh:property [
+        sh:path cg:evidenceWindow ;
+        sh:datatype xsd:duration
+    ] ;
+    sh:property [
+        sh:path cg:lastObservedAt ;
+        sh:datatype xsd:dateTime
+    ] .

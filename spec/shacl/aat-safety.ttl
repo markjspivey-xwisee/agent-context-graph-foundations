@@ -1,0 +1,216 @@
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix aat: <https://agentcontextgraph.dev/aat#> .
+@prefix cg: <https://agentcontextgraph.dev/context#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+
+# =============================================================================
+# AAT Safety Shapes - Ensuring agents cannot receive forbidden affordances
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Core Affordance Shape - All affordances must have required fields
+# -----------------------------------------------------------------------------
+
+aat:AffordanceShape a sh:NodeShape ;
+    sh:targetClass cg:Affordance ;
+    sh:property [
+        sh:path cg:id ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:name "Affordance ID" ;
+        sh:description "Unique identifier for the affordance"
+    ] ;
+    sh:property [
+        sh:path cg:rel ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:name "Relation type"
+    ] ;
+    sh:property [
+        sh:path cg:actionType ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:name "Action type" ;
+        sh:description "Must match an allowed action from the agent's AAT"
+    ] ;
+    sh:property [
+        sh:path cg:target ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:node aat:TargetShape ;
+        sh:name "Target specification"
+    ] .
+
+# -----------------------------------------------------------------------------
+# Target Shape - Valid target specifications
+# -----------------------------------------------------------------------------
+
+aat:TargetShape a sh:NodeShape ;
+    sh:property [
+        sh:path cg:targetType ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:in ( "HTTP" "DIDComm" "OID4VCI" "Internal" "EventEmit" ) ;
+        sh:name "Target type"
+    ] .
+
+# -----------------------------------------------------------------------------
+# Planner Agent Context Shape - No Actuate affordances allowed
+# -----------------------------------------------------------------------------
+
+aat:PlannerContextShape a sh:NodeShape ;
+    sh:targetClass cg:ContextGraph ;
+    sh:sparql [
+        sh:message "Planner context must not contain Actuate affordances" ;
+        sh:prefixes aat:, cg: ;
+        sh:select """
+            SELECT $this
+            WHERE {
+                $this cg:agentType aat:PlannerAgentType .
+                $this cg:affordances/cg:actionType "Actuate" .
+            }
+        """
+    ] ;
+    sh:sparql [
+        sh:message "Planner context must not contain WriteExternal affordances" ;
+        sh:prefixes aat:, cg: ;
+        sh:select """
+            SELECT $this
+            WHERE {
+                $this cg:agentType aat:PlannerAgentType .
+                $this cg:affordances/cg:actionType "WriteExternal" .
+            }
+        """
+    ] .
+
+# -----------------------------------------------------------------------------
+# Observer Agent Context Shape - No side-effect affordances allowed
+# -----------------------------------------------------------------------------
+
+aat:ObserverContextShape a sh:NodeShape ;
+    sh:targetClass cg:ContextGraph ;
+    sh:sparql [
+        sh:message "Observer context must not contain Actuate affordances" ;
+        sh:prefixes aat:, cg: ;
+        sh:select """
+            SELECT $this
+            WHERE {
+                $this cg:agentType aat:ObserverAgentType .
+                $this cg:affordances/cg:actionType "Actuate" .
+            }
+        """
+    ] ;
+    sh:sparql [
+        sh:message "Observer context must not contain ModifyState affordances" ;
+        sh:prefixes aat:, cg: ;
+        sh:select """
+            SELECT $this
+            WHERE {
+                $this cg:agentType aat:ObserverAgentType .
+                $this cg:affordances/cg:actionType "ModifyState" .
+            }
+        """
+    ] .
+
+# -----------------------------------------------------------------------------
+# Executor Agent Context Shape - Must have authorization
+# -----------------------------------------------------------------------------
+
+aat:ExecutorContextShape a sh:NodeShape ;
+    sh:targetClass cg:ContextGraph ;
+    sh:sparql [
+        sh:message "Executor Act affordances must require credentials" ;
+        sh:prefixes aat:, cg: ;
+        sh:select """
+            SELECT $this
+            WHERE {
+                $this cg:agentType aat:ExecutorAgentType .
+                $this cg:affordances ?aff .
+                ?aff cg:actionType "Act" .
+                FILTER NOT EXISTS { ?aff cg:requiresCredential ?cred }
+            }
+        """
+    ] .
+
+# -----------------------------------------------------------------------------
+# Trace Policy Shape - All contexts must have trace policy
+# -----------------------------------------------------------------------------
+
+aat:TracePolicyShape a sh:NodeShape ;
+    sh:targetClass cg:ContextGraph ;
+    sh:property [
+        sh:path cg:tracePolicy ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:name "Trace policy" ;
+        sh:description "Every context must specify trace requirements"
+    ] ;
+    sh:property [
+        sh:path ( cg:tracePolicy cg:mustEmitProvActivity ) ;
+        sh:hasValue true ;
+        sh:name "PROV required" ;
+        sh:description "All contexts must require PROV activity emission"
+    ] .
+
+# -----------------------------------------------------------------------------
+# Credential Requirement Shape - VC requirements must be complete
+# -----------------------------------------------------------------------------
+
+aat:CredentialRequirementShape a sh:NodeShape ;
+    sh:targetClass cg:CredentialRequirement ;
+    sh:property [
+        sh:path cg:schema ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+        sh:name "Credential schema" ;
+        sh:description "Schema that the required credential must satisfy"
+    ] .
+
+# -----------------------------------------------------------------------------
+# Causal Semantics Shape - Causal affordances must be complete
+# -----------------------------------------------------------------------------
+
+aat:CausalSemanticsShape a sh:NodeShape ;
+    sh:targetClass cg:CausalSemantics ;
+    sh:property [
+        sh:path cg:interventionLabel ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:pattern "^do\\(.+,.+\\)$" ;
+        sh:name "Intervention label" ;
+        sh:description "Must be in do(action, params) format"
+    ] ;
+    sh:property [
+        sh:path cg:outcomeVariables ;
+        sh:minCount 1 ;
+        sh:name "Outcome variables" ;
+        sh:description "At least one outcome variable must be specified"
+    ] .
+
+# -----------------------------------------------------------------------------
+# Context Freshness Shape - Prevent stale context replay
+# -----------------------------------------------------------------------------
+
+aat:ContextFreshnessShape a sh:NodeShape ;
+    sh:targetClass cg:ContextGraph ;
+    sh:property [
+        sh:path cg:nonce ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:name "Nonce" ;
+        sh:description "Unique nonce for replay protection"
+    ] ;
+    sh:property [
+        sh:path cg:expiresAt ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:dateTime ;
+        sh:name "Expiration" ;
+        sh:description "Context must have expiration time"
+    ] .

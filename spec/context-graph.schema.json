@@ -1,0 +1,727 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agentcontextgraph.dev/schemas/context-graph.schema.json",
+  "title": "Context Graph (acg:ContextGraph)",
+  "description": "Runtime situational awareness graph for agents with affordances, credentials, and policy. See https://agentcontextgraph.dev/ontology# for full ontology.",
+  "$comment": "JSON-LD instances should include inline @context with vocabulary mappings to acg:, aat:, prov:, hydra:, odrl:, sh: namespaces",
+  "type": "object",
+  "required": ["@context", "id", "agentDID", "timestamp", "affordances"],
+  "properties": {
+    "@context": {
+      "description": "JSON-LD context array. Should include W3C vocabularies and inline term definitions mapping to ACG ontology.",
+      "oneOf": [
+        {
+          "type": "array",
+          "items": {
+            "oneOf": [
+              { "type": "string", "format": "uri" },
+              { "type": "object" }
+            ]
+          },
+          "contains": {
+            "type": "string",
+            "pattern": "^https://www\\.w3\\.org/ns/"
+          }
+        },
+        { "type": "string", "format": "uri" }
+      ],
+      "examples": [
+        [
+          "https://www.w3.org/ns/did/v1",
+          "https://www.w3.org/2018/credentials/v1",
+          "https://www.w3.org/ns/hydra/core#",
+          {
+            "acg": "https://agentcontextgraph.dev/ontology#",
+            "aat": "https://agentcontextgraph.dev/aat#",
+            "id": "@id",
+            "type": "@type"
+          }
+        ]
+      ]
+    },
+    "id": {
+      "type": "string",
+      "format": "uri",
+      "description": "Unique identifier for this context instance. Maps to @id in JSON-LD."
+    },
+    "type": {
+      "description": "JSON-LD type(s). Should include acg:ContextGraph. Maps to @type.",
+      "oneOf": [
+        { "type": "string" },
+        { "type": "array", "items": { "type": "string" } }
+      ],
+      "default": ["acg:ContextGraph"]
+    },
+    "agentDID": {
+      "type": "string",
+      "pattern": "^did:[a-z0-9]+:.+$",
+      "description": "The DID of the agent requesting context. Maps to acg:hasDID."
+    },
+    "agentType": {
+      "type": "string",
+      "description": "Reference to the Abstract Agent Type (aat:) this agent implements. Maps to acg:hasAgentType."
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 timestamp when context was generated. Maps to acg:hasTimestamp (xsd:dateTime)."
+    },
+    "expiresAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Context expiration time for replay protection. Maps to acg:expiresAt (xsd:dateTime)."
+    },
+    "nonce": {
+      "type": "string",
+      "description": "Unique nonce for replay protection. Maps to acg:nonce."
+    },
+    "scope": {
+      "type": "object",
+      "description": "Boundaries of the current context. Maps to acg:hasScope.",
+      "properties": {
+        "type": {
+          "type": "string",
+          "default": "acg:Scope"
+        },
+        "domain": {
+          "type": "string",
+          "description": "Maps to acg:scopeDomain."
+        },
+        "resources": {
+          "type": "array",
+          "items": { "type": "string", "format": "uri" },
+          "description": "Maps to acg:scopeResources (@container: @set)."
+        },
+        "actions": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Maps to acg:scopeActions (@container: @set)."
+        }
+      }
+    },
+    "verifiedCredentials": {
+      "type": "array",
+      "description": "VCs that have been verified for this context. Maps to acg:hasVerifiedCredentials (@container: @set).",
+      "items": { "$ref": "#/$defs/VerifiedCredentialRef" }
+    },
+    "constraints": {
+      "type": "array",
+      "description": "Active constraints/policies affecting this context. Maps to acg:hasConstraints (@container: @set). Use odrl:Constraint or odrl:Duty types.",
+      "items": { "$ref": "#/$defs/Constraint" }
+    },
+    "affordances": {
+      "type": "array",
+      "description": "Available actions in this context. Maps to acg:hasAffordance (@container: @set). Each affordance should have type [hydra:Operation, acg:Affordance].",
+      "items": { "$ref": "#/$defs/Affordance" }
+    },
+    "tracePolicy": {
+      "$ref": "#/$defs/TracePolicy",
+      "description": "Maps to acg:hasTracePolicy."
+    },
+    "federation": {
+      "$ref": "#/$defs/FederationInfo",
+      "description": "Federation metadata for cross-broker contexts. Maps to fed:* properties."
+    },
+    "hypergraph": {
+      "$ref": "#/$defs/Hypergraph",
+      "description": "Optional explicit hypergraph representation of the context (multi-party relations, multi-target affordances)."
+    },
+    "category": {
+      "$ref": "#/$defs/ContextCategory",
+      "description": "Optional category-theoretic view of the context graph (objects, morphisms, composition)."
+    }
+  },
+  "$defs": {
+    "FederationInfo": {
+      "type": "object",
+      "description": "Federation metadata for decentralized/federated deployments. See federation.ttl ontology.",
+      "properties": {
+        "type": {
+          "type": "string",
+          "default": "fed:FederatedContext"
+        },
+        "originBroker": {
+          "$ref": "#/$defs/BrokerRef",
+          "description": "The broker that materialized this context. Maps to fed:originBroker."
+        },
+        "trustDomain": {
+          "type": "string",
+          "format": "uri",
+          "description": "DID of the trust domain this context belongs to. Maps to fed:memberOfDomain."
+        },
+        "federatedBrokers": {
+          "type": "array",
+          "description": "Other brokers whose resources are included in this context. Maps to fed:includesBroker.",
+          "items": { "$ref": "#/$defs/BrokerRef" }
+        },
+        "trustLevel": {
+          "type": "string",
+          "enum": ["FullTrust", "LimitedTrust", "VerifyAlways"],
+          "description": "Trust level for remote affordances. Maps to fed:hasTrustLevel."
+        },
+        "maxFederationHops": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 10,
+          "default": 2,
+          "description": "Maximum hops for cross-broker resolution. Maps to fed:maxFederationHops."
+        },
+        "credentialBridges": {
+          "type": "array",
+          "description": "Credential bridges available for cross-domain auth. Maps to fed:hasCredentialBridge.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": { "type": "string", "default": "fed:CredentialBridge" },
+              "id": { "type": "string", "format": "uri" },
+              "fromDomain": { "type": "string", "format": "uri" },
+              "toDomain": { "type": "string", "format": "uri" }
+            }
+          }
+        }
+      }
+    },
+    "BrokerRef": {
+      "type": "object",
+      "description": "Reference to a broker node in the federation. Maps to fed:Broker.",
+      "required": ["brokerDID"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "default": "fed:Broker"
+        },
+        "brokerDID": {
+          "type": "string",
+          "pattern": "^did:(web|key|dht|plc|peer):.+$",
+          "description": "DID of the broker. Maps to fed:hasBrokerDID."
+        },
+        "serviceEndpoint": {
+          "type": "string",
+          "format": "uri",
+          "description": "Primary service endpoint URL. Maps to fed:hasServiceEndpoint."
+        },
+        "status": {
+          "type": "string",
+          "enum": ["Active", "Degraded", "Offline", "Untrusted"],
+          "description": "Current broker status. Maps to fed:hasBrokerStatus."
+        },
+        "supportedDIDMethods": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["did:key", "did:web", "did:dht", "did:plc", "did:peer"]
+          },
+          "description": "DID methods this broker supports. Maps to fed:supportsDIDMethod."
+        },
+        "federationProtocols": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["ActivityPub", "DIDComm", "LDN"]
+          },
+          "description": "Federation protocols supported. Maps to fed:supportsFederationProtocol."
+        }
+      }
+    },
+    "VerifiedCredentialRef": {
+      "type": "object",
+      "description": "Reference to a verified credential. Type should include VerifiableCredential.",
+      "required": ["id", "type", "issuer", "validUntil"],
+      "properties": {
+        "type": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Should include VerifiableCredential and capability type."
+        },
+        "id": {
+          "type": "string",
+          "format": "uri",
+          "description": "Credential identifier. Maps to @id."
+        },
+        "issuer": {
+          "type": "string",
+          "description": "DID of the credential issuer. Maps to acg:issuer (@type: @id)."
+        },
+        "validUntil": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Maps to acg:validUntil (xsd:dateTime)."
+        },
+        "credentialSubject": {
+          "type": "object",
+          "description": "Maps to acg:credentialSubject.",
+          "properties": {
+            "id": { "type": "string" },
+            "capability": {
+              "type": "string",
+              "description": "Maps to acg:capability."
+            }
+          }
+        }
+      }
+    },
+    "Constraint": {
+      "type": "object",
+      "description": "Policy constraint. Type should include odrl:Constraint or odrl:Duty with acg:*Constraint.",
+      "required": ["type", "rule"],
+      "properties": {
+        "type": {
+          "oneOf": [
+            { "type": "string" },
+            { "type": "array", "items": { "type": "string" } }
+          ],
+          "description": "Use types like [odrl:Constraint, acg:OutcomeConstraint] or [odrl:Duty, acg:DeonticConstraint]."
+        },
+        "rule": {
+          "type": "string",
+          "description": "The constraint rule. Maps to odrl:duty."
+        },
+        "policyRef": {
+          "type": "string",
+          "format": "uri",
+          "description": "Maps to acg:policyRef (@type: @id)."
+        },
+        "enforcementLevel": {
+          "type": "string",
+          "enum": ["strict", "advisory", "audit-only"],
+          "description": "Maps to acg:enforcementLevel."
+        }
+      }
+    },
+    "Affordance": {
+      "type": "object",
+      "description": "An available action. Type should be [hydra:Operation, acg:Affordance]. For causal affordances, add acg:CausalAffordance.",
+      "required": ["id", "rel", "actionType", "target"],
+      "properties": {
+        "type": {
+          "type": "array",
+          "items": { "type": "string" },
+          "default": ["hydra:Operation", "acg:Affordance"],
+          "description": "JSON-LD types. Maps to @type."
+        },
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for this affordance. Maps to @id."
+        },
+        "rel": {
+          "type": "string",
+          "description": "Relation type (semantic label). Maps to acg:relationType."
+        },
+        "relVersion": {
+          "type": "string",
+          "description": "Version of the relation semantics. Maps to acg:relationVersion."
+        },
+        "actionType": {
+          "type": "string",
+          "description": "AAT action type (e.g., aat:EmitPlan, aat:Act). Maps to acg:actionType (@type: @id)."
+        },
+        "target": {
+          "$ref": "#/$defs/Target",
+          "description": "Maps to acg:hasTarget."
+        },
+        "params": {
+          "$ref": "#/$defs/ParamsSchema",
+          "description": "Maps to acg:hasParams."
+        },
+        "requiresCredential": {
+          "type": "array",
+          "description": "VCs required to traverse this affordance. Maps to acg:requiresCredential (@container: @set).",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "default": "acg:CredentialRequirement"
+              },
+              "schema": { "type": "string" },
+              "issuer": { "type": "string" }
+            }
+          }
+        },
+        "effects": {
+          "type": "array",
+          "description": "Declared effects of traversing. Maps to acg:hasEffects (@container: @set).",
+          "items": { "$ref": "#/$defs/Effect" }
+        },
+        "causalSemantics": {
+          "$ref": "#/$defs/CausalSemantics",
+          "description": "Maps to acg:hasCausalSemantics."
+        },
+        "usageSemantics": {
+          "$ref": "#/$defs/UsageSemantics",
+          "description": "Usage-based semantics derived from observed traversals. Maps to acg:hasUsageSemantics."
+        },
+        "preconditions": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Maps to acg:preconditions (@container: @list)."
+        },
+        "enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Maps to acg:isEnabled (xsd:boolean)."
+        },
+        "disabledReason": {
+          "type": "string",
+          "description": "Maps to acg:disabledReason."
+        }
+      }
+    },
+    "Target": {
+      "type": "object",
+      "description": "Target endpoint for the affordance. Type should be acg:HTTPTarget, acg:FederatedTarget, acg:OID4VCITarget, etc.",
+      "required": ["type"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "description": "Use acg:HTTPTarget, acg:FederatedTarget, acg:DIDCommTarget, acg:OID4VCITarget, acg:InternalTarget, acg:EventEmitTarget."
+        },
+        "href": {
+          "type": "string",
+          "format": "uri",
+          "description": "Maps to hydra:entrypoint (@type: @id)."
+        },
+        "method": {
+          "type": "string",
+          "enum": ["GET", "POST", "PUT", "DELETE", "PATCH"],
+          "description": "Maps to hydra:method."
+        },
+        "didcommType": {
+          "type": "string",
+          "description": "Maps to acg:didcommType."
+        },
+        "serviceEndpoint": {
+          "type": "string",
+          "description": "Maps to acg:serviceEndpoint (@type: @id)."
+        },
+        "remoteBroker": {
+          "$ref": "#/$defs/BrokerRef",
+          "description": "For FederatedTarget: the remote broker hosting this affordance. Maps to fed:hostedBy."
+        },
+        "requiresCrossdomainAuth": {
+          "type": "boolean",
+          "description": "For FederatedTarget: whether credential bridging is required. Maps to fed:requiresCrossdomainAuth."
+        },
+        "federationProtocol": {
+          "type": "string",
+          "enum": ["ActivityPub", "DIDComm", "LDN", "HTTP"],
+          "description": "For FederatedTarget: protocol to use for cross-broker communication."
+        }
+      }
+    },
+    "ParamsSchema": {
+      "type": "object",
+      "description": "Parameter schema. Type should be sh:NodeShape for SHACL validation.",
+      "properties": {
+        "type": {
+          "type": "string",
+          "description": "Use sh:NodeShape for SHACL-based validation."
+        },
+        "schema": {
+          "type": "object",
+          "description": "Inline JSON Schema for parameters. Maps to sh:targetClass."
+        },
+        "shaclRef": {
+          "type": "string",
+          "format": "uri",
+          "description": "Reference to external SHACL shape."
+        }
+      }
+    },
+    "Effect": {
+      "type": "object",
+      "description": "Effect of traversing an affordance. Type should be acg:StateChangeEffect, acg:EventEmitEffect, etc.",
+      "properties": {
+        "type": {
+          "type": "string",
+          "description": "Use acg:StateChangeEffect, acg:EventEmitEffect, acg:ResourceCreateEffect, etc."
+        },
+        "description": {
+          "type": "string",
+          "description": "Maps to rdfs:comment."
+        },
+        "reversible": {
+          "type": "boolean",
+          "description": "Maps to acg:isReversible (xsd:boolean)."
+        }
+      }
+    },
+    "CausalSemantics": {
+      "type": "object",
+      "description": "Causal model semantics for SCM-based reasoning. Type should be acg:CausalSemantics.",
+      "properties": {
+        "type": {
+          "type": "string",
+          "default": "acg:CausalSemantics"
+        },
+        "interventionLabel": {
+          "type": "string",
+          "description": "The do(action, params) label for causal analysis. Maps to acg:interventionLabel."
+        },
+        "outcomeVariables": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Maps to acg:outcomeVariables (@container: @list)."
+        },
+        "causalModelRef": {
+          "type": "string",
+          "format": "uri",
+          "description": "Maps to acg:causalModelRef (@type: @id)."
+        },
+        "evaluatorEndpoint": {
+          "type": "string",
+          "format": "uri",
+          "description": "Maps to acg:evaluatorEndpoint (@type: @id)."
+        }
+      }
+    },
+    "UsageSemantics": {
+      "type": "object",
+      "description": "Usage-based semantics derived from observed affordance traversals.",
+      "properties": {
+        "type": {
+          "type": "string",
+          "default": "acg:UsageSemantics"
+        },
+        "stability": {
+          "type": "number",
+          "description": "Stability score for relation usage (0..1). Maps to acg:usageStability."
+        },
+        "drift": {
+          "type": "number",
+          "description": "Drift score over window (0..1). Maps to acg:usageDrift."
+        },
+        "polysemy": {
+          "type": "number",
+          "description": "Estimated polysemy (usage cluster count or ratio). Maps to acg:usagePolysemy."
+        },
+        "evidenceWindow": {
+          "type": "string",
+          "description": "ISO 8601 duration for usage aggregation window. Maps to acg:usageEvidenceWindow."
+        },
+        "lastObservedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Most recent usage observation time. Maps to acg:usageLastObservedAt."
+        },
+        "usageExamples": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Trace IDs or example references. Maps to acg:usageExampleTrace."
+        },
+        "notes": {
+          "type": "string",
+          "description": "Free-form notes about usage semantics."
+        }
+      }
+    },
+    "TracePolicy": {
+      "type": "object",
+      "description": "Policy for provenance traces. Type should be acg:TracePolicy.",
+      "properties": {
+        "type": {
+          "type": "string",
+          "default": "acg:TracePolicy"
+        },
+        "mustEmitProvActivity": {
+          "type": "boolean",
+          "default": true,
+          "description": "Maps to acg:mustEmitProvActivity (xsd:boolean)."
+        },
+        "retentionPeriod": {
+          "type": "string",
+          "description": "ISO 8601 duration. Maps to acg:retentionPeriod (xsd:duration)."
+        },
+        "includeContextSnapshot": {
+          "type": "boolean",
+          "default": true,
+          "description": "Maps to acg:includeContextSnapshot (xsd:boolean)."
+        },
+        "includeOutcomes": {
+          "type": "boolean",
+          "default": true,
+          "description": "Maps to acg:includeOutcomes (xsd:boolean)."
+        }
+      }
+    },
+    "Hypergraph": {
+      "type": "object",
+      "description": "Hypergraph representation of the context graph. Nodes may represent agents, affordances, constraints, credentials, and resources; hyperedges capture multi-party relations.",
+      "required": ["nodes", "hyperedges"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "default": "acg:Hypergraph"
+        },
+        "nodes": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/Hypernode" }
+        },
+        "hyperedges": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/Hyperedge" }
+        }
+      }
+    },
+    "Hypernode": {
+      "type": "object",
+      "description": "Hypergraph node. May refer to an entity already present in the context graph.",
+      "required": ["id"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "default": "acg:Hypernode"
+        },
+        "id": {
+          "type": "string",
+          "description": "Local identifier for this hypernode."
+        },
+        "kind": {
+          "type": "string",
+          "description": "Optional node kind (Agent, Affordance, Constraint, Credential, Target, Resource, Policy, State)."
+        },
+        "ref": {
+          "type": "string",
+          "description": "Reference to the underlying graph entity (URI or local id)."
+        }
+      }
+    },
+    "Hyperedge": {
+      "type": "object",
+      "description": "Hyperedge connecting multiple hypernodes. Often corresponds to an affordance.",
+      "required": ["id", "connects"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "default": "acg:Hyperedge"
+        },
+        "id": {
+          "type": "string",
+          "description": "Local identifier for this hyperedge."
+        },
+        "relation": {
+          "type": "string",
+          "description": "Relation label (e.g., affordance-rel, constraint-rel)."
+        },
+        "affordanceRef": {
+          "type": "string",
+          "description": "Reference to an affordance id in the context graph (if applicable)."
+        },
+        "connects": {
+          "type": "array",
+          "minItems": 2,
+          "items": { "type": "string" },
+          "description": "Hypernode ids incident to this hyperedge."
+        },
+        "roles": {
+          "type": "object",
+          "description": "Optional role bindings from semantic roles to hypernode ids.",
+          "additionalProperties": {
+            "oneOf": [
+              { "type": "string" },
+              { "type": "array", "items": { "type": "string" } }
+            ]
+          }
+        }
+      }
+    },
+    "ContextCategory": {
+      "type": "object",
+      "description": "Category-theoretic view of a context. Objects are state/resources; morphisms map to affordances or hyperedges.",
+      "properties": {
+        "type": {
+          "type": "string",
+          "default": "acg:ContextCategory"
+        },
+        "objects": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/CategoryObject" }
+        },
+        "morphisms": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/Morphism" }
+        },
+        "composition": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/Composition" }
+        }
+      }
+    },
+    "CategoryObject": {
+      "type": "object",
+      "description": "An object in the context category (state/resource slice).",
+      "required": ["id"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "default": "acg:CategoryObject"
+        },
+        "id": {
+          "type": "string"
+        },
+        "ref": {
+          "type": "string",
+          "description": "Reference to a resource or hypernode id."
+        }
+      }
+    },
+    "Morphism": {
+      "type": "object",
+      "description": "A morphism between objects (optionally multi-input/output for monoidal composition).",
+      "required": ["id", "domain", "codomain"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "default": "acg:Morphism"
+        },
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "domain": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string" },
+          "description": "Object ids comprising the input boundary."
+        },
+        "codomain": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string" },
+          "description": "Object ids comprising the output boundary."
+        },
+        "affordanceRef": {
+          "type": "string",
+          "description": "Reference to affordance id (if this morphism is an affordance traversal)."
+        },
+        "hyperedgeRef": {
+          "type": "string",
+          "description": "Reference to hyperedge id (if modeled as a hyperedge)."
+        }
+      }
+    },
+    "Composition": {
+      "type": "object",
+      "description": "Composition record for morphisms (g ∘ f).",
+      "required": ["of", "composite"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "default": "acg:Composition"
+        },
+        "of": {
+          "type": "array",
+          "minItems": 2,
+          "items": { "type": "string" },
+          "description": "Ordered list of morphism ids composing to the composite."
+        },
+        "composite": {
+          "type": "string",
+          "description": "The resulting morphism id."
+        }
+      }
+    }
+  }
+}

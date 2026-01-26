@@ -1,0 +1,314 @@
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix cert: <http://www.w3.org/ns/auth/cert#> .
+@prefix solid: <http://www.w3.org/ns/solid/terms#> .
+@prefix acg: <https://agentcontextgraph.dev/ontology#> .
+@prefix id: <https://agentcontextgraph.dev/identity#> .
+
+# =============================================================================
+# Agent Context Graph Identity Ontology
+# =============================================================================
+# Defines identity mechanisms for ACG agents, supporting both DIDs and WebIDs.
+# Enables interoperability with Solid ecosystem and broader semantic web.
+# =============================================================================
+
+<https://agentcontextgraph.dev/identity>
+    a owl:Ontology ;
+    owl:versionIRI <https://agentcontextgraph.dev/identity/1.0.0> ;
+    dcterms:title "Agent Context Graph Identity Ontology"@en ;
+    dcterms:description "Defines identity mechanisms supporting both Decentralized Identifiers (DIDs) and WebIDs for ACG agents. Enables bridging between DID-based and WebID-based identity systems."@en ;
+    dcterms:created "2026-01-25"^^xsd:date ;
+    owl:imports <https://agentcontextgraph.dev/ontology> ;
+    owl:imports <http://xmlns.com/foaf/0.1/> .
+
+# =============================================================================
+# Identity Core Classes
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# AgentIdentity - Abstract identity class
+# -----------------------------------------------------------------------------
+
+id:AgentIdentity a owl:Class ;
+    rdfs:label "Agent Identity"@en ;
+    rdfs:comment "An identity assertion for an ACG agent. Can be either DID-based or WebID-based."@en ;
+    owl:unionOf (id:DIDIdentity id:WebIDIdentity) .
+
+# -----------------------------------------------------------------------------
+# DIDIdentity - Decentralized Identifier based identity
+# -----------------------------------------------------------------------------
+
+id:DIDIdentity a owl:Class ;
+    rdfs:label "DID Identity"@en ;
+    rdfs:subClassOf id:AgentIdentity ;
+    rdfs:comment "An identity based on a Decentralized Identifier (DID). Cryptographically verifiable without relying on any single authority."@en ;
+    rdfs:subClassOf [
+        a owl:Restriction ;
+        owl:onProperty id:didString ;
+        owl:cardinality 1
+    ] ;
+    rdfs:subClassOf [
+        a owl:Restriction ;
+        owl:onProperty id:didMethod ;
+        owl:cardinality 1
+    ] .
+
+# -----------------------------------------------------------------------------
+# WebIDIdentity - WebID based identity (Solid/Linked Data)
+# -----------------------------------------------------------------------------
+
+id:WebIDIdentity a owl:Class ;
+    rdfs:label "WebID Identity"@en ;
+    rdfs:subClassOf id:AgentIdentity ;
+    rdfs:comment "An identity based on a WebID - an HTTP URI that dereferences to an RDF profile document. Compatible with Solid Protocol and semantic web practices."@en ;
+    rdfs:subClassOf foaf:Agent ;
+    rdfs:subClassOf [
+        a owl:Restriction ;
+        owl:onProperty id:webIdUri ;
+        owl:cardinality 1
+    ] .
+
+# -----------------------------------------------------------------------------
+# IdentityBridge - Links DID and WebID identities
+# -----------------------------------------------------------------------------
+
+id:IdentityBridge a owl:Class ;
+    rdfs:label "Identity Bridge"@en ;
+    rdfs:comment "A verified link between a DID identity and a WebID identity for the same agent. Enables interoperability between DID-based and WebID-based systems."@en ;
+    rdfs:subClassOf [
+        a owl:Restriction ;
+        owl:onProperty id:bridgesDID ;
+        owl:cardinality 1
+    ] ;
+    rdfs:subClassOf [
+        a owl:Restriction ;
+        owl:onProperty id:bridgesWebID ;
+        owl:cardinality 1
+    ] .
+
+# -----------------------------------------------------------------------------
+# WebIDProfile - The RDF document describing a WebID
+# -----------------------------------------------------------------------------
+
+id:WebIDProfile a owl:Class ;
+    rdfs:label "WebID Profile"@en ;
+    rdfs:subClassOf foaf:PersonalProfileDocument ;
+    rdfs:comment "An RDF document that describes a WebID agent, including public keys, capabilities, and agent type information."@en .
+
+# -----------------------------------------------------------------------------
+# DIDDocument - The DID Document for a DID
+# -----------------------------------------------------------------------------
+
+id:DIDDocument a owl:Class ;
+    rdfs:label "DID Document"@en ;
+    rdfs:comment "A DID Document containing verification methods, service endpoints, and metadata for a DID identity."@en .
+
+# =============================================================================
+# Verification Method Classes
+# =============================================================================
+
+id:VerificationMethod a owl:Class ;
+    rdfs:label "Verification Method"@en ;
+    rdfs:comment "A cryptographic method for verifying identity assertions."@en .
+
+id:Ed25519VerificationKey2020 a owl:Class ;
+    rdfs:label "Ed25519 Verification Key 2020"@en ;
+    rdfs:subClassOf id:VerificationMethod ;
+    rdfs:comment "Ed25519 public key verification method."@en .
+
+id:JsonWebKey2020 a owl:Class ;
+    rdfs:label "JSON Web Key 2020"@en ;
+    rdfs:subClassOf id:VerificationMethod ;
+    rdfs:comment "JSON Web Key (JWK) verification method."@en .
+
+id:RSAPublicKey a owl:Class ;
+    rdfs:label "RSA Public Key"@en ;
+    rdfs:subClassOf id:VerificationMethod, cert:RSAPublicKey ;
+    rdfs:comment "RSA public key, compatible with WebID-TLS."@en .
+
+# =============================================================================
+# Identity Resolution Classes
+# =============================================================================
+
+id:IdentityResolver a owl:Class ;
+    rdfs:label "Identity Resolver"@en ;
+    rdfs:comment "A service that resolves identity URIs to identity documents."@en .
+
+id:DIDResolver a owl:Class ;
+    rdfs:label "DID Resolver"@en ;
+    rdfs:subClassOf id:IdentityResolver ;
+    rdfs:comment "Resolves DIDs to DID Documents according to DID method specifications."@en .
+
+id:WebIDResolver a owl:Class ;
+    rdfs:label "WebID Resolver"@en ;
+    rdfs:subClassOf id:IdentityResolver ;
+    rdfs:comment "Resolves WebID URIs to RDF profile documents via HTTP content negotiation."@en .
+
+id:UnifiedResolver a owl:Class ;
+    rdfs:label "Unified Resolver"@en ;
+    rdfs:subClassOf id:IdentityResolver ;
+    rdfs:comment "Resolves both DIDs and WebIDs, automatically detecting the identity type."@en .
+
+# =============================================================================
+# Object Properties
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Identity Properties
+# -----------------------------------------------------------------------------
+
+id:hasIdentity a owl:ObjectProperty ;
+    rdfs:label "has identity"@en ;
+    rdfs:domain acg:Agent ;
+    rdfs:range id:AgentIdentity ;
+    rdfs:comment "An identity assertion for this agent."@en .
+
+id:primaryIdentity a owl:ObjectProperty ;
+    rdfs:label "primary identity"@en ;
+    rdfs:subPropertyOf id:hasIdentity ;
+    rdfs:domain acg:Agent ;
+    rdfs:range id:AgentIdentity ;
+    owl:maxCardinality 1 ;
+    rdfs:comment "The primary identity for this agent, used when only one identity is needed."@en .
+
+id:bridgesDID a owl:ObjectProperty, owl:FunctionalProperty ;
+    rdfs:label "bridges DID"@en ;
+    rdfs:domain id:IdentityBridge ;
+    rdfs:range id:DIDIdentity ;
+    rdfs:comment "The DID identity in this bridge."@en .
+
+id:bridgesWebID a owl:ObjectProperty, owl:FunctionalProperty ;
+    rdfs:label "bridges WebID"@en ;
+    rdfs:domain id:IdentityBridge ;
+    rdfs:range id:WebIDIdentity ;
+    rdfs:comment "The WebID identity in this bridge."@en .
+
+id:hasVerificationMethod a owl:ObjectProperty ;
+    rdfs:label "has verification method"@en ;
+    rdfs:domain id:AgentIdentity ;
+    rdfs:range id:VerificationMethod ;
+    rdfs:comment "A verification method for this identity."@en .
+
+id:hasProfile a owl:ObjectProperty ;
+    rdfs:label "has profile"@en ;
+    rdfs:domain id:WebIDIdentity ;
+    rdfs:range id:WebIDProfile ;
+    rdfs:comment "The RDF profile document for this WebID."@en .
+
+id:hasDIDDocument a owl:ObjectProperty ;
+    rdfs:label "has DID document"@en ;
+    rdfs:domain id:DIDIdentity ;
+    rdfs:range id:DIDDocument ;
+    rdfs:comment "The DID Document for this DID identity."@en .
+
+id:equivalentIdentity a owl:ObjectProperty, owl:SymmetricProperty ;
+    rdfs:label "equivalent identity"@en ;
+    rdfs:domain id:AgentIdentity ;
+    rdfs:range id:AgentIdentity ;
+    rdfs:comment "Indicates two identities refer to the same agent. Must be cryptographically proven."@en .
+
+id:resolvedBy a owl:ObjectProperty ;
+    rdfs:label "resolved by"@en ;
+    rdfs:domain id:AgentIdentity ;
+    rdfs:range id:IdentityResolver ;
+    rdfs:comment "The resolver used to resolve this identity."@en .
+
+# -----------------------------------------------------------------------------
+# WebID-specific Properties (aligned with FOAF/Solid)
+# -----------------------------------------------------------------------------
+
+id:storage a owl:ObjectProperty ;
+    rdfs:label "storage"@en ;
+    rdfs:subPropertyOf solid:storage ;
+    rdfs:domain id:WebIDIdentity ;
+    rdfs:range rdfs:Resource ;
+    rdfs:comment "A Solid storage location (Pod) for this WebID agent."@en .
+
+id:oidcIssuer a owl:ObjectProperty ;
+    rdfs:label "OIDC issuer"@en ;
+    rdfs:subPropertyOf solid:oidcIssuer ;
+    rdfs:domain id:WebIDIdentity ;
+    rdfs:range rdfs:Resource ;
+    rdfs:comment "An OpenID Connect issuer trusted to authenticate this WebID."@en .
+
+# =============================================================================
+# Datatype Properties
+# =============================================================================
+
+id:didString a owl:DatatypeProperty, owl:FunctionalProperty ;
+    rdfs:label "DID string"@en ;
+    rdfs:domain id:DIDIdentity ;
+    rdfs:range xsd:string ;
+    rdfs:comment "The full DID string (e.g., 'did:web:example.com:agent:123')."@en .
+
+id:didMethod a owl:DatatypeProperty, owl:FunctionalProperty ;
+    rdfs:label "DID method"@en ;
+    rdfs:domain id:DIDIdentity ;
+    rdfs:range xsd:string ;
+    rdfs:comment "The DID method (e.g., 'web', 'key', 'dht', 'plc')."@en .
+
+id:webIdUri a owl:DatatypeProperty, owl:FunctionalProperty ;
+    rdfs:label "WebID URI"@en ;
+    rdfs:domain id:WebIDIdentity ;
+    rdfs:range xsd:anyURI ;
+    rdfs:comment "The WebID URI (e.g., 'https://example.com/profile/agent#me')."@en .
+
+id:publicKeyPem a owl:DatatypeProperty ;
+    rdfs:label "public key PEM"@en ;
+    rdfs:domain id:VerificationMethod ;
+    rdfs:range xsd:string ;
+    rdfs:comment "Public key in PEM format."@en .
+
+id:publicKeyJwk a owl:DatatypeProperty ;
+    rdfs:label "public key JWK"@en ;
+    rdfs:domain id:VerificationMethod ;
+    rdfs:range xsd:string ;
+    rdfs:comment "Public key as JSON Web Key (serialized)."@en .
+
+id:publicKeyMultibase a owl:DatatypeProperty ;
+    rdfs:label "public key multibase"@en ;
+    rdfs:domain id:VerificationMethod ;
+    rdfs:range xsd:string ;
+    rdfs:comment "Public key in multibase format."@en .
+
+id:bridgeProofType a owl:DatatypeProperty ;
+    rdfs:label "bridge proof type"@en ;
+    rdfs:domain id:IdentityBridge ;
+    rdfs:range xsd:string ;
+    rdfs:comment "The type of proof linking the two identities (e.g., 'LinkedDataSignature', 'JWTProof')."@en .
+
+id:bridgeProofValue a owl:DatatypeProperty ;
+    rdfs:label "bridge proof value"@en ;
+    rdfs:domain id:IdentityBridge ;
+    rdfs:range xsd:string ;
+    rdfs:comment "The cryptographic proof linking the two identities."@en .
+
+id:bridgeCreated a owl:DatatypeProperty ;
+    rdfs:label "bridge created"@en ;
+    rdfs:domain id:IdentityBridge ;
+    rdfs:range xsd:dateTime ;
+    rdfs:comment "When this identity bridge was created."@en .
+
+id:bridgeExpires a owl:DatatypeProperty ;
+    rdfs:label "bridge expires"@en ;
+    rdfs:domain id:IdentityBridge ;
+    rdfs:range xsd:dateTime ;
+    rdfs:comment "When this identity bridge expires (if temporal)."@en .
+
+# =============================================================================
+# Extended acg:Agent with Identity Support
+# =============================================================================
+
+# Extend Agent to support both DID and WebID
+acg:Agent rdfs:subClassOf [
+    a owl:Restriction ;
+    owl:onProperty id:hasIdentity ;
+    owl:minCardinality 1
+] .
+
+# Agent equivalence to FOAF Agent
+acg:Agent owl:equivalentClass foaf:Agent .

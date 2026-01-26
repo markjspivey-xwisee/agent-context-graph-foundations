@@ -1,0 +1,958 @@
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix as: <https://www.w3.org/ns/activitystreams#> .
+@prefix acg: <https://agentcontextgraph.dev/ontology#> .
+@prefix aat: <https://agentcontextgraph.dev/aat#> .
+@prefix fed: <https://agentcontextgraph.dev/federation#> .
+@prefix id: <https://agentcontextgraph.dev/identity#> .
+@prefix ds: <https://agentcontextgraph.dev/data-space#> .
+@prefix pb: <https://agentcontextgraph.dev/personal-broker#> .
+
+# =============================================================================
+# Agent Context Graph Personal Broker Ontology
+# =============================================================================
+# Defines the Personal Broker - a user-owned federated agent runtime that acts
+# as a personal AI assistant hub. Each user runs their own broker, federating
+# with others for social, collaborative, and multiplayer agent experiences.
+# =============================================================================
+
+<https://agentcontextgraph.dev/personal-broker>
+    a owl:Ontology ;
+    owl:versionIRI <https://agentcontextgraph.dev/personal-broker/1.0.0> ;
+    dcterms:title "Agent Context Graph Personal Broker Ontology"@en ;
+    dcterms:description "Defines the Personal Broker - a user-owned runtime for personal AI assistants. Enables federated, decentralized, social agent experiences where users control their own agents, data, and connections."@en ;
+    dcterms:created "2026-01-25"^^xsd:date ;
+    owl:imports <https://agentcontextgraph.dev/federation> ;
+    owl:imports <https://agentcontextgraph.dev/identity> ;
+    owl:imports <https://agentcontextgraph.dev/data-space> .
+
+# =============================================================================
+# Personal Broker Core Classes
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# PersonalBroker - User's own agent runtime
+# -----------------------------------------------------------------------------
+
+pb:PersonalBroker a owl:Class ;
+    rdfs:label "Personal Broker"@en ;
+    rdfs:subClassOf fed:Broker ;
+    rdfs:comment "A user-owned ACG broker that serves as their personal AI assistant hub. Routes messages from channels, manages personal agents, stores conversation history in the user's data space, and federates with other personal brokers for social interactions."@en ;
+    rdfs:subClassOf [
+        a owl:Restriction ;
+        owl:onProperty pb:ownerIdentity ;
+        owl:cardinality 1
+    ] ;
+    rdfs:subClassOf [
+        a owl:Restriction ;
+        owl:onProperty pb:hasDataSpace ;
+        owl:minCardinality 1
+    ] .
+
+# -----------------------------------------------------------------------------
+# Conversation - A session with the personal assistant
+# -----------------------------------------------------------------------------
+
+pb:Conversation a owl:Class ;
+    rdfs:label "Conversation"@en ;
+    rdfs:subClassOf prov:Activity ;
+    rdfs:comment "A conversation session between the user and their personal broker. Contains messages, context, and spawned agent workflows. Persisted in the user's data space."@en ;
+    rdfs:subClassOf [
+        a owl:Restriction ;
+        owl:onProperty pb:belongsToBroker ;
+        owl:cardinality 1
+    ] .
+
+pb:ConversationStatus a owl:Class ;
+    rdfs:label "Conversation Status"@en ;
+    owl:oneOf (pb:ConversationActive pb:ConversationPaused pb:ConversationEnded pb:ConversationArchived) .
+
+pb:ConversationActive a pb:ConversationStatus ;
+    rdfs:label "Active"@en ;
+    rdfs:comment "Conversation is active and accepting messages."@en .
+
+pb:ConversationPaused a pb:ConversationStatus ;
+    rdfs:label "Paused"@en ;
+    rdfs:comment "Conversation is paused, user has stepped away."@en .
+
+pb:ConversationEnded a pb:ConversationStatus ;
+    rdfs:label "Ended"@en ;
+    rdfs:comment "Conversation has ended normally."@en .
+
+pb:ConversationArchived a pb:ConversationStatus ;
+    rdfs:label "Archived"@en ;
+    rdfs:comment "Conversation has been archived for long-term storage."@en .
+
+# -----------------------------------------------------------------------------
+# Message - A message in a conversation
+# -----------------------------------------------------------------------------
+
+pb:Message a owl:Class ;
+    rdfs:label "Message"@en ;
+    rdfs:subClassOf as:Note ;
+    rdfs:comment "A message in a conversation. Can be from the user, the assistant, an agent, or a remote participant in multiplayer scenarios."@en .
+
+pb:MessageRole a owl:Class ;
+    rdfs:label "Message Role"@en ;
+    owl:oneOf (pb:UserMessage pb:AssistantMessage pb:AgentMessage pb:SystemMessage pb:RemoteMessage) .
+
+pb:UserMessage a pb:MessageRole ;
+    rdfs:label "User Message"@en ;
+    rdfs:comment "A message from the broker owner."@en .
+
+pb:AssistantMessage a pb:MessageRole ;
+    rdfs:label "Assistant Message"@en ;
+    rdfs:comment "A response from the personal assistant."@en .
+
+pb:AgentMessage a pb:MessageRole ;
+    rdfs:label "Agent Message"@en ;
+    rdfs:comment "A message from an autonomous agent (part of a workflow)."@en .
+
+pb:SystemMessage a pb:MessageRole ;
+    rdfs:label "System Message"@en ;
+    rdfs:comment "A system notification or context message."@en .
+
+pb:RemoteMessage a pb:MessageRole ;
+    rdfs:label "Remote Message"@en ;
+    rdfs:comment "A message from a remote participant via federation."@en .
+
+# -----------------------------------------------------------------------------
+# Channel - Input/output channels for the broker
+# -----------------------------------------------------------------------------
+
+pb:Channel a owl:Class ;
+    rdfs:label "Channel"@en ;
+    rdfs:comment "A communication channel connected to the personal broker. Routes messages to/from external platforms (WhatsApp, Telegram, Discord, CLI, Web, etc.)."@en ;
+    rdfs:subClassOf [
+        a owl:Restriction ;
+        owl:onProperty pb:connectedToBroker ;
+        owl:cardinality 1
+    ] .
+
+pb:ChannelType a owl:Class ;
+    rdfs:label "Channel Type"@en ;
+    rdfs:comment "The type/platform of a channel."@en ;
+    owl:oneOf (pb:WebChannel pb:CLIChannel pb:WhatsAppChannel pb:TelegramChannel
+               pb:DiscordChannel pb:SlackChannel pb:MatrixChannel pb:EmailChannel
+               pb:SMSChannel pb:VoiceChannel pb:APIChannel) .
+
+pb:WebChannel a pb:ChannelType ;
+    rdfs:label "Web Channel"@en ;
+    rdfs:comment "Browser-based web interface."@en .
+
+pb:CLIChannel a pb:ChannelType ;
+    rdfs:label "CLI Channel"@en ;
+    rdfs:comment "Command-line interface."@en .
+
+pb:WhatsAppChannel a pb:ChannelType ;
+    rdfs:label "WhatsApp Channel"@en ;
+    rdfs:comment "WhatsApp messaging platform."@en .
+
+pb:TelegramChannel a pb:ChannelType ;
+    rdfs:label "Telegram Channel"@en ;
+    rdfs:comment "Telegram messaging platform."@en .
+
+pb:DiscordChannel a pb:ChannelType ;
+    rdfs:label "Discord Channel"@en ;
+    rdfs:comment "Discord messaging platform."@en .
+
+pb:SlackChannel a pb:ChannelType ;
+    rdfs:label "Slack Channel"@en ;
+    rdfs:comment "Slack workspace channel."@en .
+
+pb:MatrixChannel a pb:ChannelType ;
+    rdfs:label "Matrix Channel"@en ;
+    rdfs:comment "Matrix federated messaging protocol."@en .
+
+pb:EmailChannel a pb:ChannelType ;
+    rdfs:label "Email Channel"@en ;
+    rdfs:comment "Email communication."@en .
+
+pb:SMSChannel a pb:ChannelType ;
+    rdfs:label "SMS Channel"@en ;
+    rdfs:comment "SMS text messaging."@en .
+
+pb:VoiceChannel a pb:ChannelType ;
+    rdfs:label "Voice Channel"@en ;
+    rdfs:comment "Voice/audio communication."@en .
+
+pb:APIChannel a pb:ChannelType ;
+    rdfs:label "API Channel"@en ;
+    rdfs:comment "Direct API integration."@en .
+
+pb:ChannelStatus a owl:Class ;
+    rdfs:label "Channel Status"@en ;
+    owl:oneOf (pb:ChannelConnected pb:ChannelDisconnected pb:ChannelError pb:ChannelRateLimited) .
+
+pb:ChannelConnected a pb:ChannelStatus ;
+    rdfs:label "Connected"@en .
+
+pb:ChannelDisconnected a pb:ChannelStatus ;
+    rdfs:label "Disconnected"@en .
+
+pb:ChannelError a pb:ChannelStatus ;
+    rdfs:label "Error"@en .
+
+pb:ChannelRateLimited a pb:ChannelStatus ;
+    rdfs:label "Rate Limited"@en .
+
+# -----------------------------------------------------------------------------
+# Memory - Long-term memory and knowledge for the broker
+# -----------------------------------------------------------------------------
+
+pb:Memory a owl:Class ;
+    rdfs:label "Memory"@en ;
+    rdfs:subClassOf ds:DataSpaceResource ;
+    rdfs:comment "Long-term memory storage for the personal broker. Includes facts, preferences, context summaries, and learned patterns."@en .
+
+pb:MemoryType a owl:Class ;
+    rdfs:label "Memory Type"@en ;
+    owl:oneOf (pb:EpisodicMemory pb:SemanticMemory pb:ProceduralMemory pb:PreferenceMemory) .
+
+pb:EpisodicMemory a pb:MemoryType ;
+    rdfs:label "Episodic Memory"@en ;
+    rdfs:comment "Memories of specific events and conversations."@en .
+
+pb:SemanticMemory a pb:MemoryType ;
+    rdfs:label "Semantic Memory"@en ;
+    rdfs:comment "General knowledge and facts about the user and their world."@en .
+
+pb:ProceduralMemory a pb:MemoryType ;
+    rdfs:label "Procedural Memory"@en ;
+    rdfs:comment "Learned procedures and how to perform tasks."@en .
+
+pb:PreferenceMemory a pb:MemoryType ;
+    rdfs:label "Preference Memory"@en ;
+    rdfs:comment "User preferences, likes, dislikes, and communication style."@en .
+
+pb:MemoryEntry a owl:Class ;
+    rdfs:label "Memory Entry"@en ;
+    rdfs:comment "A single entry in the broker's memory."@en .
+
+# -----------------------------------------------------------------------------
+# Routine - Scheduled/recurring agent tasks
+# -----------------------------------------------------------------------------
+
+pb:Routine a owl:Class ;
+    rdfs:label "Routine"@en ;
+    rdfs:subClassOf prov:Plan ;
+    rdfs:comment "A scheduled or recurring agent task. For example, 'every morning at 8am, summarize my emails' or 'when I say goodnight, turn off the lights'."@en .
+
+pb:RoutineTrigger a owl:Class ;
+    rdfs:label "Routine Trigger"@en ;
+    rdfs:comment "What triggers a routine to execute."@en ;
+    owl:oneOf (pb:ScheduledTrigger pb:EventTrigger pb:CommandTrigger pb:ContextTrigger) .
+
+pb:ScheduledTrigger a pb:RoutineTrigger ;
+    rdfs:label "Scheduled Trigger"@en ;
+    rdfs:comment "Triggered at scheduled times (cron-like)."@en .
+
+pb:EventTrigger a pb:RoutineTrigger ;
+    rdfs:label "Event Trigger"@en ;
+    rdfs:comment "Triggered by external events (webhook, message, etc.)."@en .
+
+pb:CommandTrigger a pb:RoutineTrigger ;
+    rdfs:label "Command Trigger"@en ;
+    rdfs:comment "Triggered by a specific user command/phrase."@en .
+
+pb:ContextTrigger a pb:RoutineTrigger ;
+    rdfs:label "Context Trigger"@en ;
+    rdfs:comment "Triggered when certain context conditions are met."@en .
+
+# -----------------------------------------------------------------------------
+# Tool - External tools/integrations available to the broker
+# -----------------------------------------------------------------------------
+
+pb:Tool a owl:Class ;
+    rdfs:label "Tool"@en ;
+    rdfs:subClassOf acg:Capability ;
+    rdfs:comment "An external tool or integration available to the personal broker. Tools extend the broker's capabilities (e.g., search, calendar, smart home, payments)."@en .
+
+pb:ToolCategory a owl:Class ;
+    rdfs:label "Tool Category"@en ;
+    owl:oneOf (pb:SearchTool pb:ProductivityTool pb:SmartHomeTool pb:CommunicationTool
+               pb:FinanceTool pb:MediaTool pb:DeveloperTool pb:CustomTool) .
+
+pb:SearchTool a pb:ToolCategory ;
+    rdfs:label "Search Tool"@en ;
+    rdfs:comment "Web search, knowledge base search, etc."@en .
+
+pb:ProductivityTool a pb:ToolCategory ;
+    rdfs:label "Productivity Tool"@en ;
+    rdfs:comment "Calendar, tasks, notes, documents."@en .
+
+pb:SmartHomeTool a pb:ToolCategory ;
+    rdfs:label "Smart Home Tool"@en ;
+    rdfs:comment "IoT and smart home control."@en .
+
+pb:CommunicationTool a pb:ToolCategory ;
+    rdfs:label "Communication Tool"@en ;
+    rdfs:comment "Email, messaging, calls."@en .
+
+pb:FinanceTool a pb:ToolCategory ;
+    rdfs:label "Finance Tool"@en ;
+    rdfs:comment "Banking, payments, budgeting."@en .
+
+pb:MediaTool a pb:ToolCategory ;
+    rdfs:label "Media Tool"@en ;
+    rdfs:comment "Music, video, images."@en .
+
+pb:DeveloperTool a pb:ToolCategory ;
+    rdfs:label "Developer Tool"@en ;
+    rdfs:comment "Code, git, APIs."@en .
+
+pb:CustomTool a pb:ToolCategory ;
+    rdfs:label "Custom Tool"@en ;
+    rdfs:comment "User-defined custom tools."@en .
+
+# =============================================================================
+# Social/Federation Classes
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Contact - A social connection to another user's broker
+# -----------------------------------------------------------------------------
+
+pb:Contact a owl:Class ;
+    rdfs:label "Contact"@en ;
+    rdfs:subClassOf as:Person ;
+    rdfs:comment "A social connection to another user's personal broker. Enables federated conversations, shared contexts, and multiplayer workflows."@en ;
+    rdfs:subClassOf [
+        a owl:Restriction ;
+        owl:onProperty pb:contactBroker ;
+        owl:cardinality 1
+    ] .
+
+pb:ContactStatus a owl:Class ;
+    rdfs:label "Contact Status"@en ;
+    owl:oneOf (pb:ContactPending pb:ContactAccepted pb:ContactBlocked pb:ContactMuted) .
+
+pb:ContactPending a pb:ContactStatus ;
+    rdfs:label "Pending"@en ;
+    rdfs:comment "Contact request sent, awaiting acceptance."@en .
+
+pb:ContactAccepted a pb:ContactStatus ;
+    rdfs:label "Accepted"@en ;
+    rdfs:comment "Contact request accepted, federation established."@en .
+
+pb:ContactBlocked a pb:ContactStatus ;
+    rdfs:label "Blocked"@en ;
+    rdfs:comment "Contact has been blocked."@en .
+
+pb:ContactMuted a pb:ContactStatus ;
+    rdfs:label "Muted"@en ;
+    rdfs:comment "Contact is muted (no notifications)."@en .
+
+pb:ContactTrustLevel a owl:Class ;
+    rdfs:label "Contact Trust Level"@en ;
+    rdfs:comment "Level of trust/permissions granted to a contact."@en ;
+    owl:oneOf (pb:TrustPublic pb:TrustFriend pb:TrustClose pb:TrustFamily) .
+
+pb:TrustPublic a pb:ContactTrustLevel ;
+    rdfs:label "Public Trust"@en ;
+    rdfs:comment "Public information only, no special access."@en .
+
+pb:TrustFriend a pb:ContactTrustLevel ;
+    rdfs:label "Friend Trust"@en ;
+    rdfs:comment "Friend-level access, can join some shared workflows."@en .
+
+pb:TrustClose a pb:ContactTrustLevel ;
+    rdfs:label "Close Trust"@en ;
+    rdfs:comment "Close friend access, can see more context, join sensitive workflows."@en .
+
+pb:TrustFamily a pb:ContactTrustLevel ;
+    rdfs:label "Family Trust"@en ;
+    rdfs:comment "Family-level trust, near-full access to shared resources."@en .
+
+# -----------------------------------------------------------------------------
+# Group - A group of contacts for shared activities
+# -----------------------------------------------------------------------------
+
+pb:Group a owl:Class ;
+    rdfs:label "Group"@en ;
+    rdfs:subClassOf as:Group ;
+    rdfs:comment "A group of contacts that can participate in shared conversations and workflows."@en .
+
+# -----------------------------------------------------------------------------
+# SharedWorkflow - A multiplayer agent workflow
+# -----------------------------------------------------------------------------
+
+pb:SharedWorkflow a owl:Class ;
+    rdfs:label "Shared Workflow"@en ;
+    rdfs:subClassOf acg:Workflow ;
+    rdfs:comment "A workflow that spans multiple personal brokers. Enables collaborative agent tasks across federated users."@en .
+
+pb:WorkflowParticipant a owl:Class ;
+    rdfs:label "Workflow Participant"@en ;
+    rdfs:comment "A participant in a shared workflow - can be a person (via their broker) or an agent."@en .
+
+pb:ParticipantRole a owl:Class ;
+    rdfs:label "Participant Role"@en ;
+    owl:oneOf (pb:WorkflowOwner pb:WorkflowContributor pb:WorkflowObserver pb:WorkflowAgent) .
+
+pb:WorkflowOwner a pb:ParticipantRole ;
+    rdfs:label "Owner"@en ;
+    rdfs:comment "Initiated the workflow, has full control."@en .
+
+pb:WorkflowContributor a pb:ParticipantRole ;
+    rdfs:label "Contributor"@en ;
+    rdfs:comment "Can contribute to and modify the workflow."@en .
+
+pb:WorkflowObserver a pb:ParticipantRole ;
+    rdfs:label "Observer"@en ;
+    rdfs:comment "Can observe but not modify the workflow."@en .
+
+pb:WorkflowAgent a pb:ParticipantRole ;
+    rdfs:label "Agent"@en ;
+    rdfs:comment "An autonomous agent participating in the workflow."@en .
+
+# =============================================================================
+# Object Properties
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Personal Broker Properties
+# -----------------------------------------------------------------------------
+
+pb:ownerIdentity a owl:ObjectProperty, owl:FunctionalProperty ;
+    rdfs:label "owner identity"@en ;
+    rdfs:domain pb:PersonalBroker ;
+    rdfs:range id:AgentIdentity ;
+    rdfs:comment "The identity of the human user who owns this personal broker."@en .
+
+pb:hasDataSpace a owl:ObjectProperty ;
+    rdfs:label "has data space"@en ;
+    rdfs:domain pb:PersonalBroker ;
+    rdfs:range ds:DataSpace ;
+    rdfs:comment "A data space used by this personal broker for storage."@en .
+
+pb:hasConversation a owl:ObjectProperty ;
+    rdfs:label "has conversation"@en ;
+    rdfs:domain pb:PersonalBroker ;
+    rdfs:range pb:Conversation ;
+    rdfs:comment "A conversation managed by this broker."@en .
+
+pb:activeConversation a owl:ObjectProperty ;
+    rdfs:label "active conversation"@en ;
+    rdfs:subPropertyOf pb:hasConversation ;
+    rdfs:domain pb:PersonalBroker ;
+    rdfs:range pb:Conversation ;
+    rdfs:comment "The currently active conversation."@en .
+
+pb:hasChannel a owl:ObjectProperty ;
+    rdfs:label "has channel"@en ;
+    rdfs:domain pb:PersonalBroker ;
+    rdfs:range pb:Channel ;
+    rdfs:comment "A communication channel connected to this broker."@en .
+
+pb:hasMemory a owl:ObjectProperty ;
+    rdfs:label "has memory"@en ;
+    rdfs:domain pb:PersonalBroker ;
+    rdfs:range pb:Memory ;
+    rdfs:comment "Long-term memory storage for this broker."@en .
+
+pb:hasRoutine a owl:ObjectProperty ;
+    rdfs:label "has routine"@en ;
+    rdfs:domain pb:PersonalBroker ;
+    rdfs:range pb:Routine ;
+    rdfs:comment "A routine configured for this broker."@en .
+
+pb:hasTool a owl:ObjectProperty ;
+    rdfs:label "has tool"@en ;
+    rdfs:domain pb:PersonalBroker ;
+    rdfs:range pb:Tool ;
+    rdfs:comment "A tool available to this broker."@en .
+
+pb:hasContact a owl:ObjectProperty ;
+    rdfs:label "has contact"@en ;
+    rdfs:domain pb:PersonalBroker ;
+    rdfs:range pb:Contact ;
+    rdfs:comment "A social contact of this broker's owner."@en .
+
+pb:hasGroup a owl:ObjectProperty ;
+    rdfs:label "has group"@en ;
+    rdfs:domain pb:PersonalBroker ;
+    rdfs:range pb:Group ;
+    rdfs:comment "A group that this broker participates in."@en .
+
+# -----------------------------------------------------------------------------
+# Conversation Properties
+# -----------------------------------------------------------------------------
+
+pb:belongsToBroker a owl:ObjectProperty, owl:FunctionalProperty ;
+    rdfs:label "belongs to broker"@en ;
+    rdfs:domain pb:Conversation ;
+    rdfs:range pb:PersonalBroker ;
+    rdfs:comment "The broker this conversation belongs to."@en .
+
+pb:hasMessage a owl:ObjectProperty ;
+    rdfs:label "has message"@en ;
+    rdfs:domain pb:Conversation ;
+    rdfs:range pb:Message ;
+    rdfs:comment "A message in this conversation."@en .
+
+pb:conversationStatus a owl:ObjectProperty ;
+    rdfs:label "conversation status"@en ;
+    rdfs:domain pb:Conversation ;
+    rdfs:range pb:ConversationStatus ;
+    rdfs:comment "The current status of this conversation."@en .
+
+pb:spawnedWorkflow a owl:ObjectProperty ;
+    rdfs:label "spawned workflow"@en ;
+    rdfs:domain pb:Conversation ;
+    rdfs:range acg:Workflow ;
+    rdfs:comment "A workflow that was spawned from this conversation."@en .
+
+pb:sourceChannel a owl:ObjectProperty ;
+    rdfs:label "source channel"@en ;
+    rdfs:domain pb:Conversation ;
+    rdfs:range pb:Channel ;
+    rdfs:comment "The channel from which this conversation originated."@en .
+
+pb:conversationContext a owl:ObjectProperty ;
+    rdfs:label "conversation context"@en ;
+    rdfs:domain pb:Conversation ;
+    rdfs:range acg:ContextGraph ;
+    rdfs:comment "The context graph for this conversation."@en .
+
+# -----------------------------------------------------------------------------
+# Message Properties
+# -----------------------------------------------------------------------------
+
+pb:inConversation a owl:ObjectProperty ;
+    rdfs:label "in conversation"@en ;
+    rdfs:domain pb:Message ;
+    rdfs:range pb:Conversation ;
+    rdfs:comment "The conversation this message belongs to."@en .
+
+pb:messageRole a owl:ObjectProperty ;
+    rdfs:label "message role"@en ;
+    rdfs:domain pb:Message ;
+    rdfs:range pb:MessageRole ;
+    rdfs:comment "The role/type of this message."@en .
+
+pb:messageAuthor a owl:ObjectProperty ;
+    rdfs:label "message author"@en ;
+    rdfs:domain pb:Message ;
+    rdfs:range id:AgentIdentity ;
+    rdfs:comment "The identity of the message author."@en .
+
+pb:replyTo a owl:ObjectProperty ;
+    rdfs:label "reply to"@en ;
+    rdfs:domain pb:Message ;
+    rdfs:range pb:Message ;
+    rdfs:comment "The message this is replying to (for threading)."@en .
+
+pb:triggeredAction a owl:ObjectProperty ;
+    rdfs:label "triggered action"@en ;
+    rdfs:domain pb:Message ;
+    rdfs:range acg:Action ;
+    rdfs:comment "An action triggered by this message."@en .
+
+# -----------------------------------------------------------------------------
+# Channel Properties
+# -----------------------------------------------------------------------------
+
+pb:connectedToBroker a owl:ObjectProperty ;
+    rdfs:label "connected to broker"@en ;
+    rdfs:domain pb:Channel ;
+    rdfs:range pb:PersonalBroker ;
+    rdfs:comment "The broker this channel is connected to."@en .
+
+pb:channelType a owl:ObjectProperty ;
+    rdfs:label "channel type"@en ;
+    rdfs:domain pb:Channel ;
+    rdfs:range pb:ChannelType ;
+    rdfs:comment "The type of this channel."@en .
+
+pb:channelStatus a owl:ObjectProperty ;
+    rdfs:label "channel status"@en ;
+    rdfs:domain pb:Channel ;
+    rdfs:range pb:ChannelStatus ;
+    rdfs:comment "The connection status of this channel."@en .
+
+# -----------------------------------------------------------------------------
+# Memory Properties
+# -----------------------------------------------------------------------------
+
+pb:memoryType a owl:ObjectProperty ;
+    rdfs:label "memory type"@en ;
+    rdfs:domain pb:Memory ;
+    rdfs:range pb:MemoryType ;
+    rdfs:comment "The type of this memory store."@en .
+
+pb:hasEntry a owl:ObjectProperty ;
+    rdfs:label "has entry"@en ;
+    rdfs:domain pb:Memory ;
+    rdfs:range pb:MemoryEntry ;
+    rdfs:comment "An entry in this memory store."@en .
+
+pb:relatedConversation a owl:ObjectProperty ;
+    rdfs:label "related conversation"@en ;
+    rdfs:domain pb:MemoryEntry ;
+    rdfs:range pb:Conversation ;
+    rdfs:comment "A conversation this memory entry is derived from."@en .
+
+# -----------------------------------------------------------------------------
+# Routine Properties
+# -----------------------------------------------------------------------------
+
+pb:routineTrigger a owl:ObjectProperty ;
+    rdfs:label "routine trigger"@en ;
+    rdfs:domain pb:Routine ;
+    rdfs:range pb:RoutineTrigger ;
+    rdfs:comment "What triggers this routine."@en .
+
+pb:routineAction a owl:ObjectProperty ;
+    rdfs:label "routine action"@en ;
+    rdfs:domain pb:Routine ;
+    rdfs:range acg:Action ;
+    rdfs:comment "The action to perform when this routine triggers."@en .
+
+# -----------------------------------------------------------------------------
+# Tool Properties
+# -----------------------------------------------------------------------------
+
+pb:toolCategory a owl:ObjectProperty ;
+    rdfs:label "tool category"@en ;
+    rdfs:domain pb:Tool ;
+    rdfs:range pb:ToolCategory ;
+    rdfs:comment "The category of this tool."@en .
+
+pb:requiresCredential a owl:ObjectProperty ;
+    rdfs:label "requires credential"@en ;
+    rdfs:domain pb:Tool ;
+    rdfs:range acg:Credential ;
+    rdfs:comment "A credential required to use this tool."@en .
+
+# -----------------------------------------------------------------------------
+# Contact Properties
+# -----------------------------------------------------------------------------
+
+pb:contactBroker a owl:ObjectProperty ;
+    rdfs:label "contact broker"@en ;
+    rdfs:domain pb:Contact ;
+    rdfs:range pb:PersonalBroker ;
+    rdfs:comment "The personal broker of this contact."@en .
+
+pb:contactIdentity a owl:ObjectProperty ;
+    rdfs:label "contact identity"@en ;
+    rdfs:domain pb:Contact ;
+    rdfs:range id:AgentIdentity ;
+    rdfs:comment "The identity of this contact."@en .
+
+pb:contactStatus a owl:ObjectProperty ;
+    rdfs:label "contact status"@en ;
+    rdfs:domain pb:Contact ;
+    rdfs:range pb:ContactStatus ;
+    rdfs:comment "The status of this contact relationship."@en .
+
+pb:contactTrustLevel a owl:ObjectProperty ;
+    rdfs:label "contact trust level"@en ;
+    rdfs:domain pb:Contact ;
+    rdfs:range pb:ContactTrustLevel ;
+    rdfs:comment "The trust level granted to this contact."@en .
+
+pb:inGroup a owl:ObjectProperty ;
+    rdfs:label "in group"@en ;
+    rdfs:domain pb:Contact ;
+    rdfs:range pb:Group ;
+    rdfs:comment "A group this contact belongs to."@en .
+
+# -----------------------------------------------------------------------------
+# Group Properties
+# -----------------------------------------------------------------------------
+
+pb:hasMember a owl:ObjectProperty ;
+    rdfs:label "has member"@en ;
+    rdfs:domain pb:Group ;
+    rdfs:range pb:Contact ;
+    rdfs:comment "A contact that is a member of this group."@en .
+
+pb:groupOwner a owl:ObjectProperty ;
+    rdfs:label "group owner"@en ;
+    rdfs:domain pb:Group ;
+    rdfs:range pb:PersonalBroker ;
+    rdfs:comment "The broker that owns/created this group."@en .
+
+# -----------------------------------------------------------------------------
+# Shared Workflow Properties
+# -----------------------------------------------------------------------------
+
+pb:hasParticipant a owl:ObjectProperty ;
+    rdfs:label "has participant"@en ;
+    rdfs:domain pb:SharedWorkflow ;
+    rdfs:range pb:WorkflowParticipant ;
+    rdfs:comment "A participant in this shared workflow."@en .
+
+pb:participantBroker a owl:ObjectProperty ;
+    rdfs:label "participant broker"@en ;
+    rdfs:domain pb:WorkflowParticipant ;
+    rdfs:range pb:PersonalBroker ;
+    rdfs:comment "The broker of this participant."@en .
+
+pb:participantRole a owl:ObjectProperty ;
+    rdfs:label "participant role"@en ;
+    rdfs:domain pb:WorkflowParticipant ;
+    rdfs:range pb:ParticipantRole ;
+    rdfs:comment "The role of this participant in the workflow."@en .
+
+pb:sharedContext a owl:ObjectProperty ;
+    rdfs:label "shared context"@en ;
+    rdfs:domain pb:SharedWorkflow ;
+    rdfs:range acg:ContextGraph ;
+    rdfs:comment "The shared context graph for this workflow."@en .
+
+# =============================================================================
+# Datatype Properties
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Personal Broker Datatype Properties
+# -----------------------------------------------------------------------------
+
+pb:brokerDisplayName a owl:DatatypeProperty ;
+    rdfs:label "broker display name"@en ;
+    rdfs:domain pb:PersonalBroker ;
+    rdfs:range xsd:string ;
+    rdfs:comment "Display name for this personal broker."@en .
+
+pb:brokerAvatar a owl:DatatypeProperty ;
+    rdfs:label "broker avatar"@en ;
+    rdfs:domain pb:PersonalBroker ;
+    rdfs:range xsd:anyURI ;
+    rdfs:comment "Avatar image URL for this broker."@en .
+
+pb:brokerBio a owl:DatatypeProperty ;
+    rdfs:label "broker bio"@en ;
+    rdfs:domain pb:PersonalBroker ;
+    rdfs:range xsd:string ;
+    rdfs:comment "Short bio/description for this broker."@en .
+
+pb:brokerTimezone a owl:DatatypeProperty ;
+    rdfs:label "broker timezone"@en ;
+    rdfs:domain pb:PersonalBroker ;
+    rdfs:range xsd:string ;
+    rdfs:comment "Timezone of the broker owner (e.g., 'America/New_York')."@en .
+
+pb:brokerLocale a owl:DatatypeProperty ;
+    rdfs:label "broker locale"@en ;
+    rdfs:domain pb:PersonalBroker ;
+    rdfs:range xsd:string ;
+    rdfs:comment "Locale/language preference (e.g., 'en-US')."@en .
+
+# -----------------------------------------------------------------------------
+# Conversation Datatype Properties
+# -----------------------------------------------------------------------------
+
+pb:conversationTitle a owl:DatatypeProperty ;
+    rdfs:label "conversation title"@en ;
+    rdfs:domain pb:Conversation ;
+    rdfs:range xsd:string ;
+    rdfs:comment "Title/summary of the conversation."@en .
+
+pb:conversationStarted a owl:DatatypeProperty ;
+    rdfs:label "conversation started"@en ;
+    rdfs:domain pb:Conversation ;
+    rdfs:range xsd:dateTime ;
+    rdfs:comment "When the conversation started."@en .
+
+pb:conversationEnded a owl:DatatypeProperty ;
+    rdfs:label "conversation ended"@en ;
+    rdfs:domain pb:Conversation ;
+    rdfs:range xsd:dateTime ;
+    rdfs:comment "When the conversation ended."@en .
+
+pb:conversationSummary a owl:DatatypeProperty ;
+    rdfs:label "conversation summary"@en ;
+    rdfs:domain pb:Conversation ;
+    rdfs:range xsd:string ;
+    rdfs:comment "AI-generated summary of the conversation."@en .
+
+# -----------------------------------------------------------------------------
+# Message Datatype Properties
+# -----------------------------------------------------------------------------
+
+pb:messageContent a owl:DatatypeProperty ;
+    rdfs:label "message content"@en ;
+    rdfs:domain pb:Message ;
+    rdfs:range xsd:string ;
+    rdfs:comment "The text content of the message."@en .
+
+pb:messageTimestamp a owl:DatatypeProperty ;
+    rdfs:label "message timestamp"@en ;
+    rdfs:domain pb:Message ;
+    rdfs:range xsd:dateTime ;
+    rdfs:comment "When the message was sent."@en .
+
+pb:messageAttachment a owl:DatatypeProperty ;
+    rdfs:label "message attachment"@en ;
+    rdfs:domain pb:Message ;
+    rdfs:range xsd:anyURI ;
+    rdfs:comment "URL to an attachment on this message."@en .
+
+# -----------------------------------------------------------------------------
+# Channel Datatype Properties
+# -----------------------------------------------------------------------------
+
+pb:channelIdentifier a owl:DatatypeProperty ;
+    rdfs:label "channel identifier"@en ;
+    rdfs:domain pb:Channel ;
+    rdfs:range xsd:string ;
+    rdfs:comment "Platform-specific identifier for this channel (e.g., phone number, chat ID)."@en .
+
+pb:channelName a owl:DatatypeProperty ;
+    rdfs:label "channel name"@en ;
+    rdfs:domain pb:Channel ;
+    rdfs:range xsd:string ;
+    rdfs:comment "Display name for this channel."@en .
+
+pb:channelWebhookURL a owl:DatatypeProperty ;
+    rdfs:label "channel webhook URL"@en ;
+    rdfs:domain pb:Channel ;
+    rdfs:range xsd:anyURI ;
+    rdfs:comment "Webhook URL for receiving messages on this channel."@en .
+
+pb:channelLastActivity a owl:DatatypeProperty ;
+    rdfs:label "channel last activity"@en ;
+    rdfs:domain pb:Channel ;
+    rdfs:range xsd:dateTime ;
+    rdfs:comment "When this channel last had activity."@en .
+
+# -----------------------------------------------------------------------------
+# Memory Datatype Properties
+# -----------------------------------------------------------------------------
+
+pb:entryContent a owl:DatatypeProperty ;
+    rdfs:label "entry content"@en ;
+    rdfs:domain pb:MemoryEntry ;
+    rdfs:range xsd:string ;
+    rdfs:comment "The content of this memory entry."@en .
+
+pb:entryCreated a owl:DatatypeProperty ;
+    rdfs:label "entry created"@en ;
+    rdfs:domain pb:MemoryEntry ;
+    rdfs:range xsd:dateTime ;
+    rdfs:comment "When this memory entry was created."@en .
+
+pb:entryImportance a owl:DatatypeProperty ;
+    rdfs:label "entry importance"@en ;
+    rdfs:domain pb:MemoryEntry ;
+    rdfs:range xsd:float ;
+    rdfs:comment "Importance score of this memory entry (0.0 to 1.0)."@en .
+
+pb:entryLastAccessed a owl:DatatypeProperty ;
+    rdfs:label "entry last accessed"@en ;
+    rdfs:domain pb:MemoryEntry ;
+    rdfs:range xsd:dateTime ;
+    rdfs:comment "When this memory entry was last retrieved."@en .
+
+# -----------------------------------------------------------------------------
+# Routine Datatype Properties
+# -----------------------------------------------------------------------------
+
+pb:routineName a owl:DatatypeProperty ;
+    rdfs:label "routine name"@en ;
+    rdfs:domain pb:Routine ;
+    rdfs:range xsd:string ;
+    rdfs:comment "Name of this routine."@en .
+
+pb:routineDescription a owl:DatatypeProperty ;
+    rdfs:label "routine description"@en ;
+    rdfs:domain pb:Routine ;
+    rdfs:range xsd:string ;
+    rdfs:comment "Description of what this routine does."@en .
+
+pb:routineSchedule a owl:DatatypeProperty ;
+    rdfs:label "routine schedule"@en ;
+    rdfs:domain pb:Routine ;
+    rdfs:range xsd:string ;
+    rdfs:comment "Cron expression for scheduled routines."@en .
+
+pb:routineEnabled a owl:DatatypeProperty ;
+    rdfs:label "routine enabled"@en ;
+    rdfs:domain pb:Routine ;
+    rdfs:range xsd:boolean ;
+    rdfs:comment "Whether this routine is currently enabled."@en .
+
+# -----------------------------------------------------------------------------
+# Tool Datatype Properties
+# -----------------------------------------------------------------------------
+
+pb:toolName a owl:DatatypeProperty ;
+    rdfs:label "tool name"@en ;
+    rdfs:domain pb:Tool ;
+    rdfs:range xsd:string ;
+    rdfs:comment "Name of this tool."@en .
+
+pb:toolDescription a owl:DatatypeProperty ;
+    rdfs:label "tool description"@en ;
+    rdfs:domain pb:Tool ;
+    rdfs:range xsd:string ;
+    rdfs:comment "Description of this tool's capabilities."@en .
+
+pb:toolEndpoint a owl:DatatypeProperty ;
+    rdfs:label "tool endpoint"@en ;
+    rdfs:domain pb:Tool ;
+    rdfs:range xsd:anyURI ;
+    rdfs:comment "API endpoint for this tool."@en .
+
+pb:toolEnabled a owl:DatatypeProperty ;
+    rdfs:label "tool enabled"@en ;
+    rdfs:domain pb:Tool ;
+    rdfs:range xsd:boolean ;
+    rdfs:comment "Whether this tool is currently enabled."@en .
+
+# -----------------------------------------------------------------------------
+# Contact Datatype Properties
+# -----------------------------------------------------------------------------
+
+pb:contactDisplayName a owl:DatatypeProperty ;
+    rdfs:label "contact display name"@en ;
+    rdfs:domain pb:Contact ;
+    rdfs:range xsd:string ;
+    rdfs:comment "Display name for this contact."@en .
+
+pb:contactNickname a owl:DatatypeProperty ;
+    rdfs:label "contact nickname"@en ;
+    rdfs:domain pb:Contact ;
+    rdfs:range xsd:string ;
+    rdfs:comment "Personal nickname for this contact."@en .
+
+pb:contactNotes a owl:DatatypeProperty ;
+    rdfs:label "contact notes"@en ;
+    rdfs:domain pb:Contact ;
+    rdfs:range xsd:string ;
+    rdfs:comment "Personal notes about this contact."@en .
+
+pb:contactAddedAt a owl:DatatypeProperty ;
+    rdfs:label "contact added at"@en ;
+    rdfs:domain pb:Contact ;
+    rdfs:range xsd:dateTime ;
+    rdfs:comment "When this contact was added."@en .
+
+# -----------------------------------------------------------------------------
+# Group Datatype Properties
+# -----------------------------------------------------------------------------
+
+pb:groupName a owl:DatatypeProperty ;
+    rdfs:label "group name"@en ;
+    rdfs:domain pb:Group ;
+    rdfs:range xsd:string ;
+    rdfs:comment "Name of this group."@en .
+
+pb:groupDescription a owl:DatatypeProperty ;
+    rdfs:label "group description"@en ;
+    rdfs:domain pb:Group ;
+    rdfs:range xsd:string ;
+    rdfs:comment "Description of this group."@en .
+
+pb:groupCreatedAt a owl:DatatypeProperty ;
+    rdfs:label "group created at"@en ;
+    rdfs:domain pb:Group ;
+    rdfs:range xsd:dateTime ;
+    rdfs:comment "When this group was created."@en .

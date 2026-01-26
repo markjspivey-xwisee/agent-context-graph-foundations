@@ -1,0 +1,487 @@
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix as: <https://www.w3.org/ns/activitystreams#> .
+@prefix ldp: <http://www.w3.org/ns/ldp#> .
+@prefix sec: <https://w3id.org/security#> .
+@prefix acg: <https://agentcontextgraph.dev/ontology#> .
+@prefix aat: <https://agentcontextgraph.dev/aat#> .
+@prefix fed: <https://agentcontextgraph.dev/federation#> .
+
+# =============================================================================
+# Agent Context Graph Federation Ontology
+# =============================================================================
+# Defines concepts for decentralized, federated agent systems at web scale.
+# Aligns with ActivityPub, Linked Data Platform, and DIDs/VCs standards.
+# =============================================================================
+
+<https://agentcontextgraph.dev/federation>
+    a owl:Ontology ;
+    owl:versionIRI <https://agentcontextgraph.dev/federation/1.0.0> ;
+    dcterms:title "Agent Context Graph Federation Ontology"@en ;
+    dcterms:description "Defines classes and properties for federated, decentralized agent systems. Enables cross-domain context resolution, trust federation, and web-scale identity."@en ;
+    dcterms:created "2026-01-24"^^xsd:date ;
+    owl:imports <https://agentcontextgraph.dev/ontology> ;
+    owl:imports <https://www.w3.org/ns/activitystreams#> ;
+    owl:imports <http://www.w3.org/ns/ldp#> .
+
+# =============================================================================
+# Federation Core Classes
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Broker - A node in the federated network
+# -----------------------------------------------------------------------------
+
+fed:Broker a owl:Class ;
+    rdfs:label "Broker"@en ;
+    rdfs:subClassOf as:Service, prov:SoftwareAgent ;
+    rdfs:comment "A node in the federated ACG network that materializes context graphs for agents. Each broker is identified by a DID and can federate with other brokers."@en ;
+    rdfs:subClassOf [
+        a owl:Restriction ;
+        owl:onProperty fed:hasBrokerDID ;
+        owl:cardinality 1
+    ] ;
+    rdfs:subClassOf [
+        a owl:Restriction ;
+        owl:onProperty fed:hasServiceEndpoint ;
+        owl:minCardinality 1
+    ] .
+
+fed:BrokerStatus a owl:Class ;
+    rdfs:label "Broker Status"@en ;
+    rdfs:comment "Operational status of a broker node."@en ;
+    owl:oneOf (fed:BrokerActive fed:BrokerDegraded fed:BrokerOffline fed:BrokerUntrusted) .
+
+fed:BrokerActive a fed:BrokerStatus ;
+    rdfs:label "Active"@en ;
+    rdfs:comment "Broker is fully operational and trusted."@en .
+
+fed:BrokerDegraded a fed:BrokerStatus ;
+    rdfs:label "Degraded"@en ;
+    rdfs:comment "Broker is operational but with reduced capabilities."@en .
+
+fed:BrokerOffline a fed:BrokerStatus ;
+    rdfs:label "Offline"@en ;
+    rdfs:comment "Broker is not currently reachable."@en .
+
+fed:BrokerUntrusted a fed:BrokerStatus ;
+    rdfs:label "Untrusted"@en ;
+    rdfs:comment "Broker has been marked as untrusted by the trust domain."@en .
+
+# -----------------------------------------------------------------------------
+# TrustDomain - A federation of brokers with shared trust
+# -----------------------------------------------------------------------------
+
+fed:TrustDomain a owl:Class ;
+    rdfs:label "Trust Domain"@en ;
+    rdfs:subClassOf as:Organization ;
+    rdfs:comment "A set of brokers that share a trust relationship. Agents and credentials from one broker in the domain are recognized by others. Similar to ActivityPub server-to-server federation."@en ;
+    rdfs:subClassOf [
+        a owl:Restriction ;
+        owl:onProperty fed:hasDomainDID ;
+        owl:cardinality 1
+    ] .
+
+fed:TrustRelationship a owl:Class ;
+    rdfs:label "Trust Relationship"@en ;
+    rdfs:comment "A trust relationship between two trust domains or brokers."@en .
+
+fed:TrustLevel a owl:Class ;
+    rdfs:label "Trust Level"@en ;
+    rdfs:comment "The level of trust in a relationship."@en ;
+    owl:oneOf (fed:FullTrust fed:LimitedTrust fed:VerifyAlways fed:NoTrust) .
+
+fed:FullTrust a fed:TrustLevel ;
+    rdfs:label "Full Trust"@en ;
+    rdfs:comment "Complete trust - credentials and contexts are accepted without additional verification."@en .
+
+fed:LimitedTrust a fed:TrustLevel ;
+    rdfs:label "Limited Trust"@en ;
+    rdfs:comment "Partial trust - some verification required, limited credential types accepted."@en .
+
+fed:VerifyAlways a fed:TrustLevel ;
+    rdfs:label "Verify Always"@en ;
+    rdfs:comment "No cached trust - every assertion must be independently verified."@en .
+
+fed:NoTrust a fed:TrustLevel ;
+    rdfs:label "No Trust"@en ;
+    rdfs:comment "No trust relationship - requests are rejected."@en .
+
+# -----------------------------------------------------------------------------
+# FederatedContext - Context spanning multiple domains
+# -----------------------------------------------------------------------------
+
+fed:FederatedContext a owl:Class ;
+    rdfs:label "Federated Context"@en ;
+    rdfs:subClassOf acg:ContextGraph ;
+    rdfs:comment "A context graph that includes affordances and resources from multiple trust domains. Requires cross-domain resolution and credential verification."@en .
+
+fed:RemoteAffordance a owl:Class ;
+    rdfs:label "Remote Affordance"@en ;
+    rdfs:subClassOf acg:Affordance ;
+    rdfs:comment "An affordance whose target is hosted on a different broker than the context origin."@en ;
+    rdfs:subClassOf [
+        a owl:Restriction ;
+        owl:onProperty fed:hostedBy ;
+        owl:cardinality 1
+    ] .
+
+# -----------------------------------------------------------------------------
+# FederatedTarget - Cross-broker affordance target
+# -----------------------------------------------------------------------------
+
+acg:FederatedTarget a owl:Class ;
+    rdfs:label "Federated Target"@en ;
+    rdfs:subClassOf acg:Target ;
+    rdfs:comment "An affordance target that resolves through federation to a remote broker."@en .
+
+# -----------------------------------------------------------------------------
+# CredentialBridge - Cross-domain credential translation
+# -----------------------------------------------------------------------------
+
+fed:CredentialBridge a owl:Class ;
+    rdfs:label "Credential Bridge"@en ;
+    rdfs:comment "A mapping that enables credentials from one domain to be recognized in another. Allows federated trust without requiring universal credential schemes."@en .
+
+fed:CredentialMapping a owl:Class ;
+    rdfs:label "Credential Mapping"@en ;
+    rdfs:comment "A specific mapping from one credential type/issuer to another domain's equivalent."@en .
+
+# -----------------------------------------------------------------------------
+# DIDMethod - Supported DID method for web-scale identity
+# -----------------------------------------------------------------------------
+
+fed:DIDMethod a owl:Class ;
+    rdfs:label "DID Method"@en ;
+    rdfs:comment "A DID method supported by a broker or trust domain."@en .
+
+fed:DIDMethodKey a fed:DIDMethod ;
+    rdfs:label "did:key"@en ;
+    rdfs:comment "Self-certifying DID method - no external resolution needed."@en ;
+    fed:resolutionType fed:SelfCertifying .
+
+fed:DIDMethodWeb a fed:DIDMethod ;
+    rdfs:label "did:web"@en ;
+    rdfs:comment "Web-based DID method - resolves via HTTPS."@en ;
+    fed:resolutionType fed:HTTPSResolution .
+
+fed:DIDMethodDHT a fed:DIDMethod ;
+    rdfs:label "did:dht"@en ;
+    rdfs:comment "DHT-based DID method - decentralized resolution via distributed hash table."@en ;
+    fed:resolutionType fed:DHTResolution .
+
+fed:DIDMethodPLC a fed:DIDMethod ;
+    rdfs:label "did:plc"@en ;
+    rdfs:comment "PLC DID method - used by AT Protocol (Bluesky) for portable identity."@en ;
+    fed:resolutionType fed:PLCDirectoryResolution .
+
+fed:DIDMethodPeer a fed:DIDMethod ;
+    rdfs:label "did:peer"@en ;
+    rdfs:comment "Peer DID method - for direct peer-to-peer relationships without external infrastructure."@en ;
+    fed:resolutionType fed:PeerExchange .
+
+# -----------------------------------------------------------------------------
+# FederationProtocol - Inter-broker communication
+# -----------------------------------------------------------------------------
+
+fed:FederationProtocol a owl:Class ;
+    rdfs:label "Federation Protocol"@en ;
+    rdfs:comment "A protocol used for inter-broker communication."@en .
+
+fed:ActivityPubProtocol a fed:FederationProtocol ;
+    rdfs:label "ActivityPub Protocol"@en ;
+    rdfs:comment "W3C ActivityPub for server-to-server federation. Enables broad interoperability with fediverse."@en ;
+    fed:protocolSpec <https://www.w3.org/TR/activitypub/> .
+
+fed:DIDCommProtocol a fed:FederationProtocol ;
+    rdfs:label "DIDComm Protocol"@en ;
+    rdfs:comment "DIDComm messaging for secure, private agent-to-agent communication."@en ;
+    fed:protocolSpec <https://identity.foundation/didcomm-messaging/spec/> .
+
+fed:LinkedDataNotifications a fed:FederationProtocol ;
+    rdfs:label "Linked Data Notifications"@en ;
+    rdfs:comment "W3C LDN for decentralized notification delivery."@en ;
+    fed:protocolSpec <https://www.w3.org/TR/ldn/> .
+
+# =============================================================================
+# Federation Object Properties
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Broker Properties
+# -----------------------------------------------------------------------------
+
+fed:hasBrokerDID a owl:ObjectProperty, owl:FunctionalProperty ;
+    rdfs:label "has broker DID"@en ;
+    rdfs:domain fed:Broker ;
+    rdfs:range rdfs:Resource ;
+    rdfs:comment "The DID identifying this broker. Should use did:web for discoverability."@en .
+
+fed:hasServiceEndpoint a owl:ObjectProperty ;
+    rdfs:label "has service endpoint"@en ;
+    rdfs:domain fed:Broker ;
+    rdfs:range rdfs:Resource ;
+    rdfs:comment "A service endpoint URL for this broker."@en .
+
+fed:hasBrokerStatus a owl:ObjectProperty ;
+    rdfs:label "has broker status"@en ;
+    rdfs:domain fed:Broker ;
+    rdfs:range fed:BrokerStatus ;
+    rdfs:comment "Current operational status of this broker."@en .
+
+fed:federatesWith a owl:ObjectProperty, owl:SymmetricProperty ;
+    rdfs:label "federates with"@en ;
+    rdfs:domain fed:Broker ;
+    rdfs:range fed:Broker ;
+    rdfs:comment "Indicates this broker federates with another broker."@en .
+
+fed:memberOfDomain a owl:ObjectProperty ;
+    rdfs:label "member of domain"@en ;
+    rdfs:domain fed:Broker ;
+    rdfs:range fed:TrustDomain ;
+    rdfs:comment "The trust domain this broker belongs to."@en .
+
+fed:supportsDIDMethod a owl:ObjectProperty ;
+    rdfs:label "supports DID method"@en ;
+    rdfs:domain fed:Broker ;
+    rdfs:range fed:DIDMethod ;
+    rdfs:comment "A DID method supported by this broker for agent identity."@en .
+
+fed:supportsFederationProtocol a owl:ObjectProperty ;
+    rdfs:label "supports federation protocol"@en ;
+    rdfs:domain fed:Broker ;
+    rdfs:range fed:FederationProtocol ;
+    rdfs:comment "A federation protocol this broker supports."@en .
+
+# -----------------------------------------------------------------------------
+# Trust Domain Properties
+# -----------------------------------------------------------------------------
+
+fed:hasDomainDID a owl:ObjectProperty, owl:FunctionalProperty ;
+    rdfs:label "has domain DID"@en ;
+    rdfs:domain fed:TrustDomain ;
+    rdfs:range rdfs:Resource ;
+    rdfs:comment "The DID identifying this trust domain."@en .
+
+fed:hasMemberBroker a owl:ObjectProperty ;
+    rdfs:label "has member broker"@en ;
+    rdfs:domain fed:TrustDomain ;
+    rdfs:range fed:Broker ;
+    owl:inverseOf fed:memberOfDomain ;
+    rdfs:comment "A broker that is a member of this trust domain."@en .
+
+fed:hasTrustRelationship a owl:ObjectProperty ;
+    rdfs:label "has trust relationship"@en ;
+    rdfs:domain fed:TrustDomain ;
+    rdfs:range fed:TrustRelationship ;
+    rdfs:comment "A trust relationship this domain has with another domain."@en .
+
+fed:trustsCredentialsFrom a owl:ObjectProperty ;
+    rdfs:label "trusts credentials from"@en ;
+    rdfs:domain fed:TrustDomain ;
+    rdfs:range fed:TrustDomain ;
+    rdfs:comment "Indicates this domain trusts credentials issued by another domain."@en .
+
+fed:hasCredentialBridge a owl:ObjectProperty ;
+    rdfs:label "has credential bridge"@en ;
+    rdfs:domain fed:TrustDomain ;
+    rdfs:range fed:CredentialBridge ;
+    rdfs:comment "A credential bridge enabling cross-domain credential recognition."@en .
+
+# -----------------------------------------------------------------------------
+# Trust Relationship Properties
+# -----------------------------------------------------------------------------
+
+fed:trustSource a owl:ObjectProperty, owl:FunctionalProperty ;
+    rdfs:label "trust source"@en ;
+    rdfs:domain fed:TrustRelationship ;
+    rdfs:range fed:TrustDomain ;
+    rdfs:comment "The domain initiating/maintaining the trust relationship."@en .
+
+fed:trustTarget a owl:ObjectProperty, owl:FunctionalProperty ;
+    rdfs:label "trust target"@en ;
+    rdfs:domain fed:TrustRelationship ;
+    rdfs:range fed:TrustDomain ;
+    rdfs:comment "The domain being trusted."@en .
+
+fed:hasTrustLevel a owl:ObjectProperty ;
+    rdfs:label "has trust level"@en ;
+    rdfs:domain fed:TrustRelationship ;
+    rdfs:range fed:TrustLevel ;
+    rdfs:comment "The level of trust in this relationship."@en .
+
+# -----------------------------------------------------------------------------
+# Federated Context Properties
+# -----------------------------------------------------------------------------
+
+fed:originBroker a owl:ObjectProperty, owl:FunctionalProperty ;
+    rdfs:label "origin broker"@en ;
+    rdfs:domain fed:FederatedContext ;
+    rdfs:range fed:Broker ;
+    rdfs:comment "The broker that materialized this federated context."@en .
+
+fed:includesBroker a owl:ObjectProperty ;
+    rdfs:label "includes broker"@en ;
+    rdfs:domain fed:FederatedContext ;
+    rdfs:range fed:Broker ;
+    rdfs:comment "A broker whose resources are included in this federated context."@en .
+
+fed:hostedBy a owl:ObjectProperty ;
+    rdfs:label "hosted by"@en ;
+    rdfs:domain fed:RemoteAffordance ;
+    rdfs:range fed:Broker ;
+    rdfs:comment "The broker hosting this remote affordance."@en .
+
+fed:requiresCrossdomainAuth a owl:ObjectProperty ;
+    rdfs:label "requires cross-domain auth"@en ;
+    rdfs:domain fed:RemoteAffordance ;
+    rdfs:range fed:CredentialBridge ;
+    rdfs:comment "A credential bridge required to traverse this remote affordance."@en .
+
+# -----------------------------------------------------------------------------
+# Credential Bridge Properties
+# -----------------------------------------------------------------------------
+
+fed:bridgesFrom a owl:ObjectProperty ;
+    rdfs:label "bridges from"@en ;
+    rdfs:domain fed:CredentialBridge ;
+    rdfs:range fed:TrustDomain ;
+    rdfs:comment "The source domain whose credentials are translated."@en .
+
+fed:bridgesTo a owl:ObjectProperty ;
+    rdfs:label "bridges to"@en ;
+    rdfs:domain fed:CredentialBridge ;
+    rdfs:range fed:TrustDomain ;
+    rdfs:comment "The target domain that recognizes translated credentials."@en .
+
+fed:hasMapping a owl:ObjectProperty ;
+    rdfs:label "has mapping"@en ;
+    rdfs:domain fed:CredentialBridge ;
+    rdfs:range fed:CredentialMapping ;
+    rdfs:comment "A credential mapping in this bridge."@en .
+
+# =============================================================================
+# Federation Datatype Properties
+# =============================================================================
+
+fed:brokerName a owl:DatatypeProperty ;
+    rdfs:label "broker name"@en ;
+    rdfs:domain fed:Broker ;
+    rdfs:range xsd:string ;
+    rdfs:comment "Human-readable name for this broker."@en .
+
+fed:brokerDescription a owl:DatatypeProperty ;
+    rdfs:label "broker description"@en ;
+    rdfs:domain fed:Broker ;
+    rdfs:range xsd:string ;
+    rdfs:comment "Description of this broker's purpose and capabilities."@en .
+
+fed:domainName a owl:DatatypeProperty ;
+    rdfs:label "domain name"@en ;
+    rdfs:domain fed:TrustDomain ;
+    rdfs:range xsd:string ;
+    rdfs:comment "Human-readable name for this trust domain."@en .
+
+fed:trustEstablished a owl:DatatypeProperty ;
+    rdfs:label "trust established"@en ;
+    rdfs:domain fed:TrustRelationship ;
+    rdfs:range xsd:dateTime ;
+    rdfs:comment "When this trust relationship was established."@en .
+
+fed:trustExpires a owl:DatatypeProperty ;
+    rdfs:label "trust expires"@en ;
+    rdfs:domain fed:TrustRelationship ;
+    rdfs:range xsd:dateTime ;
+    rdfs:comment "When this trust relationship expires (if temporal)."@en .
+
+fed:resolutionType a owl:DatatypeProperty ;
+    rdfs:label "resolution type"@en ;
+    rdfs:domain fed:DIDMethod ;
+    rdfs:range xsd:string ;
+    rdfs:comment "How DIDs of this method are resolved."@en .
+
+fed:protocolSpec a owl:ObjectProperty ;
+    rdfs:label "protocol specification"@en ;
+    rdfs:domain fed:FederationProtocol ;
+    rdfs:range rdfs:Resource ;
+    rdfs:comment "URL to the specification for this protocol."@en .
+
+fed:maxFederationHops a owl:DatatypeProperty ;
+    rdfs:label "max federation hops"@en ;
+    rdfs:domain fed:Broker ;
+    rdfs:range xsd:integer ;
+    rdfs:comment "Maximum number of federation hops this broker will traverse."@en .
+
+fed:federationTimeout a owl:DatatypeProperty ;
+    rdfs:label "federation timeout"@en ;
+    rdfs:domain fed:Broker ;
+    rdfs:range xsd:duration ;
+    rdfs:comment "Timeout for cross-broker federation requests."@en .
+
+# =============================================================================
+# Federation Actions (extends aat:ActionType)
+# =============================================================================
+
+aat:FederationAction a owl:Class ;
+    rdfs:label "Federation Action"@en ;
+    rdfs:subClassOf aat:ActionType ;
+    rdfs:comment "Actions related to cross-broker federation."@en .
+
+aat:FederateContext a aat:FederationAction ;
+    rdfs:label "Federate Context"@en ;
+    rdfs:comment "Request context materialization from a federated broker."@en ;
+    aat:hasParamsShape <https://agentcontextgraph.dev/shacl/params#FederateContextParamsShape> .
+
+aat:EstablishTrust a aat:FederationAction ;
+    rdfs:label "Establish Trust"@en ;
+    rdfs:comment "Establish or update a trust relationship with another domain."@en ;
+    aat:requiresCapability aat:FederationCapability ;
+    aat:hasParamsShape <https://agentcontextgraph.dev/shacl/params#EstablishTrustParamsShape> .
+
+aat:RevokeTrust a aat:FederationAction ;
+    rdfs:label "Revoke Trust"@en ;
+    rdfs:comment "Revoke a trust relationship with another domain."@en ;
+    aat:requiresCapability aat:FederationCapability ;
+    aat:hasParamsShape <https://agentcontextgraph.dev/shacl/params#RevokeTrustParamsShape> .
+
+aat:ResolveRemoteAffordance a aat:FederationAction ;
+    rdfs:label "Resolve Remote Affordance"@en ;
+    rdfs:comment "Resolve an affordance hosted on a remote broker."@en ;
+    aat:hasParamsShape <https://agentcontextgraph.dev/shacl/params#ResolveRemoteAffordanceParamsShape> .
+
+aat:BridgeCredential a aat:FederationAction ;
+    rdfs:label "Bridge Credential"@en ;
+    rdfs:comment "Translate a credential for cross-domain use via a credential bridge."@en ;
+    aat:requiresCapability aat:FederationCapability ;
+    aat:hasParamsShape <https://agentcontextgraph.dev/shacl/params#BridgeCredentialParamsShape> .
+
+# Capability for federation operations
+aat:FederationCapability a aat:Capability ;
+    rdfs:label "Federation Capability"@en ;
+    rdfs:comment "Capability to perform federation operations (establish trust, bridge credentials)."@en .
+
+# =============================================================================
+# ActivityStreams Integration
+# =============================================================================
+# ACG brokers can participate in the fediverse as ActivityPub actors
+
+fed:Broker rdfs:subClassOf as:Service .
+
+fed:BrokerFollowActivity a owl:Class ;
+    rdfs:label "Broker Follow Activity"@en ;
+    rdfs:subClassOf as:Follow ;
+    rdfs:comment "An ActivityPub Follow activity where one broker follows another for federation."@en .
+
+fed:ContextShareActivity a owl:Class ;
+    rdfs:label "Context Share Activity"@en ;
+    rdfs:subClassOf as:Announce ;
+    rdfs:comment "Sharing a context or context update with federated brokers."@en .
+
+fed:TraceShareActivity a owl:Class ;
+    rdfs:label "Trace Share Activity"@en ;
+    rdfs:subClassOf as:Create ;
+    rdfs:comment "Sharing a provenance trace with federated archivists."@en .

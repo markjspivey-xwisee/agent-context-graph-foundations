@@ -1,0 +1,383 @@
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix acg: <https://agentcontextgraph.dev/ontology#> .
+@prefix aat: <https://agentcontextgraph.dev/aat#> .
+
+# =============================================================================
+# Actions Ontology - Taxonomy of Action Types
+# =============================================================================
+
+<https://agentcontextgraph.dev/actions>
+    a owl:Ontology ;
+    owl:versionIRI <https://agentcontextgraph.dev/actions/1.0.0> ;
+    dcterms:title "Agent Context Graph Actions Ontology"@en ;
+    dcterms:description "Defines the taxonomy of action types available in the Agent Context Graph system."@en ;
+    dcterms:created "2026-01-23"^^xsd:date ;
+    owl:imports <https://agentcontextgraph.dev/aat> .
+
+# =============================================================================
+# Action Type Taxonomy
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Top-level Action Categories
+# -----------------------------------------------------------------------------
+
+aat:CognitiveAction a owl:Class ;
+    rdfs:label "Cognitive Action"@en ;
+    rdfs:subClassOf aat:ActionType ;
+    rdfs:comment "Actions involving reasoning, planning, or analysis without external effects."@en .
+
+aat:CommunicativeAction a owl:Class ;
+    rdfs:label "Communicative Action"@en ;
+    rdfs:subClassOf aat:ActionType ;
+    rdfs:comment "Actions involving information exchange or signaling."@en .
+
+aat:EffectfulAction a owl:Class ;
+    rdfs:label "Effectful Action"@en ;
+    rdfs:subClassOf aat:ActionType ;
+    rdfs:comment "Actions that cause changes in the external world."@en .
+
+aat:PerceptualAction a owl:Class ;
+    rdfs:label "Perceptual Action"@en ;
+    rdfs:subClassOf aat:ActionType ;
+    rdfs:comment "Actions involving observation without side effects."@en .
+
+aat:NormativeAction a owl:Class ;
+    rdfs:label "Normative Action"@en ;
+    rdfs:subClassOf aat:ActionType ;
+    rdfs:comment "Actions involving approval, rejection, or governance."@en .
+
+aat:ArchivalAction a owl:Class ;
+    rdfs:label "Archival Action"@en ;
+    rdfs:subClassOf aat:ActionType ;
+    rdfs:comment "Actions involving storage, retrieval, or management of information."@en .
+
+# =============================================================================
+# Planner Actions
+# =============================================================================
+
+aat:EmitPlan a aat:CognitiveAction ;
+    rdfs:label "Emit Plan"@en ;
+    rdfs:comment "Produce a plan for achieving a goal. The primary output action for Planner agents."@en ;
+    aat:requiresCapability aat:PlannerCapability ;
+    aat:hasParamsShape <https://agentcontextgraph.dev/shacl/EmitPlanParamsShape> .
+
+aat:RevisePlan a aat:CognitiveAction ;
+    rdfs:label "Revise Plan"@en ;
+    rdfs:comment "Update an existing plan based on feedback or new information."@en ;
+    aat:requiresCapability aat:PlannerCapability ;
+    aat:hasParamsShape <https://agentcontextgraph.dev/shacl/RevisePlanParamsShape> .
+
+aat:ValidatePlan a aat:CognitiveAction ;
+    rdfs:label "Validate Plan"@en ;
+    rdfs:comment "Check a plan for validity without emitting it."@en ;
+    aat:hasParamsShape <https://agentcontextgraph.dev/shacl/ValidatePlanParamsShape> .
+
+aat:RequestInfo a aat:CommunicativeAction ;
+    rdfs:label "Request Info"@en ;
+    rdfs:comment "Request additional information or clarification."@en ;
+    aat:hasParamsShape <https://agentcontextgraph.dev/shacl/RequestInfoParamsShape> .
+
+# =============================================================================
+# Executor Actions
+# =============================================================================
+
+aat:Act a aat:EffectfulAction ;
+    rdfs:label "Act"@en ;
+    rdfs:comment "Execute an action in the world. The primary output action for Executor agents."@en ;
+    aat:requiresCapability aat:ExecutorCapability ;
+    aat:hasParamsShape <https://agentcontextgraph.dev/shacl/ActParamsShape> .
+
+aat:Actuate a aat:EffectfulAction ;
+    rdfs:label "Actuate"@en ;
+    rdfs:comment "Direct physical or system actuation. Forbidden for non-executor agents."@en ;
+    aat:requiresCapability aat:ActuationCapability ;
+    aat:hasParamsShape <https://agentcontextgraph.dev/shacl/ActuateParamsShape> .
+
+aat:Abort a aat:EffectfulAction ;
+    rdfs:label "Abort"@en ;
+    rdfs:comment "Abort an in-progress action safely."@en ;
+    aat:hasParamsShape <https://agentcontextgraph.dev/shacl/AbortParamsShape> .
+
+aat:WriteExternal a aat:EffectfulAction ;
+    rdfs:label "Write External"@en ;
+    rdfs:comment "Write to an external system. Forbidden for non-executor agents."@en ;
+    aat:requiresCapability aat:ExternalWriteCapability ;
+    aat:hasParamsShape <https://agentcontextgraph.dev/shacl/WriteExternalParamsShape> .
+
+# =============================================================================
+# Arbiter Actions
+# =============================================================================
+
+aat:Approve a aat:NormativeAction ;
+    rdfs:label "Approve"@en ;
+    rdfs:comment "Approve a proposed action or plan to proceed."@en ;
+    aat:requiresCapability aat:ArbiterCapability ;
+    aat:hasParamsShape <https://agentcontextgraph.dev/shacl/ApproveParamsShape> .
+
+aat:Deny a aat:NormativeAction ;
+    rdfs:label "Deny"@en ;
+    rdfs:comment "Deny a proposed action or plan."@en ;
+    aat:requiresCapability aat:ArbiterCapability ;
+    aat:hasParamsShape <https://agentcontextgraph.dev/shacl/DenyParamsShape> .
+
+aat:RequestModification a aat:NormativeAction ;
+    rdfs:label "Request Modification"@en ;
+    rdfs:comment "Request modifications to a proposed action or plan before approval."@en ;
+    aat:hasParamsShape <https://agentcontextgraph.dev/shacl/RequestModificationParamsShape> .
+
+aat:Escalate a aat:NormativeAction ;
+    rdfs:label "Escalate"@en ;
+    rdfs:comment "Escalate a decision to a higher authority."@en ;
+    aat:hasParamsShape <https://agentcontextgraph.dev/shacl/EscalateParamsShape> .
+
+# =============================================================================
+# Observer Actions
+# =============================================================================
+
+aat:Observe a aat:PerceptualAction ;
+    rdfs:label "Observe"@en ;
+    rdfs:comment "Observe the current state without causing side effects."@en ;
+    aat:hasParamsShape <https://agentcontextgraph.dev/shacl/ObserveParamsShape> .
+
+aat:Report a aat:CommunicativeAction ;
+    rdfs:label "Report"@en ;
+    rdfs:comment "Report observations or findings. The primary output action for Observer agents."@en ;
+    aat:hasParamsShape <https://agentcontextgraph.dev/shacl/ReportParamsShape> .
+
+aat:Summarize a aat:CognitiveAction ;
+    rdfs:label "Summarize"@en ;
+    rdfs:comment "Create a summary of observations or information."@en ;
+    aat:hasParamsShape <https://agentcontextgraph.dev/shacl/SummarizeParamsShape> .
+
+# =============================================================================
+# Archivist Actions
+# =============================================================================
+
+aat:Store a aat:ArchivalAction ;
+    rdfs:label "Store"@en ;
+    rdfs:comment "Store a trace or knowledge item. The primary output action for Archivist agents."@en ;
+    aat:requiresCapability aat:ArchivistCapability ;
+    aat:hasParamsShape <https://agentcontextgraph.dev/shacl/StoreParamsShape> .
+
+aat:Retrieve a aat:ArchivalAction ;
+    rdfs:label "Retrieve"@en ;
+    rdfs:comment "Retrieve stored traces or knowledge."@en ;
+    aat:hasParamsShape <https://agentcontextgraph.dev/shacl/RetrieveParamsShape> .
+
+aat:Index a aat:ArchivalAction ;
+    rdfs:label "Index"@en ;
+    rdfs:comment "Create or update an index of stored items."@en ;
+    aat:hasParamsShape <https://agentcontextgraph.dev/shacl/IndexParamsShape> .
+
+aat:Version a aat:ArchivalAction ;
+    rdfs:label "Version"@en ;
+    rdfs:comment "Create a new version of stored content."@en ;
+    aat:hasParamsShape <https://agentcontextgraph.dev/shacl/VersionParamsShape> .
+
+# =============================================================================
+# Forbidden Actions (for explicit prohibition)
+# =============================================================================
+
+aat:Delete a aat:ArchivalAction ;
+    rdfs:label "Delete"@en ;
+    rdfs:comment "Permanently delete stored content. Forbidden for Archivists to preserve immutability."@en .
+
+aat:Mutate a aat:ArchivalAction ;
+    rdfs:label "Mutate"@en ;
+    rdfs:comment "Modify stored content in place. Forbidden for Archivists to preserve immutability."@en .
+
+aat:FabricateProvenance a aat:ArchivalAction ;
+    rdfs:label "Fabricate Provenance"@en ;
+    rdfs:comment "Create false provenance records. Universally forbidden."@en .
+
+aat:ModifyCredentials a aat:NormativeAction ;
+    rdfs:label "Modify Credentials"@en ;
+    rdfs:comment "Alter credential state. Requires explicit authorization."@en ;
+    aat:requiresCapability aat:CredentialManagementCapability .
+
+aat:ModifyState a aat:EffectfulAction ;
+    rdfs:label "Modify State"@en ;
+    rdfs:comment "Modify system state. Forbidden for Observer agents."@en .
+
+# =============================================================================
+# Infrastructure Actions (Gas Town inspired - Enclave & Checkpoint)
+# =============================================================================
+
+aat:InfrastructureAction a owl:Class ;
+    rdfs:label "Infrastructure Action"@en ;
+    rdfs:subClassOf aat:ActionType ;
+    rdfs:comment "Actions involving execution environment and state management infrastructure."@en .
+
+# -----------------------------------------------------------------------------
+# Enclave Actions - Isolated Execution Environments
+# -----------------------------------------------------------------------------
+
+aat:CreateEnclave a aat:InfrastructureAction ;
+    rdfs:label "Create Enclave"@en ;
+    rdfs:comment "Create an isolated execution enclave (git worktree) for an agent. Inspired by Gas Town's worktree isolation pattern."@en ;
+    aat:requiresCapability aat:EnclaveCapability ;
+    aat:hasParamsShape <https://agentcontextgraph.dev/shacl/params#CreateEnclaveParamsShape> ;
+    aat:causesEffect acg:ResourceCreateEffect .
+
+aat:SealEnclave a aat:InfrastructureAction ;
+    rdfs:label "Seal Enclave"@en ;
+    rdfs:comment "Seal an enclave, making it read-only while preserving work state."@en ;
+    aat:requiresCapability aat:EnclaveCapability ;
+    aat:hasParamsShape <https://agentcontextgraph.dev/shacl/params#SealEnclaveParamsShape> ;
+    aat:causesEffect acg:StateChangeEffect .
+
+aat:DestroyEnclave a aat:InfrastructureAction ;
+    rdfs:label "Destroy Enclave"@en ;
+    rdfs:comment "Destroy an enclave and clean up its worktree."@en ;
+    aat:requiresCapability aat:EnclaveCapability ;
+    aat:hasParamsShape <https://agentcontextgraph.dev/shacl/params#DestroyEnclaveParamsShape> ;
+    aat:causesEffect acg:ResourceDeleteEffect .
+
+# -----------------------------------------------------------------------------
+# Checkpoint Actions - Resumable State Management
+# -----------------------------------------------------------------------------
+
+aat:Checkpoint a aat:InfrastructureAction ;
+    rdfs:label "Checkpoint"@en ;
+    rdfs:comment "Create an immutable checkpoint of context graph and agent state for crash recovery. Inspired by Gas Town's Beads/Hooks pattern."@en ;
+    aat:hasParamsShape <https://agentcontextgraph.dev/shacl/params#CheckpointParamsShape> ;
+    aat:causesEffect acg:ResourceCreateEffect .
+
+aat:Resume a aat:InfrastructureAction ;
+    rdfs:label "Resume"@en ;
+    rdfs:comment "Resume execution from a previously created checkpoint."@en ;
+    aat:hasParamsShape <https://agentcontextgraph.dev/shacl/params#ResumeParamsShape> ;
+    aat:causesEffect acg:StateChangeEffect .
+
+# =============================================================================
+# Capabilities (Credential Types)
+# =============================================================================
+
+aat:Capability a owl:Class ;
+    rdfs:label "Capability"@en ;
+    rdfs:comment "A capability that can be granted via Verifiable Credential."@en .
+
+aat:PlannerCapability a aat:Capability ;
+    rdfs:label "Planner Capability"@en ;
+    rdfs:comment "Capability to emit and revise plans."@en .
+
+aat:ExecutorCapability a aat:Capability ;
+    rdfs:label "Executor Capability"@en ;
+    rdfs:comment "Capability to execute actions."@en .
+
+aat:ActuationCapability a aat:Capability ;
+    rdfs:label "Actuation Capability"@en ;
+    rdfs:comment "Capability for direct system actuation."@en .
+
+aat:ExternalWriteCapability a aat:Capability ;
+    rdfs:label "External Write Capability"@en ;
+    rdfs:comment "Capability to write to external systems."@en .
+
+aat:ArbiterCapability a aat:Capability ;
+    rdfs:label "Arbiter Capability"@en ;
+    rdfs:comment "Capability to approve or deny actions."@en .
+
+aat:ArchivistCapability a aat:Capability ;
+    rdfs:label "Archivist Capability"@en ;
+    rdfs:comment "Capability to store traces and knowledge."@en .
+
+aat:CredentialManagementCapability a aat:Capability ;
+    rdfs:label "Credential Management Capability"@en ;
+    rdfs:comment "Capability to manage credentials."@en .
+
+aat:EnclaveCapability a aat:Capability ;
+    rdfs:label "Enclave Capability"@en ;
+    rdfs:comment "Capability to create, seal, and destroy execution enclaves."@en .
+
+# =============================================================================
+# Action Properties
+# =============================================================================
+
+aat:hasParamsShape a owl:ObjectProperty ;
+    rdfs:label "has params shape"@en ;
+    rdfs:domain aat:ActionType ;
+    rdfs:comment "SHACL shape defining valid parameters for this action."@en .
+
+aat:causesEffect a owl:ObjectProperty ;
+    rdfs:label "causes effect"@en ;
+    rdfs:domain aat:ActionType ;
+    rdfs:range acg:Effect ;
+    rdfs:comment "An effect caused by this action type."@en .
+
+aat:hasRationale a owl:DatatypeProperty ;
+    rdfs:label "has rationale"@en ;
+    rdfs:range xsd:string ;
+    rdfs:comment "Rationale for why an action is allowed or forbidden."@en .
+
+# =============================================================================
+# Federation Actions
+# =============================================================================
+
+aat:FederationAction a owl:Class ;
+    rdfs:label "Federation Action"@en ;
+    rdfs:subClassOf aat:ActionType ;
+    rdfs:comment "Actions involving cross-broker federation and trust management."@en .
+
+aat:FederateContext a aat:FederationAction ;
+    rdfs:label "Federate Context"@en ;
+    rdfs:comment "Request context materialization from a federated broker. Enables cross-domain affordance discovery."@en ;
+    aat:hasParamsShape <https://agentcontextgraph.dev/shacl/params#FederateContextParamsShape> ;
+    aat:causesEffect acg:StateChangeEffect .
+
+aat:EstablishTrust a aat:FederationAction ;
+    rdfs:label "Establish Trust"@en ;
+    rdfs:comment "Establish a trust relationship with another broker in the federation network."@en ;
+    aat:requiresCapability aat:FederationCapability ;
+    aat:hasParamsShape <https://agentcontextgraph.dev/shacl/params#EstablishTrustParamsShape> ;
+    aat:causesEffect acg:StateChangeEffect .
+
+aat:RevokeTrust a aat:FederationAction ;
+    rdfs:label "Revoke Trust"@en ;
+    rdfs:comment "Revoke a trust relationship with another broker."@en ;
+    aat:requiresCapability aat:FederationCapability ;
+    aat:hasParamsShape <https://agentcontextgraph.dev/shacl/params#RevokeTrustParamsShape> ;
+    aat:causesEffect acg:StateChangeEffect .
+
+aat:FederationCapability a aat:Capability ;
+    rdfs:label "Federation Capability"@en ;
+    rdfs:comment "Capability to manage federation relationships between brokers."@en .
+
+# =============================================================================
+# Credential Actions (OID4VCI)
+# =============================================================================
+
+aat:CredentialAction a owl:Class ;
+    rdfs:label "Credential Action"@en ;
+    rdfs:subClassOf aat:ActionType ;
+    rdfs:comment "Actions involving verifiable credential issuance and management."@en .
+
+aat:RequestCredential a aat:CredentialAction ;
+    rdfs:label "Request Credential"@en ;
+    rdfs:comment "Request a verifiable credential from an issuer via OID4VCI protocol."@en ;
+    aat:hasParamsShape <https://agentcontextgraph.dev/shacl/params#RequestCredentialParamsShape> .
+
+# =============================================================================
+# Causal Actions (Intervention and Outcome Tracking)
+# =============================================================================
+
+aat:CausalAction a owl:Class ;
+    rdfs:label "Causal Action"@en ;
+    rdfs:subClassOf aat:ActionType ;
+    rdfs:comment "Actions involving causal intervention tracking and outcome reporting."@en .
+
+aat:RollbackAction a aat:CausalAction ;
+    rdfs:label "Rollback Action"@en ;
+    rdfs:comment "Roll back a previously executed action using causal trace information."@en ;
+    aat:hasParamsShape <https://agentcontextgraph.dev/shacl/params#RollbackActionParamsShape> ;
+    aat:causesEffect acg:StateChangeEffect .
+
+aat:ReportOutcome a aat:CausalAction ;
+    rdfs:label "Report Outcome"@en ;
+    rdfs:comment "Report the causal outcomes of an intervention for causal model validation."@en ;
+    aat:hasParamsShape <https://agentcontextgraph.dev/shacl/params#ReportOutcomeParamsShape> ;
+    aat:causesEffect acg:ResourceCreateEffect .

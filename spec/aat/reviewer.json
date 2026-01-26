@@ -1,0 +1,220 @@
+{
+  "@context": [
+    "https://www.w3.org/ns/prov#",
+    {
+      "xsd": "http://www.w3.org/2001/XMLSchema#",
+      "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+      "owl": "http://www.w3.org/2002/07/owl#",
+      "dcterms": "http://purl.org/dc/terms/",
+      "acg": "https://agentcontextgraph.dev/ontology#",
+      "aat": "https://agentcontextgraph.dev/aat#",
+
+      "id": "@id",
+      "type": "@type",
+      "AbstractAgentType": "aat:AbstractAgentType",
+      "name": "rdfs:label",
+      "description": "rdfs:comment",
+      "version": "owl:versionInfo",
+
+      "perceptSpace": "aat:hasPerceptSpace",
+      "PerceptSpace": "aat:PerceptSpace",
+      "perceptTypes": { "@id": "aat:hasPerceptType", "@container": "@set" },
+
+      "actionSpace": "aat:hasActionSpace",
+      "ActionSpace": "aat:ActionSpace",
+      "allowed": { "@id": "aat:allowsAction", "@container": "@set" },
+      "forbidden": { "@id": "aat:forbidsAction", "@container": "@set" },
+      "ActionType": "aat:ActionType",
+      "requiresCapability": { "@id": "acg:requiresCapability", "@type": "@id" },
+      "rationale": "aat:forbiddenRationale",
+
+      "internalState": "aat:hasInternalState",
+      "components": { "@id": "aat:hasStateComponent", "@container": "@set" },
+
+      "behavioralInvariants": { "@id": "aat:hasBehavioralInvariant", "@container": "@set" },
+      "BehavioralInvariant": "aat:BehavioralInvariant",
+      "formalRule": "aat:formalRule",
+      "enforcement": "aat:enforcementLevel",
+      "requiredOutputAction": { "@id": "aat:requiredOutputAction", "@type": "@id" },
+
+      "traceRequirements": "acg:hasTracePolicy",
+      "mustEmitProvActivity": "acg:mustEmitProvActivity",
+      "requiredFields": { "@id": "acg:requiredTraceFields", "@container": "@list" },
+      "retentionPolicy": "acg:retentionPolicy",
+
+      "livenessGuarantees": { "@id": "aat:hasLivenessGuarantee", "@container": "@set" },
+      "LivenessGuarantee": "aat:LivenessGuarantee",
+
+      "compositionRules": "aat:hasCompositionRules",
+      "CompositionRules": "aat:CompositionRules",
+      "canComposeBefore": { "@id": "aat:canComposeBefore", "@type": "@id", "@container": "@set" },
+      "canComposeAfter": { "@id": "aat:canComposeAfter", "@type": "@id", "@container": "@set" },
+      "notes": "rdfs:comment"
+    }
+  ],
+  "type": ["aat:AbstractAgentType", "aat:ReviewerAgentType"],
+  "id": "aat:ReviewerAgentType",
+  "name": "Reviewer Agent Type",
+  "version": "1.0.0",
+  "description": "Abstract Agent Type for code review agents. Reviewers analyze code, documents, and artifacts for quality, security, and compliance issues.",
+
+  "perceptSpace": {
+    "type": "aat:PerceptSpace",
+    "description": "What the reviewer can observe",
+    "perceptTypes": [
+      {
+        "type": "aat:PerceptType",
+        "name": "SourceCode",
+        "description": "Code files and changes to review"
+      },
+      {
+        "type": "aat:PerceptType",
+        "name": "Documentation",
+        "description": "Documentation and comments"
+      },
+      {
+        "type": "aat:PerceptType",
+        "name": "TestResults",
+        "description": "Test outcomes and coverage"
+      },
+      {
+        "type": "aat:PerceptType",
+        "name": "SecurityPolicies",
+        "description": "Security rules and compliance requirements"
+      },
+      {
+        "type": "aat:PerceptType",
+        "name": "StyleGuides",
+        "description": "Coding standards and style guidelines"
+      }
+    ]
+  },
+
+  "actionSpace": {
+    "type": "aat:ActionSpace",
+    "description": "Actions a reviewer may perform",
+    "allowed": [
+      {
+        "type": "aat:ActionType",
+        "name": "Review",
+        "description": "Analyze code or artifacts and produce a review report",
+        "requiresCapability": "acg:ReviewerCapability"
+      },
+      {
+        "type": "aat:ActionType",
+        "name": "Approve",
+        "description": "Approve reviewed content for merging or deployment",
+        "requiresCapability": "acg:ReviewerCapability"
+      },
+      {
+        "type": "aat:ActionType",
+        "name": "RequestChanges",
+        "description": "Request specific changes to reviewed content",
+        "requiresCapability": "acg:ReviewerCapability"
+      },
+      {
+        "type": "aat:ActionType",
+        "name": "Comment",
+        "description": "Add inline comments to code or documents",
+        "requiresCapability": "acg:ReviewerCapability"
+      },
+      {
+        "type": "aat:ActionType",
+        "name": "FlagSecurity",
+        "description": "Flag potential security vulnerabilities",
+        "requiresCapability": "acg:ReviewerCapability"
+      },
+      {
+        "type": "aat:ActionType",
+        "name": "RequestInfo",
+        "description": "Request additional context or information"
+      }
+    ],
+    "forbidden": [
+      {
+        "type": "aat:ActionType",
+        "name": "Act",
+        "rationale": "Reviewers analyze but do not execute actions directly"
+      },
+      {
+        "type": "aat:ActionType",
+        "name": "Deploy",
+        "rationale": "Reviewers approve but do not deploy"
+      },
+      {
+        "type": "aat:ActionType",
+        "name": "ModifyCode",
+        "rationale": "Reviewers suggest changes but do not make them directly"
+      }
+    ]
+  },
+
+  "internalState": {
+    "description": "State components maintained by the reviewer",
+    "components": [
+      {
+        "name": "reviewQueue",
+        "type": "xsd:string",
+        "description": "Queue of items pending review"
+      },
+      {
+        "name": "reviewHistory",
+        "type": "xsd:string",
+        "description": "History of completed reviews"
+      },
+      {
+        "name": "flaggedIssues",
+        "type": "xsd:string",
+        "description": "Currently flagged security/quality issues"
+      }
+    ]
+  },
+
+  "behavioralInvariants": [
+    {
+      "type": "aat:BehavioralInvariant",
+      "name": "thorough-review",
+      "description": "Must review all changes in scope before approval",
+      "formalRule": "forall(change in scope) => reviewed(change) before approve()",
+      "enforcement": "structural"
+    },
+    {
+      "type": "aat:BehavioralInvariant",
+      "name": "security-first",
+      "description": "Security issues must be flagged before approval",
+      "formalRule": "securityIssue(x) => flagged(x) before approve()",
+      "enforcement": "structural"
+    },
+    {
+      "type": "aat:BehavioralInvariant",
+      "name": "must-produce-review",
+      "description": "Reviewer must produce a review report",
+      "formalRule": "exists(output) && isReviewReport(output)",
+      "enforcement": "structural",
+      "requiredOutputAction": "aat:Review"
+    }
+  ],
+
+  "traceRequirements": {
+    "mustEmitProvActivity": true,
+    "requiredFields": ["contextSnapshot", "reviewScope", "findings", "decision", "comments"],
+    "retentionPolicy": "indefinite"
+  },
+
+  "livenessGuarantees": [
+    {
+      "type": "aat:LivenessGuarantee",
+      "name": "eventual-review",
+      "description": "All submitted items will eventually be reviewed"
+    }
+  ],
+
+  "compositionRules": {
+    "type": "aat:CompositionRules",
+    "maxConcurrent": 5,
+    "canComposeBefore": ["aat:ExecutorAgentType", "aat:DeployerAgentType"],
+    "canComposeAfter": ["aat:PlannerAgentType", "aat:TesterAgentType"],
+    "conflictsWith": [],
+    "notes": "Reviewers typically run after development and before deployment"
+  }
+}

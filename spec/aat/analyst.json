@@ -1,0 +1,273 @@
+{
+  "@context": [
+    "https://www.w3.org/ns/prov#",
+    {
+      "xsd": "http://www.w3.org/2001/XMLSchema#",
+      "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+      "owl": "http://www.w3.org/2002/07/owl#",
+      "dcterms": "http://purl.org/dc/terms/",
+
+      "acg": "https://agentcontextgraph.dev/ontology#",
+      "aat": "https://agentcontextgraph.dev/aat#",
+
+      "id": "@id",
+      "type": "@type",
+      "AbstractAgentType": "aat:AbstractAgentType",
+      "name": "rdfs:label",
+      "description": "rdfs:comment",
+      "version": "owl:versionInfo",
+
+      "perceptSpace": "aat:hasPerceptSpace",
+      "PerceptSpace": "aat:PerceptSpace",
+      "perceptTypes": { "@id": "aat:hasPerceptType", "@container": "@set" },
+
+      "actionSpace": "aat:hasActionSpace",
+      "ActionSpace": "aat:ActionSpace",
+      "allowed": { "@id": "aat:allowsAction", "@container": "@set" },
+      "forbidden": { "@id": "aat:forbidsAction", "@container": "@set" },
+      "ActionType": "aat:ActionType",
+      "requiresCapability": { "@id": "acg:requiresCapability", "@type": "@id" },
+      "rationale": "aat:forbiddenRationale",
+
+      "internalState": "aat:hasInternalState",
+      "components": { "@id": "aat:hasStateComponent", "@container": "@set" },
+
+      "behavioralInvariants": { "@id": "aat:hasBehavioralInvariant", "@container": "@set" },
+      "BehavioralInvariant": "aat:BehavioralInvariant",
+      "formalRule": "aat:formalRule",
+      "enforcement": "aat:enforcementLevel",
+      "requiredOutputAction": { "@id": "aat:requiredOutputAction", "@type": "@id" },
+
+      "traceRequirements": "acg:hasTracePolicy",
+      "mustEmitProvActivity": "acg:mustEmitProvActivity",
+      "requiredFields": { "@id": "acg:requiredTraceFields", "@container": "@list" },
+      "retentionPolicy": "acg:retentionPolicy",
+
+      "livenessGuarantees": { "@id": "aat:hasLivenessGuarantee", "@container": "@set" },
+      "LivenessGuarantee": "aat:LivenessGuarantee",
+
+      "compositionRules": "aat:hasCompositionRules",
+      "CompositionRules": "aat:CompositionRules",
+      "canComposeBefore": { "@id": "aat:canComposeBefore", "@type": "@id", "@container": "@set" },
+      "canComposeAfter": { "@id": "aat:canComposeAfter", "@type": "@id", "@container": "@set" },
+      "notes": "rdfs:comment",
+
+      "parallelization": "aat:hasParallelizationRules",
+      "maxConcurrent": "aat:maxConcurrentInstances",
+      "conflictsWith": { "@id": "aat:conflictsWith", "@type": "@id", "@container": "@set" },
+      "resourceLimits": "aat:hasResourceLimits",
+      "maxCostPerHour": "aat:maxCostPerHour",
+      "priority": "aat:hasPriority"
+    }
+  ],
+  "type": ["aat:AbstractAgentType", "aat:AnalystAgentType"],
+  "id": "aat:AnalystAgentType",
+  "name": "Analyst Agent Type",
+  "version": "1.0.0",
+  "description": "Abstract Agent Type for analysis agents. Analysts process data, detect patterns, generate insights, and produce analytical reports. They are read-only with respect to external state.",
+
+  "perceptSpace": {
+    "type": "aat:PerceptSpace",
+    "description": "What the analyst can observe",
+    "perceptTypes": [
+      {
+        "type": "aat:PerceptType",
+        "name": "DataSources",
+        "description": "Available data sources for analysis"
+      },
+      {
+        "type": "aat:PerceptType",
+        "name": "HistoricalRecords",
+        "description": "Historical data and trends"
+      },
+      {
+        "type": "aat:PerceptType",
+        "name": "Metrics",
+        "description": "Quantitative measurements"
+      },
+      {
+        "type": "aat:PerceptType",
+        "name": "Patterns",
+        "description": "Detected patterns and anomalies"
+      },
+      {
+        "type": "aat:PerceptType",
+        "name": "ProvTraces",
+        "description": "Provenance traces for audit analysis"
+      }
+    ]
+  },
+
+  "actionSpace": {
+    "type": "aat:ActionSpace",
+    "allowed": [
+      {
+        "type": "aat:ActionType",
+        "id": "aat:Analyze",
+        "name": "Analyze",
+        "description": "Perform analysis on data",
+        "requiresCapability": "acg:AnalystCapability"
+      },
+      {
+        "type": "aat:ActionType",
+        "id": "aat:EmitInsight",
+        "name": "EmitInsight",
+        "description": "Emit an analytical insight or finding",
+        "requiresCapability": "acg:AnalystCapability"
+      },
+      {
+        "type": "aat:ActionType",
+        "id": "aat:DetectAnomaly",
+        "name": "DetectAnomaly",
+        "description": "Report a detected anomaly or outlier",
+        "requiresCapability": "acg:AnalystCapability"
+      },
+      {
+        "type": "aat:ActionType",
+        "id": "aat:GenerateReport",
+        "name": "GenerateReport",
+        "description": "Generate an analytical report",
+        "requiresCapability": "acg:AnalystCapability"
+      },
+      {
+        "type": "aat:ActionType",
+        "id": "aat:RequestInfo",
+        "name": "RequestInfo",
+        "description": "Request additional data for analysis",
+        "requiresCapability": null
+      },
+      {
+        "type": "aat:ActionType",
+        "id": "aat:QueryData",
+        "name": "QueryData",
+        "description": "Query data sources",
+        "requiresCapability": null
+      }
+    ],
+    "forbidden": [
+      {
+        "type": "aat:ActionType",
+        "id": "aat:Actuate",
+        "name": "Actuate",
+        "description": "Direct execution of actions",
+        "rationale": "Analysts are read-only; they analyze but don't act"
+      },
+      {
+        "type": "aat:ActionType",
+        "id": "aat:ModifyState",
+        "name": "ModifyState",
+        "description": "Changing any persistent state",
+        "rationale": "No side effects allowed"
+      },
+      {
+        "type": "aat:ActionType",
+        "id": "aat:EmitPlan",
+        "name": "EmitPlan",
+        "description": "Creating execution plans",
+        "rationale": "Analysts provide insights, not action plans"
+      },
+      {
+        "type": "aat:ActionType",
+        "id": "aat:FabricateData",
+        "name": "FabricateData",
+        "description": "Generating data not derived from sources",
+        "rationale": "Insights must be grounded in actual data"
+      }
+    ]
+  },
+
+  "internalState": {
+    "type": "aat:InternalState",
+    "description": "Abstract state the analyst may maintain",
+    "components": [
+      {
+        "type": "aat:StateComponent",
+        "name": "analysisContext",
+        "description": "Current analysis being performed"
+      },
+      {
+        "type": "aat:StateComponent",
+        "name": "detectedPatterns",
+        "description": "Patterns identified in current session"
+      },
+      {
+        "type": "aat:StateComponent",
+        "name": "dataCache",
+        "description": "Cached data for analysis"
+      },
+      {
+        "type": "aat:StateComponent",
+        "name": "confidenceScores",
+        "description": "Confidence levels for findings"
+      }
+    ]
+  },
+
+  "behavioralInvariants": [
+    {
+      "type": "aat:BehavioralInvariant",
+      "id": "aat:AnalystAgentType/invariant/no-side-effects",
+      "name": "no-side-effects",
+      "description": "Analyst must never modify external state",
+      "formalRule": "forall action in outputs: action.type not in {Actuate, ModifyState, WriteExternal}",
+      "enforcement": "structural"
+    },
+    {
+      "type": "aat:BehavioralInvariant",
+      "id": "aat:AnalystAgentType/invariant/grounded-insights",
+      "name": "grounded-insights",
+      "description": "All insights must reference source data",
+      "formalRule": "forall insight in EmitInsight: exists sourceRef in insight.references",
+      "enforcement": "validation"
+    },
+    {
+      "type": "aat:BehavioralInvariant",
+      "id": "aat:AnalystAgentType/invariant/confidence-required",
+      "name": "confidence-required",
+      "description": "Insights must include confidence scores",
+      "formalRule": "forall insight in EmitInsight: insight.confidence in [0.0, 1.0]",
+      "enforcement": "validation"
+    }
+  ],
+
+  "traceRequirements": {
+    "type": "acg:TracePolicy",
+    "mustEmitProvActivity": true,
+    "requiredFields": [
+      "contextSnapshot",
+      "affordance",
+      "parameters",
+      "outcome",
+      "dataSourcesUsed",
+      "confidence"
+    ],
+    "retentionPolicy": "indefinite"
+  },
+
+  "livenessGuarantees": [
+    {
+      "type": "aat:LivenessGuarantee",
+      "id": "aat:AnalystAgentType/liveness/analysis-completion",
+      "name": "analysis-completion",
+      "description": "Given data and analysis goal, eventually emits insight or requests more data",
+      "formalRule": "(data and analysisGoal) ~> (EmitInsight or GenerateReport or RequestInfo)"
+    }
+  ],
+
+  "compositionRules": {
+    "type": "aat:CompositionRules",
+    "canComposeBefore": ["aat:PlannerAgentType", "aat:ArbiterAgentType"],
+    "canComposeAfter": ["aat:ObserverAgentType", "aat:ArchivistAgentType"],
+    "notes": "Analyst receives data from Observers/Archivists, provides insights to Planners/Arbiters"
+  },
+
+  "parallelization": {
+    "type": "aat:ParallelizationRules",
+    "maxConcurrent": 5,
+    "conflictsWith": [],
+    "resourceLimits": {
+      "maxCostPerHour": 20.0
+    },
+    "priority": "normal"
+  }
+}

@@ -1,0 +1,265 @@
+{
+  "@context": [
+    "https://www.w3.org/ns/prov#",
+    {
+      "xsd": "http://www.w3.org/2001/XMLSchema#",
+      "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+      "owl": "http://www.w3.org/2002/07/owl#",
+      "dcterms": "http://purl.org/dc/terms/",
+
+      "acg": "https://agentcontextgraph.dev/ontology#",
+      "aat": "https://agentcontextgraph.dev/aat#",
+
+      "id": "@id",
+      "type": "@type",
+      "AbstractAgentType": "aat:AbstractAgentType",
+      "name": "rdfs:label",
+      "description": "rdfs:comment",
+      "version": "owl:versionInfo",
+
+      "perceptSpace": "aat:hasPerceptSpace",
+      "PerceptSpace": "aat:PerceptSpace",
+      "perceptTypes": { "@id": "aat:hasPerceptType", "@container": "@set" },
+
+      "actionSpace": "aat:hasActionSpace",
+      "ActionSpace": "aat:ActionSpace",
+      "allowed": { "@id": "aat:allowsAction", "@container": "@set" },
+      "forbidden": { "@id": "aat:forbidsAction", "@container": "@set" },
+      "ActionType": "aat:ActionType",
+      "requiresCapability": { "@id": "acg:requiresCapability", "@type": "@id" },
+      "rationale": "aat:forbiddenRationale",
+
+      "internalState": "aat:hasInternalState",
+      "components": { "@id": "aat:hasStateComponent", "@container": "@set" },
+
+      "behavioralInvariants": { "@id": "aat:hasBehavioralInvariant", "@container": "@set" },
+      "BehavioralInvariant": "aat:BehavioralInvariant",
+      "formalRule": "aat:formalRule",
+      "enforcement": "aat:enforcementLevel",
+      "requiredOutputAction": { "@id": "aat:requiredOutputAction", "@type": "@id" },
+
+      "traceRequirements": "acg:hasTracePolicy",
+      "mustEmitProvActivity": "acg:mustEmitProvActivity",
+      "requiredFields": { "@id": "acg:requiredTraceFields", "@container": "@list" },
+      "retentionPolicy": "acg:retentionPolicy",
+
+      "livenessGuarantees": { "@id": "aat:hasLivenessGuarantee", "@container": "@set" },
+      "LivenessGuarantee": "aat:LivenessGuarantee",
+
+      "compositionRules": "aat:hasCompositionRules",
+      "CompositionRules": "aat:CompositionRules",
+      "canComposeBefore": { "@id": "aat:canComposeBefore", "@type": "@id", "@container": "@set" },
+      "canComposeAfter": { "@id": "aat:canComposeAfter", "@type": "@id", "@container": "@set" },
+      "notes": "rdfs:comment",
+
+      "parallelization": "aat:hasParallelizationRules",
+      "maxConcurrent": "aat:maxConcurrentInstances",
+      "conflictsWith": { "@id": "aat:conflictsWith", "@type": "@id", "@container": "@set" },
+      "resourceLimits": "aat:hasResourceLimits",
+      "maxCostPerHour": "aat:maxCostPerHour",
+      "priority": "aat:hasPriority"
+    }
+  ],
+  "type": ["aat:AbstractAgentType", "aat:CoordinatorAgentType"],
+  "id": "aat:CoordinatorAgentType",
+  "name": "Coordinator Agent Type",
+  "version": "1.0.0",
+  "description": "Abstract Agent Type for coordination agents. Coordinators orchestrate multiple agents, manage workflows, delegate tasks, and aggregate results.",
+
+  "perceptSpace": {
+    "type": "aat:PerceptSpace",
+    "description": "What the coordinator can observe",
+    "perceptTypes": [
+      {
+        "type": "aat:PerceptType",
+        "name": "AgentStatus",
+        "description": "Current status of coordinated agents"
+      },
+      {
+        "type": "aat:PerceptType",
+        "name": "TaskQueue",
+        "description": "Pending tasks to distribute"
+      },
+      {
+        "type": "aat:PerceptType",
+        "name": "WorkflowState",
+        "description": "Current state of active workflows"
+      },
+      {
+        "type": "aat:PerceptType",
+        "name": "ResourceAvailability",
+        "description": "Available resources and capacity"
+      },
+      {
+        "type": "aat:PerceptType",
+        "name": "DelegationResults",
+        "description": "Results from delegated tasks"
+      }
+    ]
+  },
+
+  "actionSpace": {
+    "type": "aat:ActionSpace",
+    "allowed": [
+      {
+        "type": "aat:ActionType",
+        "id": "aat:Delegate",
+        "name": "Delegate",
+        "description": "Delegate a task to another agent",
+        "requiresCapability": "acg:CoordinatorCapability"
+      },
+      {
+        "type": "aat:ActionType",
+        "id": "aat:Aggregate",
+        "name": "Aggregate",
+        "description": "Aggregate results from multiple agents",
+        "requiresCapability": "acg:CoordinatorCapability"
+      },
+      {
+        "type": "aat:ActionType",
+        "id": "aat:StartWorkflow",
+        "name": "StartWorkflow",
+        "description": "Initialize a new workflow",
+        "requiresCapability": "acg:CoordinatorCapability"
+      },
+      {
+        "type": "aat:ActionType",
+        "id": "aat:CompleteWorkflow",
+        "name": "CompleteWorkflow",
+        "description": "Mark a workflow as complete with final results",
+        "requiresCapability": "acg:CoordinatorCapability"
+      },
+      {
+        "type": "aat:ActionType",
+        "id": "aat:RequestInfo",
+        "name": "RequestInfo",
+        "description": "Request information from the broker or other agents",
+        "requiresCapability": null
+      },
+      {
+        "type": "aat:ActionType",
+        "id": "aat:Checkpoint",
+        "name": "Checkpoint",
+        "description": "Create a workflow checkpoint for recovery",
+        "requiresCapability": null
+      }
+    ],
+    "forbidden": [
+      {
+        "type": "aat:ActionType",
+        "id": "aat:Actuate",
+        "name": "Actuate",
+        "description": "Direct execution of actions",
+        "rationale": "Coordinators delegate, they don't execute directly"
+      },
+      {
+        "type": "aat:ActionType",
+        "id": "aat:EmitPlan",
+        "name": "EmitPlan",
+        "description": "Creating detailed plans",
+        "rationale": "Coordinators delegate planning to Planners"
+      },
+      {
+        "type": "aat:ActionType",
+        "id": "aat:ModifyState",
+        "name": "ModifyState",
+        "description": "Direct state modifications",
+        "rationale": "Coordinators orchestrate, they don't modify state directly"
+      }
+    ]
+  },
+
+  "internalState": {
+    "type": "aat:InternalState",
+    "description": "Abstract state the coordinator may maintain",
+    "components": [
+      {
+        "type": "aat:StateComponent",
+        "name": "activeWorkflows",
+        "description": "Currently running workflows"
+      },
+      {
+        "type": "aat:StateComponent",
+        "name": "agentRegistry",
+        "description": "Known agents and their capabilities"
+      },
+      {
+        "type": "aat:StateComponent",
+        "name": "pendingDelegations",
+        "description": "Tasks awaiting delegation results"
+      },
+      {
+        "type": "aat:StateComponent",
+        "name": "aggregatedResults",
+        "description": "Collected results from delegations"
+      }
+    ]
+  },
+
+  "behavioralInvariants": [
+    {
+      "type": "aat:BehavioralInvariant",
+      "id": "aat:CoordinatorAgentType/invariant/no-direct-execution",
+      "name": "no-direct-execution",
+      "description": "Coordinator must never directly execute actions",
+      "formalRule": "forall action in outputs: action.type not in {Actuate, WriteExternal}",
+      "enforcement": "structural"
+    },
+    {
+      "type": "aat:BehavioralInvariant",
+      "id": "aat:CoordinatorAgentType/invariant/delegation-tracking",
+      "name": "delegation-tracking",
+      "description": "All delegations must be tracked until completion",
+      "formalRule": "forall d in Delegations: eventually(d.status in {Completed, Failed, Timeout})",
+      "enforcement": "audit"
+    },
+    {
+      "type": "aat:BehavioralInvariant",
+      "id": "aat:CoordinatorAgentType/invariant/workflow-completion",
+      "name": "workflow-completion",
+      "description": "Started workflows must eventually complete or fail",
+      "formalRule": "forall w in StartedWorkflows: eventually(CompleteWorkflow(w) or FailWorkflow(w))",
+      "enforcement": "audit"
+    }
+  ],
+
+  "traceRequirements": {
+    "type": "acg:TracePolicy",
+    "mustEmitProvActivity": true,
+    "requiredFields": [
+      "contextSnapshot",
+      "affordance",
+      "parameters",
+      "outcome",
+      "delegatedAgents"
+    ],
+    "retentionPolicy": "indefinite"
+  },
+
+  "livenessGuarantees": [
+    {
+      "type": "aat:LivenessGuarantee",
+      "id": "aat:CoordinatorAgentType/liveness/workflow-progress",
+      "name": "workflow-progress",
+      "description": "Active workflows must make progress",
+      "formalRule": "(activeWorkflow and availableAgent) ~> Delegate"
+    }
+  ],
+
+  "compositionRules": {
+    "type": "aat:CompositionRules",
+    "canComposeBefore": ["aat:PlannerAgentType", "aat:ExecutorAgentType", "aat:ObserverAgentType"],
+    "canComposeAfter": ["aat:ArbiterAgentType"],
+    "notes": "Coordinator delegates to Planners and Executors, receives approvals from Arbiters"
+  },
+
+  "parallelization": {
+    "type": "aat:ParallelizationRules",
+    "maxConcurrent": 3,
+    "conflictsWith": [],
+    "resourceLimits": {
+      "maxCostPerHour": 50.0
+    },
+    "priority": "high"
+  }
+}

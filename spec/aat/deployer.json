@@ -1,0 +1,236 @@
+{
+  "@context": [
+    "https://www.w3.org/ns/prov#",
+    {
+      "xsd": "http://www.w3.org/2001/XMLSchema#",
+      "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+      "owl": "http://www.w3.org/2002/07/owl#",
+      "dcterms": "http://purl.org/dc/terms/",
+      "acg": "https://agentcontextgraph.dev/ontology#",
+      "aat": "https://agentcontextgraph.dev/aat#",
+
+      "id": "@id",
+      "type": "@type",
+      "AbstractAgentType": "aat:AbstractAgentType",
+      "name": "rdfs:label",
+      "description": "rdfs:comment",
+      "version": "owl:versionInfo",
+
+      "perceptSpace": "aat:hasPerceptSpace",
+      "PerceptSpace": "aat:PerceptSpace",
+      "perceptTypes": { "@id": "aat:hasPerceptType", "@container": "@set" },
+
+      "actionSpace": "aat:hasActionSpace",
+      "ActionSpace": "aat:ActionSpace",
+      "allowed": { "@id": "aat:allowsAction", "@container": "@set" },
+      "forbidden": { "@id": "aat:forbidsAction", "@container": "@set" },
+      "ActionType": "aat:ActionType",
+      "requiresCapability": { "@id": "acg:requiresCapability", "@type": "@id" },
+      "rationale": "aat:forbiddenRationale",
+
+      "internalState": "aat:hasInternalState",
+      "components": { "@id": "aat:hasStateComponent", "@container": "@set" },
+
+      "behavioralInvariants": { "@id": "aat:hasBehavioralInvariant", "@container": "@set" },
+      "BehavioralInvariant": "aat:BehavioralInvariant",
+      "formalRule": "aat:formalRule",
+      "enforcement": "aat:enforcementLevel",
+      "requiredOutputAction": { "@id": "aat:requiredOutputAction", "@type": "@id" },
+
+      "traceRequirements": "acg:hasTracePolicy",
+      "mustEmitProvActivity": "acg:mustEmitProvActivity",
+      "requiredFields": { "@id": "acg:requiredTraceFields", "@container": "@list" },
+      "retentionPolicy": "acg:retentionPolicy",
+
+      "livenessGuarantees": { "@id": "aat:hasLivenessGuarantee", "@container": "@set" },
+      "LivenessGuarantee": "aat:LivenessGuarantee",
+
+      "compositionRules": "aat:hasCompositionRules",
+      "CompositionRules": "aat:CompositionRules",
+      "canComposeBefore": { "@id": "aat:canComposeBefore", "@type": "@id", "@container": "@set" },
+      "canComposeAfter": { "@id": "aat:canComposeAfter", "@type": "@id", "@container": "@set" },
+      "notes": "rdfs:comment"
+    }
+  ],
+  "type": ["aat:AbstractAgentType", "aat:DeployerAgentType"],
+  "id": "aat:DeployerAgentType",
+  "name": "Deployer Agent Type",
+  "version": "1.0.0",
+  "description": "Abstract Agent Type for deployment agents. Deployers handle building, packaging, and deploying applications to target environments.",
+
+  "perceptSpace": {
+    "type": "aat:PerceptSpace",
+    "description": "What the deployer can observe",
+    "perceptTypes": [
+      {
+        "type": "aat:PerceptType",
+        "name": "BuildArtifacts",
+        "description": "Compiled code, packages, and container images"
+      },
+      {
+        "type": "aat:PerceptType",
+        "name": "DeploymentConfig",
+        "description": "Deployment manifests, environment configs"
+      },
+      {
+        "type": "aat:PerceptType",
+        "name": "EnvironmentStatus",
+        "description": "Current state of target environments"
+      },
+      {
+        "type": "aat:PerceptType",
+        "name": "HealthChecks",
+        "description": "Health status of deployed services"
+      },
+      {
+        "type": "aat:PerceptType",
+        "name": "RollbackPoints",
+        "description": "Previous versions for rollback"
+      }
+    ]
+  },
+
+  "actionSpace": {
+    "type": "aat:ActionSpace",
+    "description": "Actions a deployer may perform",
+    "allowed": [
+      {
+        "type": "aat:ActionType",
+        "name": "Build",
+        "description": "Build application from source",
+        "requiresCapability": "acg:DeployerCapability"
+      },
+      {
+        "type": "aat:ActionType",
+        "name": "Deploy",
+        "description": "Deploy application to target environment",
+        "requiresCapability": "acg:DeployerCapability"
+      },
+      {
+        "type": "aat:ActionType",
+        "name": "Rollback",
+        "description": "Rollback to a previous deployment",
+        "requiresCapability": "acg:DeployerCapability"
+      },
+      {
+        "type": "aat:ActionType",
+        "name": "Scale",
+        "description": "Scale deployment up or down",
+        "requiresCapability": "acg:DeployerCapability"
+      },
+      {
+        "type": "aat:ActionType",
+        "name": "HealthCheck",
+        "description": "Verify deployment health",
+        "requiresCapability": "acg:DeployerCapability"
+      },
+      {
+        "type": "aat:ActionType",
+        "name": "Stop",
+        "description": "Stop a running deployment",
+        "requiresCapability": "acg:DeployerCapability"
+      },
+      {
+        "type": "aat:ActionType",
+        "name": "Report",
+        "description": "Report deployment status"
+      },
+      {
+        "type": "aat:ActionType",
+        "name": "RequestInfo",
+        "description": "Request additional context or information"
+      }
+    ],
+    "forbidden": [
+      {
+        "type": "aat:ActionType",
+        "name": "ModifyCode",
+        "rationale": "Deployers deploy but do not modify source code"
+      },
+      {
+        "type": "aat:ActionType",
+        "name": "DeleteProduction",
+        "rationale": "Cannot delete production environments without explicit approval"
+      },
+      {
+        "type": "aat:ActionType",
+        "name": "BypassApproval",
+        "rationale": "All production deployments require approval"
+      }
+    ]
+  },
+
+  "internalState": {
+    "description": "State components maintained by the deployer",
+    "components": [
+      {
+        "name": "deploymentHistory",
+        "type": "xsd:string",
+        "description": "History of deployments"
+      },
+      {
+        "name": "activeDeployments",
+        "type": "xsd:string",
+        "description": "Currently active deployments"
+      },
+      {
+        "name": "rollbackRegistry",
+        "type": "xsd:string",
+        "description": "Available rollback points"
+      }
+    ]
+  },
+
+  "behavioralInvariants": [
+    {
+      "type": "aat:BehavioralInvariant",
+      "name": "approval-required",
+      "description": "Production deployments require prior approval",
+      "formalRule": "deploy(production) => approved(deployment)",
+      "enforcement": "structural"
+    },
+    {
+      "type": "aat:BehavioralInvariant",
+      "name": "health-verified",
+      "description": "Deployment success requires health check pass",
+      "formalRule": "deploySuccess() => healthCheck.passed",
+      "enforcement": "runtime"
+    },
+    {
+      "type": "aat:BehavioralInvariant",
+      "name": "rollback-available",
+      "description": "Must maintain rollback capability",
+      "formalRule": "exists(previousVersion) && canRollback(previousVersion)",
+      "enforcement": "structural"
+    }
+  ],
+
+  "traceRequirements": {
+    "mustEmitProvActivity": true,
+    "requiredFields": ["contextSnapshot", "targetEnvironment", "artifactVersion", "outcome", "healthStatus", "rollbackPoint"],
+    "retentionPolicy": "indefinite"
+  },
+
+  "livenessGuarantees": [
+    {
+      "type": "aat:LivenessGuarantee",
+      "name": "eventual-deployment",
+      "description": "Approved deployments will eventually complete or fail with reason"
+    },
+    {
+      "type": "aat:LivenessGuarantee",
+      "name": "rollback-guarantee",
+      "description": "Failed deployments can be rolled back within retention window"
+    }
+  ],
+
+  "compositionRules": {
+    "type": "aat:CompositionRules",
+    "maxConcurrent": 2,
+    "requiresIsolation": true,
+    "canComposeBefore": ["aat:ObserverAgentType"],
+    "canComposeAfter": ["aat:ReviewerAgentType", "aat:TesterAgentType", "aat:ArbiterAgentType"],
+    "conflictsWith": ["aat:DeployerAgentType"],
+    "notes": "Only one deployer should target the same environment at a time"
+  }
+}

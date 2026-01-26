@@ -1,0 +1,874 @@
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix as: <https://www.w3.org/ns/activitystreams#> .
+@prefix ldp: <http://www.w3.org/ns/ldp#> .
+@prefix acl: <http://www.w3.org/ns/auth/acl#> .
+@prefix acg: <https://agentcontextgraph.dev/ontology#> .
+@prefix fed: <https://agentcontextgraph.dev/federation#> .
+@prefix pb: <https://agentcontextgraph.dev/personal-broker#> .
+@prefix id: <https://agentcontextgraph.dev/identity#> .
+@prefix soc: <https://agentcontextgraph.dev/social#> .
+
+# =============================================================================
+# Agent Context Graph Social Federation Protocol Ontology
+# =============================================================================
+# Defines the Social Federation Protocol - how users connect, discover, share,
+# and collaborate through their personal brokers. Enables social graph
+# construction, multiplayer agent workflows, and federated AI experiences.
+# =============================================================================
+
+<https://agentcontextgraph.dev/social>
+    a owl:Ontology ;
+    owl:versionIRI <https://agentcontextgraph.dev/social/1.0.0> ;
+    dcterms:title "Agent Context Graph Social Federation Protocol Ontology"@en ;
+    dcterms:description "Defines the Social Federation Protocol for connecting users through their personal brokers. Enables social discovery, relationship management, collaborative workflows, and federated AI experiences."@en ;
+    dcterms:created "2026-01-25"^^xsd:date ;
+    owl:imports <https://agentcontextgraph.dev/personal-broker> ;
+    owl:imports <https://agentcontextgraph.dev/federation> ;
+    owl:imports <https://www.w3.org/ns/activitystreams#> .
+
+# =============================================================================
+# Social Connection Classes
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# SocialConnection - A federation link between two personal brokers
+# -----------------------------------------------------------------------------
+
+soc:SocialConnection a owl:Class ;
+    rdfs:label "Social Connection"@en ;
+    rdfs:subClassOf fed:TrustRelationship ;
+    rdfs:comment "A social connection between two personal brokers, enabling federated communication, shared contexts, and collaborative workflows. Bi-directional when both parties accept."@en ;
+    rdfs:subClassOf [
+        a owl:Restriction ;
+        owl:onProperty soc:fromBroker ;
+        owl:cardinality 1
+    ] ;
+    rdfs:subClassOf [
+        a owl:Restriction ;
+        owl:onProperty soc:toBroker ;
+        owl:cardinality 1
+    ] .
+
+soc:ConnectionState a owl:Class ;
+    rdfs:label "Connection State"@en ;
+    owl:oneOf (soc:ConnectionRequested soc:ConnectionAccepted soc:ConnectionRejected
+               soc:ConnectionBlocked soc:ConnectionMuted soc:ConnectionRemoved) .
+
+soc:ConnectionRequested a soc:ConnectionState ;
+    rdfs:label "Requested"@en ;
+    rdfs:comment "Connection request has been sent, awaiting response."@en .
+
+soc:ConnectionAccepted a soc:ConnectionState ;
+    rdfs:label "Accepted"@en ;
+    rdfs:comment "Both parties have accepted the connection."@en .
+
+soc:ConnectionRejected a soc:ConnectionState ;
+    rdfs:label "Rejected"@en ;
+    rdfs:comment "Connection request was rejected."@en .
+
+soc:ConnectionBlocked a soc:ConnectionState ;
+    rdfs:label "Blocked"@en ;
+    rdfs:comment "Connection has been blocked."@en .
+
+soc:ConnectionMuted a soc:ConnectionState ;
+    rdfs:label "Muted"@en ;
+    rdfs:comment "Connection is muted (no notifications)."@en .
+
+soc:ConnectionRemoved a soc:ConnectionState ;
+    rdfs:label "Removed"@en ;
+    rdfs:comment "Connection has been removed."@en .
+
+# -----------------------------------------------------------------------------
+# ConnectionRequest - ActivityPub-style connection request
+# -----------------------------------------------------------------------------
+
+soc:ConnectionRequest a owl:Class ;
+    rdfs:label "Connection Request"@en ;
+    rdfs:subClassOf as:Follow ;
+    rdfs:comment "A request to establish a social connection. Similar to ActivityPub Follow but includes ACG-specific metadata like desired trust level and permissions."@en .
+
+soc:ConnectionResponse a owl:Class ;
+    rdfs:label "Connection Response"@en ;
+    rdfs:subClassOf as:Activity ;
+    rdfs:comment "A response to a connection request."@en .
+
+soc:AcceptConnection a owl:Class ;
+    rdfs:label "Accept Connection"@en ;
+    rdfs:subClassOf soc:ConnectionResponse, as:Accept ;
+    rdfs:comment "Acceptance of a connection request."@en .
+
+soc:RejectConnection a owl:Class ;
+    rdfs:label "Reject Connection"@en ;
+    rdfs:subClassOf soc:ConnectionResponse, as:Reject ;
+    rdfs:comment "Rejection of a connection request."@en .
+
+# -----------------------------------------------------------------------------
+# SocialProfile - Public profile shared with connections
+# -----------------------------------------------------------------------------
+
+soc:SocialProfile a owl:Class ;
+    rdfs:label "Social Profile"@en ;
+    rdfs:subClassOf as:Profile ;
+    rdfs:comment "A public-facing social profile for a personal broker. Contains information the user chooses to share with connections."@en .
+
+soc:ProfileVisibility a owl:Class ;
+    rdfs:label "Profile Visibility"@en ;
+    owl:oneOf (soc:VisibilityPublic soc:VisibilityConnections soc:VisibilityClose soc:VisibilityPrivate) .
+
+soc:VisibilityPublic a soc:ProfileVisibility ;
+    rdfs:label "Public"@en ;
+    rdfs:comment "Visible to anyone who can discover the broker."@en .
+
+soc:VisibilityConnections a soc:ProfileVisibility ;
+    rdfs:label "Connections Only"@en ;
+    rdfs:comment "Visible only to accepted connections."@en .
+
+soc:VisibilityClose a soc:ProfileVisibility ;
+    rdfs:label "Close Connections"@en ;
+    rdfs:comment "Visible only to close/trusted connections."@en .
+
+soc:VisibilityPrivate a soc:ProfileVisibility ;
+    rdfs:label "Private"@en ;
+    rdfs:comment "Not visible to others."@en .
+
+# =============================================================================
+# Social Discovery Classes
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# DiscoveryMethod - How users find each other
+# -----------------------------------------------------------------------------
+
+soc:DiscoveryMethod a owl:Class ;
+    rdfs:label "Discovery Method"@en ;
+    rdfs:comment "A method for discovering other personal brokers."@en ;
+    owl:oneOf (soc:DIDDiscovery soc:WebIDDiscovery soc:QRCodeDiscovery
+               soc:InviteLinkDiscovery soc:DirectoryDiscovery
+               soc:ContactSyncDiscovery soc:MutualConnectionDiscovery) .
+
+soc:DIDDiscovery a soc:DiscoveryMethod ;
+    rdfs:label "DID Discovery"@en ;
+    rdfs:comment "Discover via Decentralized Identifier lookup."@en .
+
+soc:WebIDDiscovery a soc:DiscoveryMethod ;
+    rdfs:label "WebID Discovery"@en ;
+    rdfs:comment "Discover via WebID URL."@en .
+
+soc:QRCodeDiscovery a soc:DiscoveryMethod ;
+    rdfs:label "QR Code Discovery"@en ;
+    rdfs:comment "Discover by scanning a QR code."@en .
+
+soc:InviteLinkDiscovery a soc:DiscoveryMethod ;
+    rdfs:label "Invite Link Discovery"@en ;
+    rdfs:comment "Discover via a shared invite link."@en .
+
+soc:DirectoryDiscovery a soc:DiscoveryMethod ;
+    rdfs:label "Directory Discovery"@en ;
+    rdfs:comment "Discover via a public directory service."@en .
+
+soc:ContactSyncDiscovery a soc:DiscoveryMethod ;
+    rdfs:label "Contact Sync Discovery"@en ;
+    rdfs:comment "Discover from synced contact list (phone, email)."@en .
+
+soc:MutualConnectionDiscovery a soc:DiscoveryMethod ;
+    rdfs:label "Mutual Connection Discovery"@en ;
+    rdfs:comment "Discover through mutual connections."@en .
+
+# -----------------------------------------------------------------------------
+# InviteLink - Shareable invitation to connect
+# -----------------------------------------------------------------------------
+
+soc:InviteLink a owl:Class ;
+    rdfs:label "Invite Link"@en ;
+    rdfs:comment "A shareable link that allows someone to connect to a personal broker."@en .
+
+soc:InviteLinkType a owl:Class ;
+    rdfs:label "Invite Link Type"@en ;
+    owl:oneOf (soc:SingleUseInvite soc:MultiUseInvite soc:TimeLimitedInvite soc:GroupInvite) .
+
+soc:SingleUseInvite a soc:InviteLinkType ;
+    rdfs:label "Single Use"@en ;
+    rdfs:comment "Can only be used once."@en .
+
+soc:MultiUseInvite a soc:InviteLinkType ;
+    rdfs:label "Multi Use"@en ;
+    rdfs:comment "Can be used multiple times."@en .
+
+soc:TimeLimitedInvite a soc:InviteLinkType ;
+    rdfs:label "Time Limited"@en ;
+    rdfs:comment "Valid only for a limited time."@en .
+
+soc:GroupInvite a soc:InviteLinkType ;
+    rdfs:label "Group Invite"@en ;
+    rdfs:comment "Invitation to join a group."@en .
+
+# =============================================================================
+# Social Interaction Classes
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# SocialMessage - Message between connected brokers
+# -----------------------------------------------------------------------------
+
+soc:SocialMessage a owl:Class ;
+    rdfs:label "Social Message"@en ;
+    rdfs:subClassOf pb:Message, as:Note ;
+    rdfs:comment "A message sent between social connections. Federated via ActivityPub or DIDComm."@en .
+
+# -----------------------------------------------------------------------------
+# Presence - Online presence/availability
+# -----------------------------------------------------------------------------
+
+soc:Presence a owl:Class ;
+    rdfs:label "Presence"@en ;
+    rdfs:comment "Online presence information for a personal broker."@en .
+
+soc:PresenceStatus a owl:Class ;
+    rdfs:label "Presence Status"@en ;
+    owl:oneOf (soc:PresenceOnline soc:PresenceAway soc:PresenceBusy
+               soc:PresenceDoNotDisturb soc:PresenceOffline soc:PresenceInvisible) .
+
+soc:PresenceOnline a soc:PresenceStatus ;
+    rdfs:label "Online"@en .
+
+soc:PresenceAway a soc:PresenceStatus ;
+    rdfs:label "Away"@en .
+
+soc:PresenceBusy a soc:PresenceStatus ;
+    rdfs:label "Busy"@en .
+
+soc:PresenceDoNotDisturb a soc:PresenceStatus ;
+    rdfs:label "Do Not Disturb"@en .
+
+soc:PresenceOffline a soc:PresenceStatus ;
+    rdfs:label "Offline"@en .
+
+soc:PresenceInvisible a soc:PresenceStatus ;
+    rdfs:label "Invisible"@en .
+
+# -----------------------------------------------------------------------------
+# Notification - Social notifications
+# -----------------------------------------------------------------------------
+
+soc:Notification a owl:Class ;
+    rdfs:label "Notification"@en ;
+    rdfs:subClassOf as:Activity ;
+    rdfs:comment "A notification to inform the user about social activity."@en .
+
+soc:NotificationType a owl:Class ;
+    rdfs:label "Notification Type"@en ;
+    owl:oneOf (soc:ConnectionRequestNotification soc:ConnectionAcceptedNotification
+               soc:MessageNotification soc:MentionNotification
+               soc:WorkflowInviteNotification soc:WorkflowUpdateNotification
+               soc:GroupInviteNotification soc:SystemNotification) .
+
+# =============================================================================
+# Collaborative Workflow Classes
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# CollaborativeContext - Shared context between connections
+# -----------------------------------------------------------------------------
+
+soc:CollaborativeContext a owl:Class ;
+    rdfs:label "Collaborative Context"@en ;
+    rdfs:subClassOf acg:ContextGraph ;
+    rdfs:comment "A context graph shared between multiple connected brokers for collaborative work. Access controlled via WebACL."@en .
+
+soc:CollaborationPermission a owl:Class ;
+    rdfs:label "Collaboration Permission"@en ;
+    rdfs:comment "A permission level for collaborative contexts."@en ;
+    owl:oneOf (soc:PermissionView soc:PermissionSuggest soc:PermissionContribute
+               soc:PermissionEdit soc:PermissionAdmin) .
+
+soc:PermissionView a soc:CollaborationPermission ;
+    rdfs:label "View"@en ;
+    rdfs:comment "Can view the context but not modify."@en .
+
+soc:PermissionSuggest a soc:CollaborationPermission ;
+    rdfs:label "Suggest"@en ;
+    rdfs:comment "Can suggest changes for approval."@en .
+
+soc:PermissionContribute a soc:CollaborationPermission ;
+    rdfs:label "Contribute"@en ;
+    rdfs:comment "Can add to the context."@en .
+
+soc:PermissionEdit a soc:CollaborationPermission ;
+    rdfs:label "Edit"@en ;
+    rdfs:comment "Can edit existing content."@en .
+
+soc:PermissionAdmin a soc:CollaborationPermission ;
+    rdfs:label "Admin"@en ;
+    rdfs:comment "Full administrative control."@en .
+
+# -----------------------------------------------------------------------------
+# WorkflowInvitation - Invite to join a workflow
+# -----------------------------------------------------------------------------
+
+soc:WorkflowInvitation a owl:Class ;
+    rdfs:label "Workflow Invitation"@en ;
+    rdfs:subClassOf as:Invite ;
+    rdfs:comment "An invitation for a connection to participate in a workflow."@en .
+
+soc:InvitationResponse a owl:Class ;
+    rdfs:label "Invitation Response"@en ;
+    rdfs:subClassOf as:Activity ;
+    rdfs:comment "Response to a workflow invitation."@en .
+
+# -----------------------------------------------------------------------------
+# SocialGroup - Group of connected users
+# -----------------------------------------------------------------------------
+
+soc:SocialGroup a owl:Class ;
+    rdfs:label "Social Group"@en ;
+    rdfs:subClassOf as:Group, pb:Group ;
+    rdfs:comment "A group of connected users who can collaborate on shared contexts and workflows."@en .
+
+soc:GroupRole a owl:Class ;
+    rdfs:label "Group Role"@en ;
+    owl:oneOf (soc:GroupOwner soc:GroupAdmin soc:GroupModerator soc:GroupMember soc:GroupGuest) .
+
+soc:GroupOwner a soc:GroupRole ;
+    rdfs:label "Owner"@en ;
+    rdfs:comment "Created the group, has full control."@en .
+
+soc:GroupAdmin a soc:GroupRole ;
+    rdfs:label "Admin"@en ;
+    rdfs:comment "Can manage group settings and members."@en .
+
+soc:GroupModerator a soc:GroupRole ;
+    rdfs:label "Moderator"@en ;
+    rdfs:comment "Can moderate content and interactions."@en .
+
+soc:GroupMember a soc:GroupRole ;
+    rdfs:label "Member"@en ;
+    rdfs:comment "Standard group member."@en .
+
+soc:GroupGuest a soc:GroupRole ;
+    rdfs:label "Guest"@en ;
+    rdfs:comment "Limited access guest."@en .
+
+# =============================================================================
+# Federation Protocol Classes
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# FederationMessage - Protocol message between brokers
+# -----------------------------------------------------------------------------
+
+soc:FederationMessage a owl:Class ;
+    rdfs:label "Federation Message"@en ;
+    rdfs:subClassOf as:Activity ;
+    rdfs:comment "A protocol-level message for federation between personal brokers."@en .
+
+soc:FederationProtocol a owl:Class ;
+    rdfs:label "Social Federation Protocol"@en ;
+    rdfs:comment "The protocol used for social federation."@en ;
+    owl:oneOf (soc:ActivityPubProtocol soc:DIDCommProtocol soc:ATProtocol soc:NativeACGProtocol) .
+
+soc:ActivityPubProtocol a soc:FederationProtocol ;
+    rdfs:label "ActivityPub"@en ;
+    rdfs:comment "W3C ActivityPub for broad fediverse compatibility."@en .
+
+soc:DIDCommProtocol a soc:FederationProtocol ;
+    rdfs:label "DIDComm"@en ;
+    rdfs:comment "DIDComm for encrypted peer-to-peer messaging."@en .
+
+soc:ATProtocol a soc:FederationProtocol ;
+    rdfs:label "AT Protocol"@en ;
+    rdfs:comment "Bluesky AT Protocol for portable social data."@en .
+
+soc:NativeACGProtocol a soc:FederationProtocol ;
+    rdfs:label "Native ACG"@en ;
+    rdfs:comment "Native ACG federation protocol for full feature support."@en .
+
+# =============================================================================
+# Object Properties
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Social Connection Properties
+# -----------------------------------------------------------------------------
+
+soc:fromBroker a owl:ObjectProperty, owl:FunctionalProperty ;
+    rdfs:label "from broker"@en ;
+    rdfs:domain soc:SocialConnection ;
+    rdfs:range pb:PersonalBroker ;
+    rdfs:comment "The broker initiating the connection."@en .
+
+soc:toBroker a owl:ObjectProperty, owl:FunctionalProperty ;
+    rdfs:label "to broker"@en ;
+    rdfs:domain soc:SocialConnection ;
+    rdfs:range pb:PersonalBroker ;
+    rdfs:comment "The broker receiving the connection."@en .
+
+soc:connectionState a owl:ObjectProperty ;
+    rdfs:label "connection state"@en ;
+    rdfs:domain soc:SocialConnection ;
+    rdfs:range soc:ConnectionState ;
+    rdfs:comment "Current state of this connection."@en .
+
+soc:grantedPermissions a owl:ObjectProperty ;
+    rdfs:label "granted permissions"@en ;
+    rdfs:domain soc:SocialConnection ;
+    rdfs:range soc:CollaborationPermission ;
+    rdfs:comment "Permissions granted to this connection."@en .
+
+soc:discoveredVia a owl:ObjectProperty ;
+    rdfs:label "discovered via"@en ;
+    rdfs:domain soc:SocialConnection ;
+    rdfs:range soc:DiscoveryMethod ;
+    rdfs:comment "How this connection was discovered."@en .
+
+soc:mutualConnections a owl:ObjectProperty ;
+    rdfs:label "mutual connections"@en ;
+    rdfs:domain soc:SocialConnection ;
+    rdfs:range soc:SocialConnection ;
+    rdfs:comment "Connections that both parties share."@en .
+
+# -----------------------------------------------------------------------------
+# Profile Properties
+# -----------------------------------------------------------------------------
+
+soc:hasProfile a owl:ObjectProperty ;
+    rdfs:label "has profile"@en ;
+    rdfs:domain pb:PersonalBroker ;
+    rdfs:range soc:SocialProfile ;
+    rdfs:comment "The social profile for this broker."@en .
+
+soc:profileVisibility a owl:ObjectProperty ;
+    rdfs:label "profile visibility"@en ;
+    rdfs:domain soc:SocialProfile ;
+    rdfs:range soc:ProfileVisibility ;
+    rdfs:comment "Visibility level of this profile."@en .
+
+# -----------------------------------------------------------------------------
+# Invite Properties
+# -----------------------------------------------------------------------------
+
+soc:createdBy a owl:ObjectProperty ;
+    rdfs:label "created by"@en ;
+    rdfs:domain soc:InviteLink ;
+    rdfs:range pb:PersonalBroker ;
+    rdfs:comment "Broker that created this invite."@en .
+
+soc:inviteType a owl:ObjectProperty ;
+    rdfs:label "invite type"@en ;
+    rdfs:domain soc:InviteLink ;
+    rdfs:range soc:InviteLinkType ;
+    rdfs:comment "Type of this invite link."@en .
+
+soc:usedBy a owl:ObjectProperty ;
+    rdfs:label "used by"@en ;
+    rdfs:domain soc:InviteLink ;
+    rdfs:range pb:PersonalBroker ;
+    rdfs:comment "Brokers that have used this invite."@en .
+
+# -----------------------------------------------------------------------------
+# Presence Properties
+# -----------------------------------------------------------------------------
+
+soc:hasPresence a owl:ObjectProperty ;
+    rdfs:label "has presence"@en ;
+    rdfs:domain pb:PersonalBroker ;
+    rdfs:range soc:Presence ;
+    rdfs:comment "Current presence information."@en .
+
+soc:presenceStatus a owl:ObjectProperty ;
+    rdfs:label "presence status"@en ;
+    rdfs:domain soc:Presence ;
+    rdfs:range soc:PresenceStatus ;
+    rdfs:comment "Current presence status."@en .
+
+soc:visibleTo a owl:ObjectProperty ;
+    rdfs:label "visible to"@en ;
+    rdfs:domain soc:Presence ;
+    rdfs:range soc:ProfileVisibility ;
+    rdfs:comment "Who can see this presence."@en .
+
+# -----------------------------------------------------------------------------
+# Notification Properties
+# -----------------------------------------------------------------------------
+
+soc:notificationType a owl:ObjectProperty ;
+    rdfs:label "notification type"@en ;
+    rdfs:domain soc:Notification ;
+    rdfs:range soc:NotificationType ;
+    rdfs:comment "Type of this notification."@en .
+
+soc:notificationFor a owl:ObjectProperty ;
+    rdfs:label "notification for"@en ;
+    rdfs:domain soc:Notification ;
+    rdfs:range pb:PersonalBroker ;
+    rdfs:comment "Broker this notification is for."@en .
+
+soc:triggeredBy a owl:ObjectProperty ;
+    rdfs:label "triggered by"@en ;
+    rdfs:domain soc:Notification ;
+    rdfs:range as:Activity ;
+    rdfs:comment "Activity that triggered this notification."@en .
+
+# -----------------------------------------------------------------------------
+# Collaborative Context Properties
+# -----------------------------------------------------------------------------
+
+soc:sharedWith a owl:ObjectProperty ;
+    rdfs:label "shared with"@en ;
+    rdfs:domain soc:CollaborativeContext ;
+    rdfs:range soc:SocialConnection ;
+    rdfs:comment "Connections this context is shared with."@en .
+
+soc:contextOwner a owl:ObjectProperty ;
+    rdfs:label "context owner"@en ;
+    rdfs:domain soc:CollaborativeContext ;
+    rdfs:range pb:PersonalBroker ;
+    rdfs:comment "Broker that owns this collaborative context."@en .
+
+soc:hasCollaborator a owl:ObjectProperty ;
+    rdfs:label "has collaborator"@en ;
+    rdfs:domain soc:CollaborativeContext ;
+    rdfs:range pb:PersonalBroker ;
+    rdfs:comment "A broker collaborating on this context."@en .
+
+soc:collaboratorPermission a owl:ObjectProperty ;
+    rdfs:label "collaborator permission"@en ;
+    rdfs:domain soc:CollaborativeContext ;
+    rdfs:range soc:CollaborationPermission ;
+    rdfs:comment "Permission level for collaborators."@en .
+
+# -----------------------------------------------------------------------------
+# Group Properties
+# -----------------------------------------------------------------------------
+
+soc:groupOwner a owl:ObjectProperty ;
+    rdfs:label "group owner"@en ;
+    rdfs:domain soc:SocialGroup ;
+    rdfs:range pb:PersonalBroker ;
+    rdfs:comment "Broker that owns this group."@en .
+
+soc:hasMembership a owl:ObjectProperty ;
+    rdfs:label "has membership"@en ;
+    rdfs:domain soc:SocialGroup ;
+    rdfs:range soc:GroupMembership ;
+    rdfs:comment "A membership in this group."@en .
+
+soc:groupContext a owl:ObjectProperty ;
+    rdfs:label "group context"@en ;
+    rdfs:domain soc:SocialGroup ;
+    rdfs:range soc:CollaborativeContext ;
+    rdfs:comment "Shared context for this group."@en .
+
+# -----------------------------------------------------------------------------
+# Group Membership (reification)
+# -----------------------------------------------------------------------------
+
+soc:GroupMembership a owl:Class ;
+    rdfs:label "Group Membership"@en ;
+    rdfs:comment "A membership relation between a broker and a group."@en .
+
+soc:memberBroker a owl:ObjectProperty ;
+    rdfs:label "member broker"@en ;
+    rdfs:domain soc:GroupMembership ;
+    rdfs:range pb:PersonalBroker ;
+    rdfs:comment "The broker that is a member."@en .
+
+soc:memberRole a owl:ObjectProperty ;
+    rdfs:label "member role"@en ;
+    rdfs:domain soc:GroupMembership ;
+    rdfs:range soc:GroupRole ;
+    rdfs:comment "The member's role in the group."@en .
+
+soc:memberOf a owl:ObjectProperty ;
+    rdfs:label "member of"@en ;
+    rdfs:domain soc:GroupMembership ;
+    rdfs:range soc:SocialGroup ;
+    rdfs:comment "The group this membership belongs to."@en .
+
+# -----------------------------------------------------------------------------
+# Federation Properties
+# -----------------------------------------------------------------------------
+
+soc:supportedProtocol a owl:ObjectProperty ;
+    rdfs:label "supported protocol"@en ;
+    rdfs:domain pb:PersonalBroker ;
+    rdfs:range soc:FederationProtocol ;
+    rdfs:comment "A federation protocol this broker supports."@en .
+
+soc:preferredProtocol a owl:ObjectProperty ;
+    rdfs:label "preferred protocol"@en ;
+    rdfs:domain pb:PersonalBroker ;
+    rdfs:range soc:FederationProtocol ;
+    rdfs:comment "The preferred federation protocol."@en .
+
+soc:usesProtocol a owl:ObjectProperty ;
+    rdfs:label "uses protocol"@en ;
+    rdfs:domain soc:SocialConnection ;
+    rdfs:range soc:FederationProtocol ;
+    rdfs:comment "Protocol used for this connection."@en .
+
+# =============================================================================
+# Datatype Properties
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Connection Datatype Properties
+# -----------------------------------------------------------------------------
+
+soc:connectionCreated a owl:DatatypeProperty ;
+    rdfs:label "connection created"@en ;
+    rdfs:domain soc:SocialConnection ;
+    rdfs:range xsd:dateTime ;
+    rdfs:comment "When this connection was created."@en .
+
+soc:connectionUpdated a owl:DatatypeProperty ;
+    rdfs:label "connection updated"@en ;
+    rdfs:domain soc:SocialConnection ;
+    rdfs:range xsd:dateTime ;
+    rdfs:comment "When this connection was last updated."@en .
+
+soc:connectionNote a owl:DatatypeProperty ;
+    rdfs:label "connection note"@en ;
+    rdfs:domain soc:SocialConnection ;
+    rdfs:range xsd:string ;
+    rdfs:comment "Personal note about this connection."@en .
+
+soc:localNickname a owl:DatatypeProperty ;
+    rdfs:label "local nickname"@en ;
+    rdfs:domain soc:SocialConnection ;
+    rdfs:range xsd:string ;
+    rdfs:comment "Local nickname for this connection."@en .
+
+# -----------------------------------------------------------------------------
+# Profile Datatype Properties
+# -----------------------------------------------------------------------------
+
+soc:displayName a owl:DatatypeProperty ;
+    rdfs:label "display name"@en ;
+    rdfs:domain soc:SocialProfile ;
+    rdfs:range xsd:string ;
+    rdfs:comment "Public display name."@en .
+
+soc:bio a owl:DatatypeProperty ;
+    rdfs:label "bio"@en ;
+    rdfs:domain soc:SocialProfile ;
+    rdfs:range xsd:string ;
+    rdfs:comment "Short biography."@en .
+
+soc:avatarUrl a owl:DatatypeProperty ;
+    rdfs:label "avatar URL"@en ;
+    rdfs:domain soc:SocialProfile ;
+    rdfs:range xsd:anyURI ;
+    rdfs:comment "URL to avatar image."@en .
+
+soc:bannerUrl a owl:DatatypeProperty ;
+    rdfs:label "banner URL"@en ;
+    rdfs:domain soc:SocialProfile ;
+    rdfs:range xsd:anyURI ;
+    rdfs:comment "URL to banner image."@en .
+
+soc:location a owl:DatatypeProperty ;
+    rdfs:label "location"@en ;
+    rdfs:domain soc:SocialProfile ;
+    rdfs:range xsd:string ;
+    rdfs:comment "User's location (city, country, etc.)."@en .
+
+soc:website a owl:DatatypeProperty ;
+    rdfs:label "website"@en ;
+    rdfs:domain soc:SocialProfile ;
+    rdfs:range xsd:anyURI ;
+    rdfs:comment "User's website."@en .
+
+soc:joinedAt a owl:DatatypeProperty ;
+    rdfs:label "joined at"@en ;
+    rdfs:domain soc:SocialProfile ;
+    rdfs:range xsd:dateTime ;
+    rdfs:comment "When the user joined ACG."@en .
+
+# -----------------------------------------------------------------------------
+# Invite Datatype Properties
+# -----------------------------------------------------------------------------
+
+soc:inviteCode a owl:DatatypeProperty ;
+    rdfs:label "invite code"@en ;
+    rdfs:domain soc:InviteLink ;
+    rdfs:range xsd:string ;
+    rdfs:comment "The unique invite code."@en .
+
+soc:inviteUrl a owl:DatatypeProperty ;
+    rdfs:label "invite URL"@en ;
+    rdfs:domain soc:InviteLink ;
+    rdfs:range xsd:anyURI ;
+    rdfs:comment "Full URL for the invite."@en .
+
+soc:inviteCreated a owl:DatatypeProperty ;
+    rdfs:label "invite created"@en ;
+    rdfs:domain soc:InviteLink ;
+    rdfs:range xsd:dateTime ;
+    rdfs:comment "When the invite was created."@en .
+
+soc:inviteExpires a owl:DatatypeProperty ;
+    rdfs:label "invite expires"@en ;
+    rdfs:domain soc:InviteLink ;
+    rdfs:range xsd:dateTime ;
+    rdfs:comment "When the invite expires."@en .
+
+soc:inviteMaxUses a owl:DatatypeProperty ;
+    rdfs:label "invite max uses"@en ;
+    rdfs:domain soc:InviteLink ;
+    rdfs:range xsd:integer ;
+    rdfs:comment "Maximum number of uses for this invite."@en .
+
+soc:inviteUseCount a owl:DatatypeProperty ;
+    rdfs:label "invite use count"@en ;
+    rdfs:domain soc:InviteLink ;
+    rdfs:range xsd:integer ;
+    rdfs:comment "Current number of uses."@en .
+
+# -----------------------------------------------------------------------------
+# Presence Datatype Properties
+# -----------------------------------------------------------------------------
+
+soc:statusMessage a owl:DatatypeProperty ;
+    rdfs:label "status message"@en ;
+    rdfs:domain soc:Presence ;
+    rdfs:range xsd:string ;
+    rdfs:comment "Custom status message."@en .
+
+soc:lastSeen a owl:DatatypeProperty ;
+    rdfs:label "last seen"@en ;
+    rdfs:domain soc:Presence ;
+    rdfs:range xsd:dateTime ;
+    rdfs:comment "When the user was last active."@en .
+
+soc:presenceUpdated a owl:DatatypeProperty ;
+    rdfs:label "presence updated"@en ;
+    rdfs:domain soc:Presence ;
+    rdfs:range xsd:dateTime ;
+    rdfs:comment "When presence was last updated."@en .
+
+# -----------------------------------------------------------------------------
+# Notification Datatype Properties
+# -----------------------------------------------------------------------------
+
+soc:notificationTitle a owl:DatatypeProperty ;
+    rdfs:label "notification title"@en ;
+    rdfs:domain soc:Notification ;
+    rdfs:range xsd:string ;
+    rdfs:comment "Title of the notification."@en .
+
+soc:notificationBody a owl:DatatypeProperty ;
+    rdfs:label "notification body"@en ;
+    rdfs:domain soc:Notification ;
+    rdfs:range xsd:string ;
+    rdfs:comment "Body text of the notification."@en .
+
+soc:notificationCreated a owl:DatatypeProperty ;
+    rdfs:label "notification created"@en ;
+    rdfs:domain soc:Notification ;
+    rdfs:range xsd:dateTime ;
+    rdfs:comment "When the notification was created."@en .
+
+soc:notificationRead a owl:DatatypeProperty ;
+    rdfs:label "notification read"@en ;
+    rdfs:domain soc:Notification ;
+    rdfs:range xsd:boolean ;
+    rdfs:comment "Whether the notification has been read."@en .
+
+# -----------------------------------------------------------------------------
+# Group Datatype Properties
+# -----------------------------------------------------------------------------
+
+soc:groupName a owl:DatatypeProperty ;
+    rdfs:label "group name"@en ;
+    rdfs:domain soc:SocialGroup ;
+    rdfs:range xsd:string ;
+    rdfs:comment "Name of the group."@en .
+
+soc:groupDescription a owl:DatatypeProperty ;
+    rdfs:label "group description"@en ;
+    rdfs:domain soc:SocialGroup ;
+    rdfs:range xsd:string ;
+    rdfs:comment "Description of the group."@en .
+
+soc:groupCreated a owl:DatatypeProperty ;
+    rdfs:label "group created"@en ;
+    rdfs:domain soc:SocialGroup ;
+    rdfs:range xsd:dateTime ;
+    rdfs:comment "When the group was created."@en .
+
+soc:groupPublic a owl:DatatypeProperty ;
+    rdfs:label "group public"@en ;
+    rdfs:domain soc:SocialGroup ;
+    rdfs:range xsd:boolean ;
+    rdfs:comment "Whether the group is public or invite-only."@en .
+
+soc:memberJoined a owl:DatatypeProperty ;
+    rdfs:label "member joined"@en ;
+    rdfs:domain soc:GroupMembership ;
+    rdfs:range xsd:dateTime ;
+    rdfs:comment "When this member joined the group."@en .
+
+# =============================================================================
+# Social Federation Actions
+# =============================================================================
+
+soc:RequestConnection a acg:ActionType ;
+    rdfs:label "Request Connection"@en ;
+    rdfs:comment "Send a connection request to another broker."@en .
+
+soc:AcceptConnectionAction a acg:ActionType ;
+    rdfs:label "Accept Connection"@en ;
+    rdfs:comment "Accept a pending connection request."@en .
+
+soc:RejectConnectionAction a acg:ActionType ;
+    rdfs:label "Reject Connection"@en ;
+    rdfs:comment "Reject a pending connection request."@en .
+
+soc:RemoveConnection a acg:ActionType ;
+    rdfs:label "Remove Connection"@en ;
+    rdfs:comment "Remove an existing connection."@en .
+
+soc:BlockConnection a acg:ActionType ;
+    rdfs:label "Block Connection"@en ;
+    rdfs:comment "Block a user/broker."@en .
+
+soc:SendSocialMessage a acg:ActionType ;
+    rdfs:label "Send Social Message"@en ;
+    rdfs:comment "Send a message to a connection."@en .
+
+soc:ShareContext a acg:ActionType ;
+    rdfs:label "Share Context"@en ;
+    rdfs:comment "Share a context with connections."@en .
+
+soc:InviteToWorkflow a acg:ActionType ;
+    rdfs:label "Invite to Workflow"@en ;
+    rdfs:comment "Invite connections to participate in a workflow."@en .
+
+soc:CreateGroup a acg:ActionType ;
+    rdfs:label "Create Group"@en ;
+    rdfs:comment "Create a social group."@en .
+
+soc:JoinGroup a acg:ActionType ;
+    rdfs:label "Join Group"@en ;
+    rdfs:comment "Join a social group."@en .
+
+soc:LeaveGroup a acg:ActionType ;
+    rdfs:label "Leave Group"@en ;
+    rdfs:comment "Leave a social group."@en .
+
+soc:UpdatePresence a acg:ActionType ;
+    rdfs:label "Update Presence"@en ;
+    rdfs:comment "Update online presence status."@en .
+
+soc:GenerateInvite a acg:ActionType ;
+    rdfs:label "Generate Invite"@en ;
+    rdfs:comment "Generate an invite link."@en .
+
+soc:DiscoverBroker a acg:ActionType ;
+    rdfs:label "Discover Broker"@en ;
+    rdfs:comment "Discover another personal broker."@en .

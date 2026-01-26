@@ -1,0 +1,237 @@
+{
+  "@context": [
+    "https://www.w3.org/ns/prov#",
+    {
+      "xsd": "http://www.w3.org/2001/XMLSchema#",
+      "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+      "owl": "http://www.w3.org/2002/07/owl#",
+      "dcterms": "http://purl.org/dc/terms/",
+
+      "acg": "https://agentcontextgraph.dev/ontology#",
+      "aat": "https://agentcontextgraph.dev/aat#",
+
+      "id": "@id",
+      "type": "@type",
+      "AbstractAgentType": "aat:AbstractAgentType",
+      "name": "rdfs:label",
+      "description": "rdfs:comment",
+      "version": "owl:versionInfo",
+
+      "perceptSpace": "aat:hasPerceptSpace",
+      "PerceptSpace": "aat:PerceptSpace",
+      "perceptTypes": { "@id": "aat:hasPerceptType", "@container": "@set" },
+
+      "actionSpace": "aat:hasActionSpace",
+      "ActionSpace": "aat:ActionSpace",
+      "allowed": { "@id": "aat:allowsAction", "@container": "@set" },
+      "forbidden": { "@id": "aat:forbidsAction", "@container": "@set" },
+      "ActionType": "aat:ActionType",
+      "requiresCapability": { "@id": "acg:requiresCapability", "@type": "@id" },
+      "rationale": "aat:forbiddenRationale",
+
+      "internalState": "aat:hasInternalState",
+      "components": { "@id": "aat:hasStateComponent", "@container": "@set" },
+
+      "behavioralInvariants": { "@id": "aat:hasBehavioralInvariant", "@container": "@set" },
+      "BehavioralInvariant": "aat:BehavioralInvariant",
+      "formalRule": "aat:formalRule",
+      "enforcement": "aat:enforcementLevel",
+      "requiredOutputAction": { "@id": "aat:requiredOutputAction", "@type": "@id" },
+
+      "traceRequirements": "acg:hasTracePolicy",
+      "mustEmitProvActivity": "acg:mustEmitProvActivity",
+      "requiredFields": { "@id": "acg:requiredTraceFields", "@container": "@list" },
+      "retentionPolicy": "acg:retentionPolicy",
+
+      "livenessGuarantees": { "@id": "aat:hasLivenessGuarantee", "@container": "@set" },
+      "LivenessGuarantee": "aat:LivenessGuarantee",
+
+      "compositionRules": "aat:hasCompositionRules",
+      "CompositionRules": "aat:CompositionRules",
+      "canComposeBefore": { "@id": "aat:canComposeBefore", "@type": "@id", "@container": "@set" },
+      "canComposeAfter": { "@id": "aat:canComposeAfter", "@type": "@id", "@container": "@set" },
+      "notes": "rdfs:comment"
+    }
+  ],
+  "type": ["aat:AbstractAgentType", "aat:PlannerAgentType"],
+  "id": "aat:PlannerAgentType",
+  "name": "Planner Agent Type",
+  "version": "1.0.0",
+  "description": "Abstract Agent Type for planning agents. Planners produce plans but do not execute actions directly.",
+
+  "perceptSpace": {
+    "type": "aat:PerceptSpace",
+    "description": "What the planner can observe",
+    "perceptTypes": [
+      {
+        "type": "aat:PerceptType",
+        "name": "Goal",
+        "description": "Objectives to achieve"
+      },
+      {
+        "type": "aat:PerceptType",
+        "name": "WorldModel",
+        "description": "Current state representation"
+      },
+      {
+        "type": "aat:PerceptType",
+        "name": "Constraints",
+        "description": "Limitations and requirements"
+      },
+      {
+        "type": "aat:PerceptType",
+        "name": "Feedback",
+        "description": "Results from previous plan executions"
+      }
+    ]
+  },
+
+  "actionSpace": {
+    "type": "aat:ActionSpace",
+    "allowed": [
+      {
+        "type": "aat:ActionType",
+        "id": "aat:EmitPlan",
+        "name": "EmitPlan",
+        "description": "Output a plan for execution",
+        "requiresCapability": "acg:PlannerCapability"
+      },
+      {
+        "type": "aat:ActionType",
+        "id": "aat:RequestInfo",
+        "name": "RequestInfo",
+        "description": "Request additional information or clarification",
+        "requiresCapability": null
+      },
+      {
+        "type": "aat:ActionType",
+        "id": "aat:RevisePlan",
+        "name": "RevisePlan",
+        "description": "Update an existing plan based on feedback",
+        "requiresCapability": "acg:PlannerCapability"
+      },
+      {
+        "type": "aat:ActionType",
+        "id": "aat:ValidatePlan",
+        "name": "ValidatePlan",
+        "description": "Check plan validity without emitting",
+        "requiresCapability": null
+      }
+    ],
+    "forbidden": [
+      {
+        "type": "aat:ActionType",
+        "id": "aat:Actuate",
+        "name": "Actuate",
+        "description": "Direct execution of actions in the world",
+        "rationale": "Planners must not bypass executors"
+      },
+      {
+        "type": "aat:ActionType",
+        "id": "aat:WriteExternal",
+        "name": "WriteExternal",
+        "description": "Direct writes to external systems",
+        "rationale": "All external effects must go through executor"
+      },
+      {
+        "type": "aat:ActionType",
+        "id": "aat:ModifyCredentials",
+        "name": "ModifyCredentials",
+        "description": "Altering credential state",
+        "rationale": "Credential management requires explicit authorization"
+      }
+    ]
+  },
+
+  "internalState": {
+    "type": "aat:InternalState",
+    "description": "Abstract state the planner may maintain (not implementation-specific)",
+    "components": [
+      {
+        "type": "aat:StateComponent",
+        "name": "currentGoals",
+        "description": "Active objectives"
+      },
+      {
+        "type": "aat:StateComponent",
+        "name": "worldModel",
+        "description": "Belief state about the environment"
+      },
+      {
+        "type": "aat:StateComponent",
+        "name": "planHistory",
+        "description": "Previously generated plans"
+      },
+      {
+        "type": "aat:StateComponent",
+        "name": "constraints",
+        "description": "Active constraints"
+      }
+    ]
+  },
+
+  "behavioralInvariants": [
+    {
+      "type": "aat:BehavioralInvariant",
+      "id": "aat:PlannerAgentType/invariant/no-actuation",
+      "name": "no-actuation",
+      "description": "Planner must never directly actuate",
+      "formalRule": "∀ action ∈ outputs: action.type ∉ ForbiddenActionTypes",
+      "enforcement": "structural"
+    },
+    {
+      "type": "aat:BehavioralInvariant",
+      "id": "aat:PlannerAgentType/invariant/plan-validity",
+      "name": "plan-validity",
+      "description": "Emitted plans must be type-correct",
+      "formalRule": "∀ plan ∈ EmitPlan: validatePlanStructure(plan) = true",
+      "enforcement": "validation"
+    },
+    {
+      "type": "aat:BehavioralInvariant",
+      "id": "aat:PlannerAgentType/invariant/monotonic-info",
+      "name": "monotonic-info",
+      "description": "Information requests must be monotonic (no forgetting)",
+      "formalRule": "observedInfo(t+1) ⊇ observedInfo(t)",
+      "enforcement": "audit"
+    },
+    {
+      "type": "aat:BehavioralInvariant",
+      "id": "aat:PlannerAgentType/invariant/must-produce-output",
+      "name": "must-produce-output",
+      "description": "Planner must produce output by traversing EmitPlan before task completion",
+      "formalRule": "∀ task ∈ CompletedTasks: ∃ action ∈ task.actions where action.type = 'EmitPlan'",
+      "enforcement": "structural",
+      "requiredOutputAction": "aat:EmitPlan"
+    }
+  ],
+
+  "traceRequirements": {
+    "type": "acg:TracePolicy",
+    "mustEmitProvActivity": true,
+    "requiredFields": [
+      "contextSnapshot",
+      "affordance",
+      "parameters",
+      "outcome"
+    ],
+    "retentionPolicy": "indefinite"
+  },
+
+  "livenessGuarantees": [
+    {
+      "type": "aat:LivenessGuarantee",
+      "id": "aat:PlannerAgentType/liveness/eventual-response",
+      "name": "eventual-response",
+      "description": "Given a goal and adequate world model, eventually emits EmitPlan or RequestInfo",
+      "formalRule": "(goal ∧ adequateModel) ~> (EmitPlan ∨ RequestInfo)"
+    }
+  ],
+
+  "compositionRules": {
+    "type": "aat:CompositionRules",
+    "canComposeBefore": ["aat:ExecutorAgentType", "aat:ArbiterAgentType"],
+    "canComposeAfter": ["aat:ObserverAgentType", "aat:ArbiterAgentType"],
+    "notes": "Planner output (Plan) becomes Executor input. Arbiter may gate both directions."
+  }
+}

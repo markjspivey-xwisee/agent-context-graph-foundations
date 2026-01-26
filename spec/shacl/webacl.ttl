@@ -1,0 +1,199 @@
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix acl: <http://www.w3.org/ns/auth/acl#> .
+@prefix wacl: <https://agentcontextgraph.dev/webacl#> .
+@prefix shapes: <https://agentcontextgraph.dev/shacl/webacl#> .
+
+# =============================================================================
+# SHACL Shapes for ACG WebACL Integration
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Authorization Shape (Base WebACL)
+# -----------------------------------------------------------------------------
+
+shapes:AuthorizationShape a sh:NodeShape ;
+    sh:targetClass acl:Authorization ;
+    rdfs:label "Authorization Shape"@en ;
+    rdfs:comment "Validates WebACL Authorization resources."@en ;
+
+    # Must have at least one access mode
+    sh:property [
+        sh:path acl:mode ;
+        sh:name "Access Mode" ;
+        sh:description "The access mode(s) granted by this authorization" ;
+        sh:minCount 1 ;
+        sh:message "Authorization must specify at least one access mode"
+    ] ;
+
+    # Must specify what resource(s) it applies to
+    sh:or (
+        [ sh:property [ sh:path acl:accessTo ; sh:minCount 1 ] ]
+        [ sh:property [ sh:path acl:accessToClass ; sh:minCount 1 ] ]
+        [ sh:property [ sh:path acl:default ; sh:minCount 1 ] ]
+    ) ;
+
+    # Must specify who gets access
+    sh:or (
+        [ sh:property [ sh:path acl:agent ; sh:minCount 1 ] ]
+        [ sh:property [ sh:path acl:agentClass ; sh:minCount 1 ] ]
+        [ sh:property [ sh:path acl:agentGroup ; sh:minCount 1 ] ]
+        [ sh:property [ sh:path wacl:agentType ; sh:minCount 1 ] ]
+    ) .
+
+# -----------------------------------------------------------------------------
+# ACG Authorization Shape (Extended)
+# -----------------------------------------------------------------------------
+
+shapes:ACGAuthorizationShape a sh:NodeShape ;
+    sh:targetClass wacl:ACGAuthorization ;
+    rdfs:label "ACG Authorization Shape"@en ;
+    rdfs:comment "Validates ACG-extended WebACL authorizations."@en ;
+
+    # Inherits from base authorization
+    sh:node shapes:AuthorizationShape ;
+
+    # Temporal constraints
+    sh:property [
+        sh:path wacl:validFrom ;
+        sh:name "Valid From" ;
+        sh:description "Authorization validity start time" ;
+        sh:datatype xsd:dateTime ;
+        sh:maxCount 1
+    ] ;
+
+    sh:property [
+        sh:path wacl:validUntil ;
+        sh:name "Valid Until" ;
+        sh:description "Authorization expiration time" ;
+        sh:datatype xsd:dateTime ;
+        sh:maxCount 1
+    ] ;
+
+    # Delegation
+    sh:property [
+        sh:path wacl:delegatedBy ;
+        sh:name "Delegated By" ;
+        sh:description "Agent who delegated this authorization" ;
+        sh:class acl:Agent ;
+        sh:maxCount 1
+    ] ;
+
+    sh:property [
+        sh:path wacl:delegationDepth ;
+        sh:name "Delegation Depth" ;
+        sh:description "Maximum further delegation depth" ;
+        sh:datatype xsd:integer ;
+        sh:maxCount 1 ;
+        sh:minInclusive 0
+    ] ;
+
+    # Credential requirements
+    sh:property [
+        sh:path wacl:requiresCredentialType ;
+        sh:name "Required Credential Type" ;
+        sh:description "Credential type required for this authorization"
+    ] ;
+
+    sh:property [
+        sh:path wacl:requiresCredentialIssuer ;
+        sh:name "Required Credential Issuer" ;
+        sh:description "Credential issuer required for this authorization"
+    ] .
+
+# -----------------------------------------------------------------------------
+# Temporal Validity Rule
+# -----------------------------------------------------------------------------
+
+shapes:TemporalValidityRule a sh:NodeShape ;
+    sh:targetClass wacl:ACGAuthorization ;
+    rdfs:label "Temporal Validity Rule"@en ;
+    rdfs:comment "Ensures validFrom is before validUntil when both are specified."@en ;
+
+    sh:sparql [
+        sh:message "validFrom ({?from}) must be before validUntil ({?until})" ;
+        sh:prefixes shapes: ;
+        sh:select """
+            SELECT $this ?from ?until
+            WHERE {
+                $this wacl:validFrom ?from .
+                $this wacl:validUntil ?until .
+                FILTER (?from >= ?until)
+            }
+        """
+    ] .
+
+# -----------------------------------------------------------------------------
+# Access Mode Validation
+# -----------------------------------------------------------------------------
+
+shapes:StandardAccessModeShape a sh:NodeShape ;
+    sh:targetSubjectsOf acl:mode ;
+    rdfs:label "Standard Access Mode Shape"@en ;
+    rdfs:comment "Validates that access modes are recognized."@en ;
+
+    sh:property [
+        sh:path acl:mode ;
+        sh:name "Access Mode" ;
+        sh:in (
+            acl:Read
+            acl:Write
+            acl:Append
+            acl:Control
+            wacl:TraverseAffordance
+            wacl:RequestContext
+            wacl:EmitTrace
+            wacl:QuerySPARQL
+            wacl:Federate
+        ) ;
+        sh:message "Access mode must be a recognized mode (acl:Read, acl:Write, acl:Append, acl:Control, or ACG extensions)"
+    ] .
+
+# -----------------------------------------------------------------------------
+# Agent Class Validation
+# -----------------------------------------------------------------------------
+
+shapes:AgentClassShape a sh:NodeShape ;
+    sh:targetSubjectsOf acl:agentClass ;
+    rdfs:label "Agent Class Shape"@en ;
+    rdfs:comment "Validates agent class references."@en ;
+
+    sh:property [
+        sh:path acl:agentClass ;
+        sh:name "Agent Class" ;
+        sh:nodeKind sh:IRI ;
+        sh:message "Agent class must be an IRI"
+    ] .
+
+# -----------------------------------------------------------------------------
+# Resource Target Validation
+# -----------------------------------------------------------------------------
+
+shapes:ResourceTargetShape a sh:NodeShape ;
+    sh:targetSubjectsOf acl:accessTo ;
+    rdfs:label "Resource Target Shape"@en ;
+    rdfs:comment "Validates access target resources."@en ;
+
+    sh:property [
+        sh:path acl:accessTo ;
+        sh:name "Access To" ;
+        sh:nodeKind sh:IRI ;
+        sh:message "accessTo must be an IRI identifying the protected resource"
+    ] .
+
+# -----------------------------------------------------------------------------
+# Container Default ACL Shape
+# -----------------------------------------------------------------------------
+
+shapes:ContainerDefaultShape a sh:NodeShape ;
+    sh:targetSubjectsOf acl:default ;
+    rdfs:label "Container Default Shape"@en ;
+    rdfs:comment "Validates default ACL for containers."@en ;
+
+    sh:property [
+        sh:path acl:default ;
+        sh:name "Default For Container" ;
+        sh:nodeKind sh:IRI ;
+        sh:message "default must be an IRI identifying the container"
+    ] .

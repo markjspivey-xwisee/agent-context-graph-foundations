@@ -1,0 +1,1071 @@
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix acg: <https://agentcontextgraph.dev/ontology#> .
+@prefix aat: <https://agentcontextgraph.dev/aat#> .
+@prefix params: <https://agentcontextgraph.dev/shacl/params#> .
+
+# =============================================================================
+# SHACL Parameter Shapes for Specialized Agent Types
+# Covers: Reviewer, Deployer, Tester
+# =============================================================================
+
+# =============================================================================
+# Reviewer Agent Parameters
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Review Parameters
+# -----------------------------------------------------------------------------
+
+params:ReviewParamsShape a sh:NodeShape ;
+    sh:targetClass params:ReviewParams ;
+    rdfs:label "Review Parameters Shape"@en ;
+    rdfs:comment "Parameters for conducting a code/artifact review."@en ;
+
+    sh:property [
+        sh:path params:targetRef ;
+        sh:name "targetRef" ;
+        sh:description "Reference to the artifact being reviewed (file, PR, commit)" ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:minLength 1
+    ] ;
+
+    sh:property [
+        sh:path params:reviewType ;
+        sh:name "reviewType" ;
+        sh:description "Type of review to conduct" ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:in ( "code" "security" "architecture" "documentation" "performance" )
+    ] ;
+
+    sh:property [
+        sh:path params:criteria ;
+        sh:name "criteria" ;
+        sh:description "Specific criteria or checklist items to evaluate" ;
+        sh:datatype xsd:string
+    ] ;
+
+    sh:property [
+        sh:path params:depth ;
+        sh:name "depth" ;
+        sh:description "Depth of review" ;
+        sh:maxCount 1 ;
+        sh:in ( "quick" "standard" "thorough" )
+    ] ;
+
+    sh:property [
+        sh:path params:focusAreas ;
+        sh:name "focusAreas" ;
+        sh:description "Specific areas to focus on" ;
+        sh:datatype xsd:string
+    ] .
+
+# -----------------------------------------------------------------------------
+# Approve (Reviewer) Parameters
+# -----------------------------------------------------------------------------
+
+params:ReviewApproveParamsShape a sh:NodeShape ;
+    sh:targetClass params:ReviewApproveParams ;
+    rdfs:label "Review Approve Parameters Shape"@en ;
+    rdfs:comment "Parameters for approving a review item."@en ;
+
+    sh:property [
+        sh:path params:reviewRef ;
+        sh:name "reviewRef" ;
+        sh:description "Reference to the review being approved" ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string
+    ] ;
+
+    sh:property [
+        sh:path params:approvalType ;
+        sh:name "approvalType" ;
+        sh:description "Type of approval" ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:in ( "approved" "approved_with_suggestions" "conditional" )
+    ] ;
+
+    sh:property [
+        sh:path params:rationale ;
+        sh:name "rationale" ;
+        sh:description "Reason for approval" ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string
+    ] ;
+
+    sh:property [
+        sh:path params:suggestions ;
+        sh:name "suggestions" ;
+        sh:description "Non-blocking suggestions for improvement" ;
+        sh:datatype xsd:string
+    ] .
+
+# -----------------------------------------------------------------------------
+# RequestChanges Parameters
+# -----------------------------------------------------------------------------
+
+params:RequestChangesParamsShape a sh:NodeShape ;
+    sh:targetClass params:RequestChangesParams ;
+    rdfs:label "RequestChanges Parameters Shape"@en ;
+    rdfs:comment "Parameters for requesting changes in a review."@en ;
+
+    sh:property [
+        sh:path params:reviewRef ;
+        sh:name "reviewRef" ;
+        sh:description "Reference to the review" ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string
+    ] ;
+
+    sh:property [
+        sh:path params:requiredChanges ;
+        sh:name "requiredChanges" ;
+        sh:description "List of required changes" ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string
+    ] ;
+
+    sh:property [
+        sh:path params:severity ;
+        sh:name "severity" ;
+        sh:description "Severity level of the issues found" ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:in ( "minor" "major" "critical" "blocking" )
+    ] ;
+
+    sh:property [
+        sh:path params:rationale ;
+        sh:name "rationale" ;
+        sh:description "Why changes are required" ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string
+    ] ;
+
+    sh:property [
+        sh:path params:affectedLines ;
+        sh:name "affectedLines" ;
+        sh:description "Specific lines/locations needing changes" ;
+        sh:datatype xsd:string
+    ] .
+
+# -----------------------------------------------------------------------------
+# Comment Parameters
+# -----------------------------------------------------------------------------
+
+params:CommentParamsShape a sh:NodeShape ;
+    sh:targetClass params:CommentParams ;
+    rdfs:label "Comment Parameters Shape"@en ;
+    rdfs:comment "Parameters for adding a review comment."@en ;
+
+    sh:property [
+        sh:path params:targetRef ;
+        sh:name "targetRef" ;
+        sh:description "Reference to the target (file, line, PR)" ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string
+    ] ;
+
+    sh:property [
+        sh:path params:content ;
+        sh:name "content" ;
+        sh:description "Comment content" ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:minLength 1
+    ] ;
+
+    sh:property [
+        sh:path params:commentType ;
+        sh:name "commentType" ;
+        sh:description "Type of comment" ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:in ( "inline" "general" "suggestion" "question" "praise" )
+    ] ;
+
+    sh:property [
+        sh:path params:lineNumber ;
+        sh:name "lineNumber" ;
+        sh:description "Line number for inline comments" ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:integer ;
+        sh:minInclusive 1
+    ] ;
+
+    sh:property [
+        sh:path params:filePath ;
+        sh:name "filePath" ;
+        sh:description "File path for inline comments" ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string
+    ] .
+
+# -----------------------------------------------------------------------------
+# FlagSecurity Parameters
+# -----------------------------------------------------------------------------
+
+params:FlagSecurityParamsShape a sh:NodeShape ;
+    sh:targetClass params:FlagSecurityParams ;
+    rdfs:label "FlagSecurity Parameters Shape"@en ;
+    rdfs:comment "Parameters for flagging a security issue."@en ;
+
+    sh:property [
+        sh:path params:issueType ;
+        sh:name "issueType" ;
+        sh:description "Type of security issue" ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:in ( "vulnerability" "exposure" "weak_crypto" "injection" "auth_bypass" "data_leak" "other" )
+    ] ;
+
+    sh:property [
+        sh:path params:severity ;
+        sh:name "severity" ;
+        sh:description "Severity level (CVSS-aligned)" ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:in ( "low" "medium" "high" "critical" )
+    ] ;
+
+    sh:property [
+        sh:path params:cweId ;
+        sh:name "cweId" ;
+        sh:description "CWE identifier if applicable" ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:pattern "^CWE-[0-9]+$"
+    ] ;
+
+    sh:property [
+        sh:path params:location ;
+        sh:name "location" ;
+        sh:description "Location of the security issue" ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string
+    ] ;
+
+    sh:property [
+        sh:path params:description ;
+        sh:name "description" ;
+        sh:description "Detailed description of the issue" ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string
+    ] ;
+
+    sh:property [
+        sh:path params:remediation ;
+        sh:name "remediation" ;
+        sh:description "Suggested remediation steps" ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string
+    ] ;
+
+    sh:property [
+        sh:path params:blockMerge ;
+        sh:name "blockMerge" ;
+        sh:description "Whether this should block merge/deployment" ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:boolean
+    ] .
+
+# =============================================================================
+# Deployer Agent Parameters
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Build Parameters
+# -----------------------------------------------------------------------------
+
+params:BuildParamsShape a sh:NodeShape ;
+    sh:targetClass params:BuildParams ;
+    rdfs:label "Build Parameters Shape"@en ;
+    rdfs:comment "Parameters for building an artifact."@en ;
+
+    sh:property [
+        sh:path params:targetRef ;
+        sh:name "targetRef" ;
+        sh:description "Reference to what should be built (repo, branch, commit)" ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string
+    ] ;
+
+    sh:property [
+        sh:path params:buildType ;
+        sh:name "buildType" ;
+        sh:description "Type of build" ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:in ( "development" "staging" "production" "release" )
+    ] ;
+
+    sh:property [
+        sh:path params:environment ;
+        sh:name "environment" ;
+        sh:description "Build environment configuration" ;
+        sh:datatype xsd:string
+    ] ;
+
+    sh:property [
+        sh:path params:cacheStrategy ;
+        sh:name "cacheStrategy" ;
+        sh:description "Build cache strategy" ;
+        sh:maxCount 1 ;
+        sh:in ( "none" "layer" "full" )
+    ] ;
+
+    sh:property [
+        sh:path params:skipTests ;
+        sh:name "skipTests" ;
+        sh:description "Whether to skip tests during build" ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:boolean
+    ] .
+
+# -----------------------------------------------------------------------------
+# Deploy Parameters
+# -----------------------------------------------------------------------------
+
+params:DeployParamsShape a sh:NodeShape ;
+    sh:targetClass params:DeployParams ;
+    rdfs:label "Deploy Parameters Shape"@en ;
+    rdfs:comment "Parameters for deploying an artifact."@en ;
+
+    sh:property [
+        sh:path params:artifactRef ;
+        sh:name "artifactRef" ;
+        sh:description "Reference to the artifact to deploy" ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string
+    ] ;
+
+    sh:property [
+        sh:path params:environment ;
+        sh:name "environment" ;
+        sh:description "Target deployment environment" ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:in ( "development" "staging" "production" "canary" )
+    ] ;
+
+    sh:property [
+        sh:path params:deploymentStrategy ;
+        sh:name "deploymentStrategy" ;
+        sh:description "Deployment strategy to use" ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:in ( "rolling" "blue_green" "canary" "recreate" "in_place" )
+    ] ;
+
+    sh:property [
+        sh:path params:replicas ;
+        sh:name "replicas" ;
+        sh:description "Number of replicas to deploy" ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:integer ;
+        sh:minInclusive 1
+    ] ;
+
+    sh:property [
+        sh:path params:healthCheckTimeout ;
+        sh:name "healthCheckTimeout" ;
+        sh:description "Health check timeout in seconds" ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:integer ;
+        sh:minInclusive 10
+    ] ;
+
+    sh:property [
+        sh:path params:notifyOnComplete ;
+        sh:name "notifyOnComplete" ;
+        sh:description "Channels to notify on completion" ;
+        sh:datatype xsd:string
+    ] .
+
+# -----------------------------------------------------------------------------
+# Rollback Parameters
+# -----------------------------------------------------------------------------
+
+params:RollbackParamsShape a sh:NodeShape ;
+    sh:targetClass params:RollbackParams ;
+    rdfs:label "Rollback Parameters Shape"@en ;
+    rdfs:comment "Parameters for rolling back a deployment."@en ;
+
+    sh:property [
+        sh:path params:deploymentRef ;
+        sh:name "deploymentRef" ;
+        sh:description "Reference to the deployment to roll back" ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string
+    ] ;
+
+    sh:property [
+        sh:path params:targetVersion ;
+        sh:name "targetVersion" ;
+        sh:description "Version to roll back to (null = previous)" ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string
+    ] ;
+
+    sh:property [
+        sh:path params:reason ;
+        sh:name "reason" ;
+        sh:description "Reason for rollback" ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string
+    ] ;
+
+    sh:property [
+        sh:path params:immediate ;
+        sh:name "immediate" ;
+        sh:description "Whether to perform immediate rollback" ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:boolean
+    ] .
+
+# -----------------------------------------------------------------------------
+# Scale Parameters
+# -----------------------------------------------------------------------------
+
+params:ScaleParamsShape a sh:NodeShape ;
+    sh:targetClass params:ScaleParams ;
+    rdfs:label "Scale Parameters Shape"@en ;
+    rdfs:comment "Parameters for scaling a deployment."@en ;
+
+    sh:property [
+        sh:path params:deploymentRef ;
+        sh:name "deploymentRef" ;
+        sh:description "Reference to the deployment to scale" ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string
+    ] ;
+
+    sh:property [
+        sh:path params:scaleType ;
+        sh:name "scaleType" ;
+        sh:description "Type of scaling operation" ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:in ( "horizontal" "vertical" )
+    ] ;
+
+    sh:property [
+        sh:path params:targetReplicas ;
+        sh:name "targetReplicas" ;
+        sh:description "Target number of replicas (for horizontal scaling)" ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:integer ;
+        sh:minInclusive 0
+    ] ;
+
+    sh:property [
+        sh:path params:resourceSpec ;
+        sh:name "resourceSpec" ;
+        sh:description "Resource specification (for vertical scaling)"
+    ] ;
+
+    sh:property [
+        sh:path params:reason ;
+        sh:name "reason" ;
+        sh:description "Reason for scaling" ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string
+    ] .
+
+# -----------------------------------------------------------------------------
+# HealthCheck Parameters
+# -----------------------------------------------------------------------------
+
+params:HealthCheckParamsShape a sh:NodeShape ;
+    sh:targetClass params:HealthCheckParams ;
+    rdfs:label "HealthCheck Parameters Shape"@en ;
+    rdfs:comment "Parameters for performing health checks."@en ;
+
+    sh:property [
+        sh:path params:targetRef ;
+        sh:name "targetRef" ;
+        sh:description "Reference to the target to check" ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string
+    ] ;
+
+    sh:property [
+        sh:path params:checkType ;
+        sh:name "checkType" ;
+        sh:description "Type of health check" ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:in ( "liveness" "readiness" "startup" "comprehensive" )
+    ] ;
+
+    sh:property [
+        sh:path params:endpoints ;
+        sh:name "endpoints" ;
+        sh:description "Specific endpoints to check" ;
+        sh:datatype xsd:string
+    ] ;
+
+    sh:property [
+        sh:path params:timeoutSeconds ;
+        sh:name "timeoutSeconds" ;
+        sh:description "Timeout for each check" ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:integer ;
+        sh:minInclusive 1
+    ] .
+
+# -----------------------------------------------------------------------------
+# Stop Parameters
+# -----------------------------------------------------------------------------
+
+params:StopParamsShape a sh:NodeShape ;
+    sh:targetClass params:StopParams ;
+    rdfs:label "Stop Parameters Shape"@en ;
+    rdfs:comment "Parameters for stopping a deployment."@en ;
+
+    sh:property [
+        sh:path params:deploymentRef ;
+        sh:name "deploymentRef" ;
+        sh:description "Reference to the deployment to stop" ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string
+    ] ;
+
+    sh:property [
+        sh:path params:reason ;
+        sh:name "reason" ;
+        sh:description "Reason for stopping" ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string
+    ] ;
+
+    sh:property [
+        sh:path params:gracefulTimeout ;
+        sh:name "gracefulTimeout" ;
+        sh:description "Graceful shutdown timeout in seconds" ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:integer ;
+        sh:minInclusive 0
+    ] ;
+
+    sh:property [
+        sh:path params:preserveVolumes ;
+        sh:name "preserveVolumes" ;
+        sh:description "Whether to preserve persistent volumes" ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:boolean
+    ] .
+
+# =============================================================================
+# Tester Agent Parameters
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# RunTests Parameters
+# -----------------------------------------------------------------------------
+
+params:RunTestsParamsShape a sh:NodeShape ;
+    sh:targetClass params:RunTestsParams ;
+    rdfs:label "RunTests Parameters Shape"@en ;
+    rdfs:comment "Parameters for running tests."@en ;
+
+    sh:property [
+        sh:path params:targetRef ;
+        sh:name "targetRef" ;
+        sh:description "Reference to the code/artifact to test" ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string
+    ] ;
+
+    sh:property [
+        sh:path params:testSuite ;
+        sh:name "testSuite" ;
+        sh:description "Test suite to run" ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:in ( "unit" "integration" "e2e" "smoke" "regression" "performance" "security" "all" )
+    ] ;
+
+    sh:property [
+        sh:path params:patterns ;
+        sh:name "patterns" ;
+        sh:description "Test file/name patterns to include" ;
+        sh:datatype xsd:string
+    ] ;
+
+    sh:property [
+        sh:path params:exclude ;
+        sh:name "exclude" ;
+        sh:description "Patterns to exclude" ;
+        sh:datatype xsd:string
+    ] ;
+
+    sh:property [
+        sh:path params:parallelism ;
+        sh:name "parallelism" ;
+        sh:description "Number of parallel test runners" ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:integer ;
+        sh:minInclusive 1
+    ] ;
+
+    sh:property [
+        sh:path params:timeout ;
+        sh:name "timeout" ;
+        sh:description "Test timeout in seconds" ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:integer ;
+        sh:minInclusive 1
+    ] ;
+
+    sh:property [
+        sh:path params:collectCoverage ;
+        sh:name "collectCoverage" ;
+        sh:description "Whether to collect coverage data" ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:boolean
+    ] .
+
+# -----------------------------------------------------------------------------
+# GenerateTests Parameters
+# -----------------------------------------------------------------------------
+
+params:GenerateTestsParamsShape a sh:NodeShape ;
+    sh:targetClass params:GenerateTestsParams ;
+    rdfs:label "GenerateTests Parameters Shape"@en ;
+    rdfs:comment "Parameters for generating test cases."@en ;
+
+    sh:property [
+        sh:path params:targetRef ;
+        sh:name "targetRef" ;
+        sh:description "Reference to the code to generate tests for" ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string
+    ] ;
+
+    sh:property [
+        sh:path params:testType ;
+        sh:name "testType" ;
+        sh:description "Type of tests to generate" ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:in ( "unit" "integration" "edge_case" "property_based" "mutation" )
+    ] ;
+
+    sh:property [
+        sh:path params:strategy ;
+        sh:name "strategy" ;
+        sh:description "Test generation strategy" ;
+        sh:maxCount 1 ;
+        sh:in ( "coverage_driven" "boundary_value" "equivalence_partition" "path_coverage" )
+    ] ;
+
+    sh:property [
+        sh:path params:framework ;
+        sh:name "framework" ;
+        sh:description "Test framework to use" ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string
+    ] ;
+
+    sh:property [
+        sh:path params:mockDependencies ;
+        sh:name "mockDependencies" ;
+        sh:description "Whether to mock external dependencies" ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:boolean
+    ] .
+
+# -----------------------------------------------------------------------------
+# ValidateOutput Parameters
+# -----------------------------------------------------------------------------
+
+params:ValidateOutputParamsShape a sh:NodeShape ;
+    sh:targetClass params:ValidateOutputParams ;
+    rdfs:label "ValidateOutput Parameters Shape"@en ;
+    rdfs:comment "Parameters for validating test/execution output."@en ;
+
+    sh:property [
+        sh:path params:outputRef ;
+        sh:name "outputRef" ;
+        sh:description "Reference to the output to validate" ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string
+    ] ;
+
+    sh:property [
+        sh:path params:expectedSchema ;
+        sh:name "expectedSchema" ;
+        sh:description "Schema the output should conform to" ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string
+    ] ;
+
+    sh:property [
+        sh:path params:assertions ;
+        sh:name "assertions" ;
+        sh:description "Specific assertions to check" ;
+        sh:datatype xsd:string
+    ] ;
+
+    sh:property [
+        sh:path params:tolerance ;
+        sh:name "tolerance" ;
+        sh:description "Tolerance for numeric comparisons" ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:decimal
+    ] .
+
+# -----------------------------------------------------------------------------
+# MeasureCoverage Parameters
+# -----------------------------------------------------------------------------
+
+params:MeasureCoverageParamsShape a sh:NodeShape ;
+    sh:targetClass params:MeasureCoverageParams ;
+    rdfs:label "MeasureCoverage Parameters Shape"@en ;
+    rdfs:comment "Parameters for measuring test coverage."@en ;
+
+    sh:property [
+        sh:path params:targetRef ;
+        sh:name "targetRef" ;
+        sh:description "Reference to the code/tests to measure" ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string
+    ] ;
+
+    sh:property [
+        sh:path params:coverageType ;
+        sh:name "coverageType" ;
+        sh:description "Type of coverage to measure" ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:in ( "line" "branch" "function" "statement" "all" )
+    ] ;
+
+    sh:property [
+        sh:path params:thresholds ;
+        sh:name "thresholds" ;
+        sh:description "Coverage thresholds to enforce"
+    ] ;
+
+    sh:property [
+        sh:path params:includePatterns ;
+        sh:name "includePatterns" ;
+        sh:description "File patterns to include in coverage" ;
+        sh:datatype xsd:string
+    ] ;
+
+    sh:property [
+        sh:path params:excludePatterns ;
+        sh:name "excludePatterns" ;
+        sh:description "File patterns to exclude from coverage" ;
+        sh:datatype xsd:string
+    ] .
+
+# -----------------------------------------------------------------------------
+# ReportResults Parameters
+# -----------------------------------------------------------------------------
+
+params:ReportResultsParamsShape a sh:NodeShape ;
+    sh:targetClass params:ReportResultsParams ;
+    rdfs:label "ReportResults Parameters Shape"@en ;
+    rdfs:comment "Parameters for reporting test results."@en ;
+
+    sh:property [
+        sh:path params:testRunRef ;
+        sh:name "testRunRef" ;
+        sh:description "Reference to the test run" ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string
+    ] ;
+
+    sh:property [
+        sh:path params:summary ;
+        sh:name "summary" ;
+        sh:description "Summary of test results" ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:node params:TestSummaryShape
+    ] ;
+
+    sh:property [
+        sh:path params:failures ;
+        sh:name "failures" ;
+        sh:description "Details of failed tests"
+    ] ;
+
+    sh:property [
+        sh:path params:format ;
+        sh:name "format" ;
+        sh:description "Output format for the report" ;
+        sh:maxCount 1 ;
+        sh:in ( "json" "junit" "tap" "markdown" "html" )
+    ] ;
+
+    sh:property [
+        sh:path params:publishTo ;
+        sh:name "publishTo" ;
+        sh:description "Where to publish the report" ;
+        sh:datatype xsd:string
+    ] .
+
+# -----------------------------------------------------------------------------
+# Test Summary Shape
+# -----------------------------------------------------------------------------
+
+params:TestSummaryShape a sh:NodeShape ;
+    rdfs:label "Test Summary Shape"@en ;
+
+    sh:property [
+        sh:path params:totalTests ;
+        sh:name "totalTests" ;
+        sh:description "Total number of tests" ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:integer ;
+        sh:minInclusive 0
+    ] ;
+
+    sh:property [
+        sh:path params:passed ;
+        sh:name "passed" ;
+        sh:description "Number of passed tests" ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:integer ;
+        sh:minInclusive 0
+    ] ;
+
+    sh:property [
+        sh:path params:failed ;
+        sh:name "failed" ;
+        sh:description "Number of failed tests" ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:integer ;
+        sh:minInclusive 0
+    ] ;
+
+    sh:property [
+        sh:path params:skipped ;
+        sh:name "skipped" ;
+        sh:description "Number of skipped tests" ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:integer ;
+        sh:minInclusive 0
+    ] ;
+
+    sh:property [
+        sh:path params:duration ;
+        sh:name "duration" ;
+        sh:description "Test duration in milliseconds" ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:integer ;
+        sh:minInclusive 0
+    ] .
+
+# =============================================================================
+# Property Definitions
+# =============================================================================
+
+params:reviewType a rdf:Property ;
+    rdfs:label "reviewType" .
+
+params:targetRef a rdf:Property ;
+    rdfs:label "targetRef" .
+
+params:depth a rdf:Property ;
+    rdfs:label "depth" .
+
+params:focusAreas a rdf:Property ;
+    rdfs:label "focusAreas" .
+
+params:reviewRef a rdf:Property ;
+    rdfs:label "reviewRef" .
+
+params:approvalType a rdf:Property ;
+    rdfs:label "approvalType" .
+
+params:requiredChanges a rdf:Property ;
+    rdfs:label "requiredChanges" .
+
+params:affectedLines a rdf:Property ;
+    rdfs:label "affectedLines" .
+
+params:commentType a rdf:Property ;
+    rdfs:label "commentType" .
+
+params:lineNumber a rdf:Property ;
+    rdfs:label "lineNumber" .
+
+params:filePath a rdf:Property ;
+    rdfs:label "filePath" .
+
+params:issueType a rdf:Property ;
+    rdfs:label "issueType" .
+
+params:cweId a rdf:Property ;
+    rdfs:label "cweId" .
+
+params:remediation a rdf:Property ;
+    rdfs:label "remediation" .
+
+params:blockMerge a rdf:Property ;
+    rdfs:label "blockMerge" .
+
+params:buildType a rdf:Property ;
+    rdfs:label "buildType" .
+
+params:environment a rdf:Property ;
+    rdfs:label "environment" .
+
+params:cacheStrategy a rdf:Property ;
+    rdfs:label "cacheStrategy" .
+
+params:skipTests a rdf:Property ;
+    rdfs:label "skipTests" .
+
+params:artifactRef a rdf:Property ;
+    rdfs:label "artifactRef" .
+
+params:deploymentStrategy a rdf:Property ;
+    rdfs:label "deploymentStrategy" .
+
+params:replicas a rdf:Property ;
+    rdfs:label "replicas" .
+
+params:healthCheckTimeout a rdf:Property ;
+    rdfs:label "healthCheckTimeout" .
+
+params:notifyOnComplete a rdf:Property ;
+    rdfs:label "notifyOnComplete" .
+
+params:deploymentRef a rdf:Property ;
+    rdfs:label "deploymentRef" .
+
+params:targetVersion a rdf:Property ;
+    rdfs:label "targetVersion" .
+
+params:immediate a rdf:Property ;
+    rdfs:label "immediate" .
+
+params:scaleType a rdf:Property ;
+    rdfs:label "scaleType" .
+
+params:targetReplicas a rdf:Property ;
+    rdfs:label "targetReplicas" .
+
+params:resourceSpec a rdf:Property ;
+    rdfs:label "resourceSpec" .
+
+params:checkType a rdf:Property ;
+    rdfs:label "checkType" .
+
+params:endpoints a rdf:Property ;
+    rdfs:label "endpoints" .
+
+params:gracefulTimeout a rdf:Property ;
+    rdfs:label "gracefulTimeout" .
+
+params:preserveVolumes a rdf:Property ;
+    rdfs:label "preserveVolumes" .
+
+params:testSuite a rdf:Property ;
+    rdfs:label "testSuite" .
+
+params:patterns a rdf:Property ;
+    rdfs:label "patterns" .
+
+params:exclude a rdf:Property ;
+    rdfs:label "exclude" .
+
+params:parallelism a rdf:Property ;
+    rdfs:label "parallelism" .
+
+params:collectCoverage a rdf:Property ;
+    rdfs:label "collectCoverage" .
+
+params:testType a rdf:Property ;
+    rdfs:label "testType" .
+
+params:strategy a rdf:Property ;
+    rdfs:label "strategy" .
+
+params:framework a rdf:Property ;
+    rdfs:label "framework" .
+
+params:mockDependencies a rdf:Property ;
+    rdfs:label "mockDependencies" .
+
+params:outputRef a rdf:Property ;
+    rdfs:label "outputRef" .
+
+params:expectedSchema a rdf:Property ;
+    rdfs:label "expectedSchema" .
+
+params:assertions a rdf:Property ;
+    rdfs:label "assertions" .
+
+params:tolerance a rdf:Property ;
+    rdfs:label "tolerance" .
+
+params:coverageType a rdf:Property ;
+    rdfs:label "coverageType" .
+
+params:thresholds a rdf:Property ;
+    rdfs:label "thresholds" .
+
+params:includePatterns a rdf:Property ;
+    rdfs:label "includePatterns" .
+
+params:excludePatterns a rdf:Property ;
+    rdfs:label "excludePatterns" .
+
+params:testRunRef a rdf:Property ;
+    rdfs:label "testRunRef" .
+
+params:totalTests a rdf:Property ;
+    rdfs:label "totalTests" .
+
+params:passed a rdf:Property ;
+    rdfs:label "passed" .
+
+params:failed a rdf:Property ;
+    rdfs:label "failed" .
+
+params:skipped a rdf:Property ;
+    rdfs:label "skipped" .
+
+params:duration a rdf:Property ;
+    rdfs:label "duration" .
+
+params:publishTo a rdf:Property ;
+    rdfs:label "publishTo" .

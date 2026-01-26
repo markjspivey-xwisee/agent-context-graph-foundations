@@ -1,0 +1,236 @@
+{
+  "@context": [
+    "https://www.w3.org/ns/prov#",
+    {
+      "xsd": "http://www.w3.org/2001/XMLSchema#",
+      "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+      "owl": "http://www.w3.org/2002/07/owl#",
+      "dcterms": "http://purl.org/dc/terms/",
+      "acg": "https://agentcontextgraph.dev/ontology#",
+      "aat": "https://agentcontextgraph.dev/aat#",
+
+      "id": "@id",
+      "type": "@type",
+      "AbstractAgentType": "aat:AbstractAgentType",
+      "name": "rdfs:label",
+      "description": "rdfs:comment",
+      "version": "owl:versionInfo",
+
+      "perceptSpace": "aat:hasPerceptSpace",
+      "PerceptSpace": "aat:PerceptSpace",
+      "perceptTypes": { "@id": "aat:hasPerceptType", "@container": "@set" },
+
+      "actionSpace": "aat:hasActionSpace",
+      "ActionSpace": "aat:ActionSpace",
+      "allowed": { "@id": "aat:allowsAction", "@container": "@set" },
+      "forbidden": { "@id": "aat:forbidsAction", "@container": "@set" },
+      "ActionType": "aat:ActionType",
+      "requiresCapability": { "@id": "acg:requiresCapability", "@type": "@id" },
+      "rationale": "aat:forbiddenRationale",
+
+      "internalState": "aat:hasInternalState",
+      "components": { "@id": "aat:hasStateComponent", "@container": "@set" },
+
+      "behavioralInvariants": { "@id": "aat:hasBehavioralInvariant", "@container": "@set" },
+      "BehavioralInvariant": "aat:BehavioralInvariant",
+      "formalRule": "aat:formalRule",
+      "enforcement": "aat:enforcementLevel",
+      "requiredOutputAction": { "@id": "aat:requiredOutputAction", "@type": "@id" },
+
+      "traceRequirements": "acg:hasTracePolicy",
+      "mustEmitProvActivity": "acg:mustEmitProvActivity",
+      "requiredFields": { "@id": "acg:requiredTraceFields", "@container": "@list" },
+      "retentionPolicy": "acg:retentionPolicy",
+
+      "livenessGuarantees": { "@id": "aat:hasLivenessGuarantee", "@container": "@set" },
+      "LivenessGuarantee": "aat:LivenessGuarantee",
+
+      "compositionRules": "aat:hasCompositionRules",
+      "CompositionRules": "aat:CompositionRules",
+      "canComposeBefore": { "@id": "aat:canComposeBefore", "@type": "@id", "@container": "@set" },
+      "canComposeAfter": { "@id": "aat:canComposeAfter", "@type": "@id", "@container": "@set" },
+      "notes": "rdfs:comment"
+    }
+  ],
+  "type": ["aat:AbstractAgentType", "aat:TesterAgentType"],
+  "id": "aat:TesterAgentType",
+  "name": "Tester Agent Type",
+  "version": "1.0.0",
+  "description": "Abstract Agent Type for testing agents. Testers run tests, validate outputs, and report on code quality and correctness.",
+
+  "perceptSpace": {
+    "type": "aat:PerceptSpace",
+    "description": "What the tester can observe",
+    "perceptTypes": [
+      {
+        "type": "aat:PerceptType",
+        "name": "SourceCode",
+        "description": "Code to be tested"
+      },
+      {
+        "type": "aat:PerceptType",
+        "name": "TestSuites",
+        "description": "Available test suites and specs"
+      },
+      {
+        "type": "aat:PerceptType",
+        "name": "TestConfig",
+        "description": "Test configuration and environments"
+      },
+      {
+        "type": "aat:PerceptType",
+        "name": "CoverageReports",
+        "description": "Code coverage data"
+      },
+      {
+        "type": "aat:PerceptType",
+        "name": "PreviousResults",
+        "description": "Historical test results for comparison"
+      }
+    ]
+  },
+
+  "actionSpace": {
+    "type": "aat:ActionSpace",
+    "description": "Actions a tester may perform",
+    "allowed": [
+      {
+        "type": "aat:ActionType",
+        "name": "RunTests",
+        "description": "Execute test suites",
+        "requiresCapability": "acg:TesterCapability"
+      },
+      {
+        "type": "aat:ActionType",
+        "name": "GenerateTests",
+        "description": "Generate new test cases",
+        "requiresCapability": "acg:TesterCapability"
+      },
+      {
+        "type": "aat:ActionType",
+        "name": "ValidateOutput",
+        "description": "Validate outputs against expectations",
+        "requiresCapability": "acg:TesterCapability"
+      },
+      {
+        "type": "aat:ActionType",
+        "name": "MeasureCoverage",
+        "description": "Measure and report code coverage",
+        "requiresCapability": "acg:TesterCapability"
+      },
+      {
+        "type": "aat:ActionType",
+        "name": "ReportResults",
+        "description": "Report test results and metrics",
+        "requiresCapability": "acg:TesterCapability"
+      },
+      {
+        "type": "aat:ActionType",
+        "name": "FlagRegression",
+        "description": "Flag regressions from previous versions",
+        "requiresCapability": "acg:TesterCapability"
+      },
+      {
+        "type": "aat:ActionType",
+        "name": "RequestInfo",
+        "description": "Request additional context or information"
+      }
+    ],
+    "forbidden": [
+      {
+        "type": "aat:ActionType",
+        "name": "ModifyProductionCode",
+        "rationale": "Testers may only modify test files, not production code"
+      },
+      {
+        "type": "aat:ActionType",
+        "name": "Deploy",
+        "rationale": "Testers validate but do not deploy"
+      },
+      {
+        "type": "aat:ActionType",
+        "name": "SkipTests",
+        "rationale": "Cannot skip required tests without explicit approval"
+      }
+    ]
+  },
+
+  "internalState": {
+    "description": "State components maintained by the tester",
+    "components": [
+      {
+        "name": "testQueue",
+        "type": "xsd:string",
+        "description": "Queue of pending test runs"
+      },
+      {
+        "name": "testHistory",
+        "type": "xsd:string",
+        "description": "History of test results"
+      },
+      {
+        "name": "coverageBaseline",
+        "type": "xsd:string",
+        "description": "Coverage baseline for regression detection"
+      },
+      {
+        "name": "flakyTests",
+        "type": "xsd:string",
+        "description": "Known flaky tests for special handling"
+      }
+    ]
+  },
+
+  "behavioralInvariants": [
+    {
+      "type": "aat:BehavioralInvariant",
+      "name": "complete-test-suite",
+      "description": "Must run all applicable tests for the changed code",
+      "formalRule": "forall(test in applicableTests) => executed(test)",
+      "enforcement": "structural"
+    },
+    {
+      "type": "aat:BehavioralInvariant",
+      "name": "honest-reporting",
+      "description": "Test results must be reported accurately without modification",
+      "formalRule": "reported(result) == actual(result)",
+      "enforcement": "structural"
+    },
+    {
+      "type": "aat:BehavioralInvariant",
+      "name": "must-produce-report",
+      "description": "Tester must produce a test report",
+      "formalRule": "exists(output) && isTestReport(output)",
+      "enforcement": "structural",
+      "requiredOutputAction": "aat:ReportResults"
+    }
+  ],
+
+  "traceRequirements": {
+    "mustEmitProvActivity": true,
+    "requiredFields": ["contextSnapshot", "testScope", "testResults", "coverageMetrics", "regressions", "duration"],
+    "retentionPolicy": "indefinite"
+  },
+
+  "livenessGuarantees": [
+    {
+      "type": "aat:LivenessGuarantee",
+      "name": "eventual-completion",
+      "description": "Tests will complete within configured timeout"
+    },
+    {
+      "type": "aat:LivenessGuarantee",
+      "name": "result-availability",
+      "description": "Test results will be available after completion"
+    }
+  ],
+
+  "compositionRules": {
+    "type": "aat:CompositionRules",
+    "maxConcurrent": 5,
+    "canComposeBefore": ["aat:ReviewerAgentType", "aat:DeployerAgentType"],
+    "canComposeAfter": ["aat:ExecutorAgentType", "aat:PlannerAgentType"],
+    "conflictsWith": [],
+    "notes": "Testers typically run after code changes and before review/deployment"
+  }
+}

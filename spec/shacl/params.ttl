@@ -1,0 +1,2068 @@
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix acg: <https://agentcontextgraph.dev/ontology#> .
+@prefix aat: <https://agentcontextgraph.dev/aat#> .
+@prefix params: <https://agentcontextgraph.dev/shacl/params#> .
+
+# =============================================================================
+# SHACL Parameter Shapes for Action Types
+# Replaces JSON Schema for affordance parameter validation
+# =============================================================================
+
+# =============================================================================
+# Planner Action Parameters
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# EmitPlan Parameters
+# -----------------------------------------------------------------------------
+
+params:EmitPlanParamsShape a sh:NodeShape ;
+    sh:targetClass params:EmitPlanParams ;
+    rdfs:label "EmitPlan Parameters Shape"@en ;
+    rdfs:comment "Validates parameters for the EmitPlan action type."@en ;
+
+    sh:property [
+        sh:path params:goal ;
+        sh:name "goal" ;
+        sh:description "The goal this plan aims to achieve" ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:minLength 1 ;
+        sh:message "EmitPlan requires a non-empty goal string"
+    ] ;
+
+    sh:property [
+        sh:path params:steps ;
+        sh:name "steps" ;
+        sh:description "The ordered steps of the plan" ;
+        sh:minCount 1 ;
+        sh:node params:PlanStepShape ;
+        sh:message "EmitPlan requires at least one plan step"
+    ] ;
+
+    sh:property [
+        sh:path params:constraints ;
+        sh:name "constraints" ;
+        sh:description "Constraints that apply to this plan" ;
+        sh:datatype xsd:string
+    ] ;
+
+    sh:property [
+        sh:path params:priority ;
+        sh:name "priority" ;
+        sh:description "Priority level of the plan" ;
+        sh:in ( "low" "normal" "high" "critical" )
+    ] .
+
+params:PlanStepShape a sh:NodeShape ;
+    rdfs:label "Plan Step Shape"@en ;
+
+    sh:property [
+        sh:path params:action ;
+        sh:name "action" ;
+        sh:description "The action to perform in this step" ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:minLength 1
+    ] ;
+
+    sh:property [
+        sh:path params:rationale ;
+        sh:name "rationale" ;
+        sh:description "Why this step is necessary" ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:minLength 1
+    ] ;
+
+    sh:property [
+        sh:path params:preconditions ;
+        sh:name "preconditions" ;
+        sh:description "Conditions that must be true before this step" ;
+        sh:datatype xsd:string
+    ] ;
+
+    sh:property [
+        sh:path params:expectedOutcome ;
+        sh:name "expectedOutcome" ;
+        sh:description "What should result from this step" ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string
+    ] .
+
+# -----------------------------------------------------------------------------
+# RevisePlan Parameters
+# -----------------------------------------------------------------------------
+
+params:RevisePlanParamsShape a sh:NodeShape ;
+    sh:targetClass params:RevisePlanParams ;
+    rdfs:label "RevisePlan Parameters Shape"@en ;
+
+    sh:property [
+        sh:path params:originalPlanRef ;
+        sh:name "originalPlanRef" ;
+        sh:description "Reference to the plan being revised" ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string
+    ] ;
+
+    sh:property [
+        sh:path params:feedback ;
+        sh:name "feedback" ;
+        sh:description "Feedback that prompted the revision" ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string
+    ] ;
+
+    sh:property [
+        sh:path params:revisedSteps ;
+        sh:name "revisedSteps" ;
+        sh:description "The revised plan steps" ;
+        sh:minCount 1 ;
+        sh:node params:PlanStepShape
+    ] .
+
+# -----------------------------------------------------------------------------
+# ValidatePlan Parameters
+# -----------------------------------------------------------------------------
+
+params:ValidatePlanParamsShape a sh:NodeShape ;
+    sh:targetClass params:ValidatePlanParams ;
+    rdfs:label "ValidatePlan Parameters Shape"@en ;
+
+    sh:property [
+        sh:path params:plan ;
+        sh:name "plan" ;
+        sh:description "The plan to validate" ;
+        sh:minCount 1 ;
+        sh:maxCount 1
+    ] ;
+
+    sh:property [
+        sh:path params:validationLevel ;
+        sh:name "validationLevel" ;
+        sh:description "Depth of validation to perform" ;
+        sh:maxCount 1 ;
+        sh:in ( "syntax" "semantic" "full" )
+    ] .
+
+# -----------------------------------------------------------------------------
+# RequestInfo Parameters
+# -----------------------------------------------------------------------------
+
+params:RequestInfoParamsShape a sh:NodeShape ;
+    sh:targetClass params:RequestInfoParams ;
+    rdfs:label "RequestInfo Parameters Shape"@en ;
+
+    sh:property [
+        sh:path params:query ;
+        sh:name "query" ;
+        sh:description "The information being requested" ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:minLength 1
+    ] ;
+
+    sh:property [
+        sh:path params:context ;
+        sh:name "context" ;
+        sh:description "Context for the request" ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string
+    ] ;
+
+    sh:property [
+        sh:path params:urgency ;
+        sh:name "urgency" ;
+        sh:in ( "low" "medium" "high" )
+    ] .
+
+# =============================================================================
+# Executor Action Parameters
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Act Parameters
+# -----------------------------------------------------------------------------
+
+params:ActParamsShape a sh:NodeShape ;
+    sh:targetClass params:ActParams ;
+    rdfs:label "Act Parameters Shape"@en ;
+
+    sh:property [
+        sh:path params:actionRef ;
+        sh:name "actionRef" ;
+        sh:description "Reference to the approved action from a plan" ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string
+    ] ;
+
+    sh:property [
+        sh:path params:target ;
+        sh:name "target" ;
+        sh:description "The target of the action" ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string
+    ] ;
+
+    sh:property [
+        sh:path params:actionParams ;
+        sh:name "actionParams" ;
+        sh:description "Parameters specific to this action"
+    ] ;
+
+    sh:property [
+        sh:path params:dryRun ;
+        sh:name "dryRun" ;
+        sh:description "If true, simulate but don't execute" ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:boolean
+    ] .
+
+# -----------------------------------------------------------------------------
+# Abort Parameters
+# -----------------------------------------------------------------------------
+
+params:AbortParamsShape a sh:NodeShape ;
+    sh:targetClass params:AbortParams ;
+    rdfs:label "Abort Parameters Shape"@en ;
+
+    sh:property [
+        sh:path params:actionId ;
+        sh:name "actionId" ;
+        sh:description "ID of the action to abort" ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string
+    ] ;
+
+    sh:property [
+        sh:path params:reason ;
+        sh:name "reason" ;
+        sh:description "Reason for aborting" ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string
+    ] ;
+
+    sh:property [
+        sh:path params:cleanup ;
+        sh:name "cleanup" ;
+        sh:description "Whether to attempt cleanup" ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:boolean
+    ] .
+
+# =============================================================================
+# Arbiter Action Parameters
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Approve Parameters
+# -----------------------------------------------------------------------------
+
+params:ApproveParamsShape a sh:NodeShape ;
+    sh:targetClass params:ApproveParams ;
+    rdfs:label "Approve Parameters Shape"@en ;
+
+    sh:property [
+        sh:path params:proposalRef ;
+        sh:name "proposalRef" ;
+        sh:description "Reference to the proposal being approved" ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string
+    ] ;
+
+    sh:property [
+        sh:path params:rationale ;
+        sh:name "rationale" ;
+        sh:description "Rationale for the approval" ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string
+    ] ;
+
+    sh:property [
+        sh:path params:conditions ;
+        sh:name "conditions" ;
+        sh:description "Conditions attached to the approval" ;
+        sh:datatype xsd:string
+    ] ;
+
+    sh:property [
+        sh:path params:expiresAt ;
+        sh:name "expiresAt" ;
+        sh:description "When this approval expires" ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:dateTime
+    ] .
+
+# -----------------------------------------------------------------------------
+# Deny Parameters
+# -----------------------------------------------------------------------------
+
+params:DenyParamsShape a sh:NodeShape ;
+    sh:targetClass params:DenyParams ;
+    rdfs:label "Deny Parameters Shape"@en ;
+
+    sh:property [
+        sh:path params:proposalRef ;
+        sh:name "proposalRef" ;
+        sh:description "Reference to the proposal being denied" ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string
+    ] ;
+
+    sh:property [
+        sh:path params:reason ;
+        sh:name "reason" ;
+        sh:description "Reason for the denial" ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string
+    ] ;
+
+    sh:property [
+        sh:path params:suggestions ;
+        sh:name "suggestions" ;
+        sh:description "Suggestions for addressing the denial" ;
+        sh:datatype xsd:string
+    ] .
+
+# -----------------------------------------------------------------------------
+# RequestModification Parameters
+# -----------------------------------------------------------------------------
+
+params:RequestModificationParamsShape a sh:NodeShape ;
+    sh:targetClass params:RequestModificationParams ;
+    rdfs:label "RequestModification Parameters Shape"@en ;
+
+    sh:property [
+        sh:path params:proposalRef ;
+        sh:name "proposalRef" ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string
+    ] ;
+
+    sh:property [
+        sh:path params:requestedChanges ;
+        sh:name "requestedChanges" ;
+        sh:description "The modifications being requested" ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string
+    ] ;
+
+    sh:property [
+        sh:path params:rationale ;
+        sh:name "rationale" ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string
+    ] .
+
+# -----------------------------------------------------------------------------
+# Escalate Parameters
+# -----------------------------------------------------------------------------
+
+params:EscalateParamsShape a sh:NodeShape ;
+    sh:targetClass params:EscalateParams ;
+    rdfs:label "Escalate Parameters Shape"@en ;
+
+    sh:property [
+        sh:path params:proposalRef ;
+        sh:name "proposalRef" ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string
+    ] ;
+
+    sh:property [
+        sh:path params:escalateTo ;
+        sh:name "escalateTo" ;
+        sh:description "DID or role to escalate to" ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string
+    ] ;
+
+    sh:property [
+        sh:path params:reason ;
+        sh:name "reason" ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string
+    ] .
+
+# =============================================================================
+# Observer Action Parameters
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Observe Parameters
+# -----------------------------------------------------------------------------
+
+params:ObserveParamsShape a sh:NodeShape ;
+    sh:targetClass params:ObserveParams ;
+    rdfs:label "Observe Parameters Shape"@en ;
+
+    sh:property [
+        sh:path params:target ;
+        sh:name "target" ;
+        sh:description "What to observe" ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string
+    ] ;
+
+    sh:property [
+        sh:path params:aspects ;
+        sh:name "aspects" ;
+        sh:description "Specific aspects to observe" ;
+        sh:datatype xsd:string
+    ] ;
+
+    sh:property [
+        sh:path params:depth ;
+        sh:name "depth" ;
+        sh:description "Depth of observation" ;
+        sh:maxCount 1 ;
+        sh:in ( "shallow" "normal" "deep" )
+    ] .
+
+# -----------------------------------------------------------------------------
+# Report Parameters
+# -----------------------------------------------------------------------------
+
+params:ReportParamsShape a sh:NodeShape ;
+    sh:targetClass params:ReportParams ;
+    rdfs:label "Report Parameters Shape"@en ;
+
+    sh:property [
+        sh:path params:observationRef ;
+        sh:name "observationRef" ;
+        sh:description "Reference to the observation being reported" ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string
+    ] ;
+
+    sh:property [
+        sh:path params:findings ;
+        sh:name "findings" ;
+        sh:description "The findings from the observation" ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string
+    ] ;
+
+    sh:property [
+        sh:path params:status ;
+        sh:name "status" ;
+        sh:description "Status determined by observation" ;
+        sh:maxCount 1 ;
+        sh:in ( "nominal" "warning" "error" "critical" )
+    ] ;
+
+    sh:property [
+        sh:path params:recommendations ;
+        sh:name "recommendations" ;
+        sh:description "Recommended actions based on observations" ;
+        sh:datatype xsd:string
+    ] .
+
+# -----------------------------------------------------------------------------
+# Summarize Parameters
+# -----------------------------------------------------------------------------
+
+params:SummarizeParamsShape a sh:NodeShape ;
+    sh:targetClass params:SummarizeParams ;
+    rdfs:label "Summarize Parameters Shape"@en ;
+
+    sh:property [
+        sh:path params:sources ;
+        sh:name "sources" ;
+        sh:description "Sources to summarize" ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string
+    ] ;
+
+    sh:property [
+        sh:path params:format ;
+        sh:name "format" ;
+        sh:description "Output format for summary" ;
+        sh:maxCount 1 ;
+        sh:in ( "brief" "detailed" "structured" )
+    ] .
+
+# =============================================================================
+# Archivist Action Parameters
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Store Parameters
+# -----------------------------------------------------------------------------
+
+params:StoreParamsShape a sh:NodeShape ;
+    sh:targetClass params:StoreParams ;
+    rdfs:label "Store Parameters Shape"@en ;
+
+    sh:property [
+        sh:path params:content ;
+        sh:name "content" ;
+        sh:description "The content to store" ;
+        sh:minCount 1 ;
+        sh:maxCount 1
+    ] ;
+
+    sh:property [
+        sh:path params:contentType ;
+        sh:name "contentType" ;
+        sh:description "Type of content being stored" ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:in ( "trace" "knowledge" "artifact" "index" )
+    ] ;
+
+    sh:property [
+        sh:path params:tags ;
+        sh:name "tags" ;
+        sh:description "Tags for categorization" ;
+        sh:datatype xsd:string
+    ] ;
+
+    sh:property [
+        sh:path params:retentionPolicy ;
+        sh:name "retentionPolicy" ;
+        sh:description "How long to retain this content" ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string
+    ] .
+
+# -----------------------------------------------------------------------------
+# Retrieve Parameters
+# -----------------------------------------------------------------------------
+
+params:RetrieveParamsShape a sh:NodeShape ;
+    sh:targetClass params:RetrieveParams ;
+    rdfs:label "Retrieve Parameters Shape"@en ;
+
+    sh:property [
+        sh:path params:query ;
+        sh:name "query" ;
+        sh:description "Query for retrieval" ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string
+    ] ;
+
+    sh:property [
+        sh:path params:filters ;
+        sh:name "filters" ;
+        sh:description "Filters to apply" ;
+        sh:datatype xsd:string
+    ] ;
+
+    sh:property [
+        sh:path params:limit ;
+        sh:name "limit" ;
+        sh:description "Maximum number of results" ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:integer ;
+        sh:minInclusive 1 ;
+        sh:maxInclusive 1000
+    ] .
+
+# -----------------------------------------------------------------------------
+# Index Parameters
+# -----------------------------------------------------------------------------
+
+params:IndexParamsShape a sh:NodeShape ;
+    sh:targetClass params:IndexParams ;
+    rdfs:label "Index Parameters Shape"@en ;
+
+    sh:property [
+        sh:path params:contentRefs ;
+        sh:name "contentRefs" ;
+        sh:description "References to content to index" ;
+        sh:minCount 0 ;
+        sh:datatype xsd:string
+    ] ;
+
+    sh:property [
+        sh:path params:indexType ;
+        sh:name "indexType" ;
+        sh:description "Type of index to create/update" ;
+        sh:maxCount 1 ;
+        sh:in ( "keyword" "semantic" "temporal" "graph" )
+    ] .
+
+# -----------------------------------------------------------------------------
+# Version Parameters
+# -----------------------------------------------------------------------------
+
+params:VersionParamsShape a sh:NodeShape ;
+    sh:targetClass params:VersionParams ;
+    rdfs:label "Version Parameters Shape"@en ;
+
+    sh:property [
+        sh:path params:contentRef ;
+        sh:name "contentRef" ;
+        sh:description "Reference to content being versioned" ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string
+    ] ;
+
+    sh:property [
+        sh:path params:newContent ;
+        sh:name "newContent" ;
+        sh:description "The new version content" ;
+        sh:minCount 1 ;
+        sh:maxCount 1
+    ] ;
+
+    sh:property [
+        sh:path params:changeDescription ;
+        sh:name "changeDescription" ;
+        sh:description "Description of what changed" ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string
+    ] .
+
+# =============================================================================
+# Parameter Properties
+# =============================================================================
+
+params:goal a rdf:Property ;
+    rdfs:label "goal" .
+
+params:steps a rdf:Property ;
+    rdfs:label "steps" .
+
+params:action a rdf:Property ;
+    rdfs:label "action" .
+
+params:rationale a rdf:Property ;
+    rdfs:label "rationale" .
+
+params:preconditions a rdf:Property ;
+    rdfs:label "preconditions" .
+
+params:expectedOutcome a rdf:Property ;
+    rdfs:label "expectedOutcome" .
+
+params:constraints a rdf:Property ;
+    rdfs:label "constraints" .
+
+params:priority a rdf:Property ;
+    rdfs:label "priority" .
+
+params:query a rdf:Property ;
+    rdfs:label "query" .
+
+params:context a rdf:Property ;
+    rdfs:label "context" .
+
+params:urgency a rdf:Property ;
+    rdfs:label "urgency" .
+
+params:target a rdf:Property ;
+    rdfs:label "target" .
+
+params:reason a rdf:Property ;
+    rdfs:label "reason" .
+
+params:proposalRef a rdf:Property ;
+    rdfs:label "proposalRef" .
+
+params:content a rdf:Property ;
+    rdfs:label "content" .
+
+params:contentType a rdf:Property ;
+    rdfs:label "contentType" .
+
+params:tags a rdf:Property ;
+    rdfs:label "tags" .
+
+params:findings a rdf:Property ;
+    rdfs:label "findings" .
+
+params:status a rdf:Property ;
+    rdfs:label "status" .
+
+params:observationRef a rdf:Property ;
+    rdfs:label "observationRef" .
+
+params:actionRef a rdf:Property ;
+    rdfs:label "actionRef" .
+
+params:actionParams a rdf:Property ;
+    rdfs:label "actionParams" .
+
+params:dryRun a rdf:Property ;
+    rdfs:label "dryRun" .
+
+params:originalPlanRef a rdf:Property ;
+    rdfs:label "originalPlanRef" .
+
+params:feedback a rdf:Property ;
+    rdfs:label "feedback" .
+
+params:revisedSteps a rdf:Property ;
+    rdfs:label "revisedSteps" .
+
+params:plan a rdf:Property ;
+    rdfs:label "plan" .
+
+params:validationLevel a rdf:Property ;
+    rdfs:label "validationLevel" .
+
+# =============================================================================
+# Execution Enclave Action Parameters (Gas Town inspired)
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# CreateEnclave Parameters
+# -----------------------------------------------------------------------------
+
+params:CreateEnclaveParamsShape a sh:NodeShape ;
+    sh:targetClass params:CreateEnclaveParams ;
+    rdfs:label "CreateEnclave Parameters Shape"@en ;
+    rdfs:comment "Parameters for creating an isolated execution enclave."@en ;
+
+    sh:property [
+        sh:path params:repository ;
+        sh:name "repository" ;
+        sh:description "Git repository URL to clone" ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:pattern "^(https?://|git@|ssh://)" ;
+        sh:message "Repository must be a valid git URL"
+    ] ;
+
+    sh:property [
+        sh:path params:baseBranch ;
+        sh:name "baseBranch" ;
+        sh:description "Branch to base the worktree on" ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:minLength 1
+    ] ;
+
+    sh:property [
+        sh:path params:enclaveName ;
+        sh:name "enclaveName" ;
+        sh:description "Human-readable name for this enclave" ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:minLength 1 ;
+        sh:maxLength 64
+    ] ;
+
+    sh:property [
+        sh:path params:scope ;
+        sh:name "scope" ;
+        sh:description "Resource URNs this enclave can access" ;
+        sh:datatype xsd:string
+    ] ;
+
+    sh:property [
+        sh:path params:ttlSeconds ;
+        sh:name "ttlSeconds" ;
+        sh:description "Time-to-live in seconds (0 = no expiration)" ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:integer ;
+        sh:minInclusive 0
+    ] .
+
+# -----------------------------------------------------------------------------
+# SealEnclave Parameters
+# -----------------------------------------------------------------------------
+
+params:SealEnclaveParamsShape a sh:NodeShape ;
+    sh:targetClass params:SealEnclaveParams ;
+    rdfs:label "SealEnclave Parameters Shape"@en ;
+    rdfs:comment "Parameters for sealing an enclave (making it read-only)."@en ;
+
+    sh:property [
+        sh:path params:enclaveId ;
+        sh:name "enclaveId" ;
+        sh:description "ID of the enclave to seal" ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:pattern "^urn:enclave:" ;
+        sh:message "Must be a valid enclave URN"
+    ] ;
+
+    sh:property [
+        sh:path params:preserveState ;
+        sh:name "preserveState" ;
+        sh:description "Whether to preserve worktree state" ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:boolean
+    ] ;
+
+    sh:property [
+        sh:path params:reason ;
+        sh:name "reason" ;
+        sh:description "Reason for sealing" ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string
+    ] .
+
+# -----------------------------------------------------------------------------
+# DestroyEnclave Parameters
+# -----------------------------------------------------------------------------
+
+params:DestroyEnclaveParamsShape a sh:NodeShape ;
+    sh:targetClass params:DestroyEnclaveParams ;
+    rdfs:label "DestroyEnclave Parameters Shape"@en ;
+    rdfs:comment "Parameters for destroying an enclave."@en ;
+
+    sh:property [
+        sh:path params:enclaveId ;
+        sh:name "enclaveId" ;
+        sh:description "ID of the enclave to destroy" ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:pattern "^urn:enclave:" ;
+        sh:message "Must be a valid enclave URN"
+    ] ;
+
+    sh:property [
+        sh:path params:force ;
+        sh:name "force" ;
+        sh:description "Force destruction even if enclave has uncommitted work" ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:boolean
+    ] ;
+
+    sh:property [
+        sh:path params:archiveFirst ;
+        sh:name "archiveFirst" ;
+        sh:description "Archive enclave contents before destruction" ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:boolean
+    ] .
+
+# =============================================================================
+# Context Checkpoint Action Parameters (Gas Town inspired)
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Checkpoint Parameters
+# -----------------------------------------------------------------------------
+
+params:CheckpointParamsShape a sh:NodeShape ;
+    sh:targetClass params:CheckpointParams ;
+    rdfs:label "Checkpoint Parameters Shape"@en ;
+    rdfs:comment "Parameters for creating a context checkpoint."@en ;
+
+    sh:property [
+        sh:path params:contextId ;
+        sh:name "contextId" ;
+        sh:description "ID of the context graph to checkpoint" ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string
+    ] ;
+
+    sh:property [
+        sh:path params:label ;
+        sh:name "label" ;
+        sh:description "Human-readable label for this checkpoint" ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:minLength 1 ;
+        sh:maxLength 128
+    ] ;
+
+    sh:property [
+        sh:path params:agentState ;
+        sh:name "agentState" ;
+        sh:description "Serialized agent state to include in checkpoint"
+    ] ;
+
+    sh:property [
+        sh:path params:sign ;
+        sh:name "sign" ;
+        sh:description "Whether to cryptographically sign the checkpoint" ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:boolean
+    ] .
+
+# -----------------------------------------------------------------------------
+# Resume Parameters
+# -----------------------------------------------------------------------------
+
+params:ResumeParamsShape a sh:NodeShape ;
+    sh:targetClass params:ResumeParams ;
+    rdfs:label "Resume Parameters Shape"@en ;
+    rdfs:comment "Parameters for resuming from a checkpoint."@en ;
+
+    sh:property [
+        sh:path params:checkpointId ;
+        sh:name "checkpointId" ;
+        sh:description "ID of the checkpoint to resume from" ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:pattern "^urn:checkpoint:" ;
+        sh:message "Must be a valid checkpoint URN"
+    ] ;
+
+    sh:property [
+        sh:path params:verifyIntegrity ;
+        sh:name "verifyIntegrity" ;
+        sh:description "Verify checkpoint hash before resuming" ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:boolean
+    ] ;
+
+    sh:property [
+        sh:path params:verifySignature ;
+        sh:name "verifySignature" ;
+        sh:description "Verify checkpoint signature before resuming" ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:boolean
+    ] ;
+
+    sh:property [
+        sh:path params:mergeCurrentState ;
+        sh:name "mergeCurrentState" ;
+        sh:description "Merge checkpoint with current state instead of replacing" ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:boolean
+    ] .
+
+# -----------------------------------------------------------------------------
+# Enclave/Checkpoint Properties
+# -----------------------------------------------------------------------------
+
+params:repository a rdf:Property ;
+    rdfs:label "repository" .
+
+params:baseBranch a rdf:Property ;
+    rdfs:label "baseBranch" .
+
+params:enclaveName a rdf:Property ;
+    rdfs:label "enclaveName" .
+
+params:scope a rdf:Property ;
+    rdfs:label "scope" .
+
+params:ttlSeconds a rdf:Property ;
+    rdfs:label "ttlSeconds" .
+
+params:enclaveId a rdf:Property ;
+    rdfs:label "enclaveId" .
+
+params:preserveState a rdf:Property ;
+    rdfs:label "preserveState" .
+
+params:force a rdf:Property ;
+    rdfs:label "force" .
+
+params:archiveFirst a rdf:Property ;
+    rdfs:label "archiveFirst" .
+
+params:contextId a rdf:Property ;
+    rdfs:label "contextId" .
+
+params:label a rdf:Property ;
+    rdfs:label "label" .
+
+params:agentState a rdf:Property ;
+    rdfs:label "agentState" .
+
+params:sign a rdf:Property ;
+    rdfs:label "sign" .
+
+params:checkpointId a rdf:Property ;
+    rdfs:label "checkpointId" .
+
+params:verifyIntegrity a rdf:Property ;
+    rdfs:label "verifyIntegrity" .
+
+params:verifySignature a rdf:Property ;
+    rdfs:label "verifySignature" .
+
+params:mergeCurrentState a rdf:Property ;
+    rdfs:label "mergeCurrentState" .
+
+# =============================================================================
+# Federation Action Parameters
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# FederateContext Parameters
+# -----------------------------------------------------------------------------
+
+params:FederateContextParamsShape a sh:NodeShape ;
+    sh:targetClass params:FederateContextParams ;
+    rdfs:label "FederateContext Parameters Shape"@en ;
+    rdfs:comment "Parameters for requesting context materialization from a federated broker."@en ;
+
+    sh:property [
+        sh:path params:targetBrokerDID ;
+        sh:name "targetBrokerDID" ;
+        sh:description "DID of the broker to federate with" ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:pattern "^did:(web|key|dht|plc|peer):.+$" ;
+        sh:message "Must be a valid DID (did:web, did:key, did:dht, did:plc, or did:peer)"
+    ] ;
+
+    sh:property [
+        sh:path params:resourceURNs ;
+        sh:name "resourceURNs" ;
+        sh:description "Resources to include in the federated context" ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string
+    ] ;
+
+    sh:property [
+        sh:path params:federationProtocol ;
+        sh:name "federationProtocol" ;
+        sh:description "Protocol to use for federation" ;
+        sh:maxCount 1 ;
+        sh:in ( "ActivityPub" "DIDComm" "LDN" "HTTP" )
+    ] ;
+
+    sh:property [
+        sh:path params:credentialBridgeId ;
+        sh:name "credentialBridgeId" ;
+        sh:description "Credential bridge to use for cross-domain auth" ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string
+    ] ;
+
+    sh:property [
+        sh:path params:maxHops ;
+        sh:name "maxHops" ;
+        sh:description "Maximum federation hops allowed" ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:integer ;
+        sh:minInclusive 1 ;
+        sh:maxInclusive 10
+    ] ;
+
+    sh:property [
+        sh:path params:ttlSeconds ;
+        sh:name "ttlSeconds" ;
+        sh:description "Time-to-live for the federated context" ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:integer ;
+        sh:minInclusive 60
+    ] .
+
+# -----------------------------------------------------------------------------
+# EstablishTrust Parameters
+# -----------------------------------------------------------------------------
+
+params:EstablishTrustParamsShape a sh:NodeShape ;
+    sh:targetClass params:EstablishTrustParams ;
+    rdfs:label "EstablishTrust Parameters Shape"@en ;
+    rdfs:comment "Parameters for establishing a trust relationship with another broker."@en ;
+
+    sh:property [
+        sh:path params:partnerBrokerDID ;
+        sh:name "partnerBrokerDID" ;
+        sh:description "DID of the broker to establish trust with" ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:pattern "^did:(web|key|dht|plc|peer):.+$"
+    ] ;
+
+    sh:property [
+        sh:path params:trustLevel ;
+        sh:name "trustLevel" ;
+        sh:description "Level of trust to establish" ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:in ( "FullTrust" "LimitedTrust" "VerifyAlways" )
+    ] ;
+
+    sh:property [
+        sh:path params:trustDomainDID ;
+        sh:name "trustDomainDID" ;
+        sh:description "Trust domain both brokers will belong to" ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:pattern "^did:(web|key|dht|plc|peer):.+$"
+    ] ;
+
+    sh:property [
+        sh:path params:credentialBridges ;
+        sh:name "credentialBridges" ;
+        sh:description "Credential bridges to establish"
+    ] ;
+
+    sh:property [
+        sh:path params:supportedProtocols ;
+        sh:name "supportedProtocols" ;
+        sh:description "Federation protocols to support" ;
+        sh:in ( "ActivityPub" "DIDComm" "LDN" )
+    ] ;
+
+    sh:property [
+        sh:path params:expiresAt ;
+        sh:name "expiresAt" ;
+        sh:description "When this trust relationship expires" ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:dateTime
+    ] ;
+
+    sh:property [
+        sh:path params:mutualTrust ;
+        sh:name "mutualTrust" ;
+        sh:description "Whether to request mutual trust establishment" ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:boolean
+    ] .
+
+# -----------------------------------------------------------------------------
+# RevokeTrust Parameters
+# -----------------------------------------------------------------------------
+
+params:RevokeTrustParamsShape a sh:NodeShape ;
+    sh:targetClass params:RevokeTrustParams ;
+    rdfs:label "RevokeTrust Parameters Shape"@en ;
+    rdfs:comment "Parameters for revoking a trust relationship with a broker."@en ;
+
+    sh:property [
+        sh:path params:partnerBrokerDID ;
+        sh:name "partnerBrokerDID" ;
+        sh:description "DID of the broker to revoke trust from" ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:pattern "^did:(web|key|dht|plc|peer):.+$"
+    ] ;
+
+    sh:property [
+        sh:path params:reason ;
+        sh:name "reason" ;
+        sh:description "Reason for revoking trust" ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:minLength 1
+    ] ;
+
+    sh:property [
+        sh:path params:revokeCredentialBridges ;
+        sh:name "revokeCredentialBridges" ;
+        sh:description "Whether to also revoke associated credential bridges" ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:boolean
+    ] ;
+
+    sh:property [
+        sh:path params:notifyPartner ;
+        sh:name "notifyPartner" ;
+        sh:description "Whether to notify the partner broker of revocation" ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:boolean
+    ] ;
+
+    sh:property [
+        sh:path params:archiveEvidence ;
+        sh:name "archiveEvidence" ;
+        sh:description "Whether to archive evidence of the trust relationship" ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:boolean
+    ] .
+
+# =============================================================================
+# Additional Missing Action Parameters
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Actuate Parameters (Executor - direct system actuation)
+# -----------------------------------------------------------------------------
+
+params:ActuateParamsShape a sh:NodeShape ;
+    sh:targetClass params:ActuateParams ;
+    rdfs:label "Actuate Parameters Shape"@en ;
+    rdfs:comment "Parameters for direct physical or system actuation. Forbidden for non-executor agents."@en ;
+
+    sh:property [
+        sh:path params:actuatorId ;
+        sh:name "actuatorId" ;
+        sh:description "Identifier of the actuator to control" ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string
+    ] ;
+
+    sh:property [
+        sh:path params:command ;
+        sh:name "command" ;
+        sh:description "Command to send to the actuator" ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string
+    ] ;
+
+    sh:property [
+        sh:path params:parameters ;
+        sh:name "parameters" ;
+        sh:description "Command parameters"
+    ] ;
+
+    sh:property [
+        sh:path params:safetyChecks ;
+        sh:name "safetyChecks" ;
+        sh:description "Safety checks to perform before actuation" ;
+        sh:datatype xsd:string
+    ] ;
+
+    sh:property [
+        sh:path params:timeout ;
+        sh:name "timeout" ;
+        sh:description "Actuation timeout in milliseconds" ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:integer ;
+        sh:minInclusive 100
+    ] .
+
+# -----------------------------------------------------------------------------
+# WriteExternal Parameters (Executor - external system writes)
+# -----------------------------------------------------------------------------
+
+params:WriteExternalParamsShape a sh:NodeShape ;
+    sh:targetClass params:WriteExternalParams ;
+    rdfs:label "WriteExternal Parameters Shape"@en ;
+    rdfs:comment "Parameters for writing to an external system. Forbidden for non-executor agents."@en ;
+
+    sh:property [
+        sh:path params:systemId ;
+        sh:name "systemId" ;
+        sh:description "Identifier of the external system" ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string
+    ] ;
+
+    sh:property [
+        sh:path params:resource ;
+        sh:name "resource" ;
+        sh:description "Resource path to write to" ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string
+    ] ;
+
+    sh:property [
+        sh:path params:payload ;
+        sh:name "payload" ;
+        sh:description "Data payload to write" ;
+        sh:minCount 1
+    ] ;
+
+    sh:property [
+        sh:path params:contentType ;
+        sh:name "contentType" ;
+        sh:description "Content type of the payload" ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string
+    ] ;
+
+    sh:property [
+        sh:path params:idempotencyKey ;
+        sh:name "idempotencyKey" ;
+        sh:description "Key for idempotent write operations" ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string
+    ] .
+
+# -----------------------------------------------------------------------------
+# RequestCredential Parameters (OID4VCI credential request)
+# -----------------------------------------------------------------------------
+
+params:RequestCredentialParamsShape a sh:NodeShape ;
+    sh:targetClass params:RequestCredentialParams ;
+    rdfs:label "RequestCredential Parameters Shape"@en ;
+    rdfs:comment "Parameters for requesting a verifiable credential via OID4VCI."@en ;
+
+    sh:property [
+        sh:path params:credentialType ;
+        sh:name "credentialType" ;
+        sh:description "Type of credential being requested" ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string
+    ] ;
+
+    sh:property [
+        sh:path params:issuerDID ;
+        sh:name "issuerDID" ;
+        sh:description "DID of the credential issuer" ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:pattern "^did:(web|key|dht|plc|peer):.+$"
+    ] ;
+
+    sh:property [
+        sh:path params:claims ;
+        sh:name "claims" ;
+        sh:description "Claims to include in the credential"
+    ] ;
+
+    sh:property [
+        sh:path params:format ;
+        sh:name "format" ;
+        sh:description "Credential format" ;
+        sh:maxCount 1 ;
+        sh:in ( "jwt_vc" "ldp_vc" "jwt_vc_json" "ldp_vc_json" )
+    ] ;
+
+    sh:property [
+        sh:path params:proofType ;
+        sh:name "proofType" ;
+        sh:description "Type of proof to include" ;
+        sh:maxCount 1 ;
+        sh:in ( "jwt" "ldp" )
+    ] .
+
+# -----------------------------------------------------------------------------
+# RollbackAction Parameters (Causal - reversing an action)
+# -----------------------------------------------------------------------------
+
+params:RollbackActionParamsShape a sh:NodeShape ;
+    sh:targetClass params:RollbackActionParams ;
+    rdfs:label "RollbackAction Parameters Shape"@en ;
+    rdfs:comment "Parameters for rolling back a previously executed action."@en ;
+
+    sh:property [
+        sh:path params:originalActionRef ;
+        sh:name "originalActionRef" ;
+        sh:description "Reference to the action being rolled back" ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string
+    ] ;
+
+    sh:property [
+        sh:path params:traceId ;
+        sh:name "traceId" ;
+        sh:description "PROV trace ID of the original action" ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string
+    ] ;
+
+    sh:property [
+        sh:path params:rollbackReason ;
+        sh:name "rollbackReason" ;
+        sh:description "Reason for the rollback" ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string
+    ] ;
+
+    sh:property [
+        sh:path params:cascadeRollback ;
+        sh:name "cascadeRollback" ;
+        sh:description "Whether to cascade rollback to dependent actions" ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:boolean
+    ] ;
+
+    sh:property [
+        sh:path params:preserveTrace ;
+        sh:name "preserveTrace" ;
+        sh:description "Whether to preserve the original trace for audit" ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:boolean
+    ] .
+
+# -----------------------------------------------------------------------------
+# ReportOutcome Parameters (Causal - outcome reporting)
+# -----------------------------------------------------------------------------
+
+params:ReportOutcomeParamsShape a sh:NodeShape ;
+    sh:targetClass params:ReportOutcomeParams ;
+    rdfs:label "ReportOutcome Parameters Shape"@en ;
+    rdfs:comment "Parameters for reporting causal outcomes of an intervention."@en ;
+
+    sh:property [
+        sh:path params:interventionRef ;
+        sh:name "interventionRef" ;
+        sh:description "Reference to the causal intervention" ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string
+    ] ;
+
+    sh:property [
+        sh:path params:outcomeVariables ;
+        sh:name "outcomeVariables" ;
+        sh:description "Observed outcome variable values" ;
+        sh:minCount 1
+    ] ;
+
+    sh:property [
+        sh:path params:observedAt ;
+        sh:name "observedAt" ;
+        sh:description "When the outcomes were observed" ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:dateTime
+    ] ;
+
+    sh:property [
+        sh:path params:causalModelRef ;
+        sh:name "causalModelRef" ;
+        sh:description "Reference to the causal model used" ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string
+    ] ;
+
+    sh:property [
+        sh:path params:confidence ;
+        sh:name "confidence" ;
+        sh:description "Confidence level in the outcome report" ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:decimal ;
+        sh:minInclusive 0.0 ;
+        sh:maxInclusive 1.0
+    ] .
+
+# -----------------------------------------------------------------------------
+# Federation Properties
+# -----------------------------------------------------------------------------
+
+params:targetBrokerDID a rdf:Property ;
+    rdfs:label "targetBrokerDID" .
+
+params:resourceURNs a rdf:Property ;
+    rdfs:label "resourceURNs" .
+
+params:federationProtocol a rdf:Property ;
+    rdfs:label "federationProtocol" .
+
+params:credentialBridgeId a rdf:Property ;
+    rdfs:label "credentialBridgeId" .
+
+params:maxHops a rdf:Property ;
+    rdfs:label "maxHops" .
+
+params:partnerBrokerDID a rdf:Property ;
+    rdfs:label "partnerBrokerDID" .
+
+params:trustLevel a rdf:Property ;
+    rdfs:label "trustLevel" .
+
+params:trustDomainDID a rdf:Property ;
+    rdfs:label "trustDomainDID" .
+
+params:credentialBridges a rdf:Property ;
+    rdfs:label "credentialBridges" .
+
+params:supportedProtocols a rdf:Property ;
+    rdfs:label "supportedProtocols" .
+
+params:expiresAt a rdf:Property ;
+    rdfs:label "expiresAt" .
+
+params:mutualTrust a rdf:Property ;
+    rdfs:label "mutualTrust" .
+
+params:revokeCredentialBridges a rdf:Property ;
+    rdfs:label "revokeCredentialBridges" .
+
+params:notifyPartner a rdf:Property ;
+    rdfs:label "notifyPartner" .
+
+params:archiveEvidence a rdf:Property ;
+    rdfs:label "archiveEvidence" .
+
+# -----------------------------------------------------------------------------
+# Additional Action Properties
+# -----------------------------------------------------------------------------
+
+params:actuatorId a rdf:Property ;
+    rdfs:label "actuatorId" .
+
+params:command a rdf:Property ;
+    rdfs:label "command" .
+
+params:parameters a rdf:Property ;
+    rdfs:label "parameters" .
+
+params:safetyChecks a rdf:Property ;
+    rdfs:label "safetyChecks" .
+
+params:timeout a rdf:Property ;
+    rdfs:label "timeout" .
+
+params:systemId a rdf:Property ;
+    rdfs:label "systemId" .
+
+params:resource a rdf:Property ;
+    rdfs:label "resource" .
+
+params:payload a rdf:Property ;
+    rdfs:label "payload" .
+
+params:idempotencyKey a rdf:Property ;
+    rdfs:label "idempotencyKey" .
+
+params:credentialType a rdf:Property ;
+    rdfs:label "credentialType" .
+
+params:issuerDID a rdf:Property ;
+    rdfs:label "issuerDID" .
+
+params:claims a rdf:Property ;
+    rdfs:label "claims" .
+
+params:format a rdf:Property ;
+    rdfs:label "format" .
+
+params:proofType a rdf:Property ;
+    rdfs:label "proofType" .
+
+params:originalActionRef a rdf:Property ;
+    rdfs:label "originalActionRef" .
+
+params:traceId a rdf:Property ;
+    rdfs:label "traceId" .
+
+params:rollbackReason a rdf:Property ;
+    rdfs:label "rollbackReason" .
+
+params:cascadeRollback a rdf:Property ;
+    rdfs:label "cascadeRollback" .
+
+params:preserveTrace a rdf:Property ;
+    rdfs:label "preserveTrace" .
+
+params:interventionRef a rdf:Property ;
+    rdfs:label "interventionRef" .
+
+params:outcomeVariables a rdf:Property ;
+    rdfs:label "outcomeVariables" .
+
+params:observedAt a rdf:Property ;
+    rdfs:label "observedAt" .
+
+params:causalModelRef a rdf:Property ;
+    rdfs:label "causalModelRef" .
+
+params:confidence a rdf:Property ;
+    rdfs:label "confidence" .
+
+# =============================================================================
+# Coordinator Action Parameters
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Delegate Parameters
+# -----------------------------------------------------------------------------
+
+params:DelegateParamsShape a sh:NodeShape ;
+    sh:targetClass params:DelegateParams ;
+    rdfs:label "Delegate Parameters Shape"@en ;
+    rdfs:comment "Parameters for delegating a task to another agent."@en ;
+
+    sh:property [
+        sh:path params:targetAgentDID ;
+        sh:name "targetAgentDID" ;
+        sh:description "DID of the agent to delegate to" ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:pattern "^did:(web|key|dht|plc|peer):.+$" ;
+        sh:message "Must be a valid DID"
+    ] ;
+
+    sh:property [
+        sh:path params:taskDescription ;
+        sh:name "taskDescription" ;
+        sh:description "Description of the task to delegate" ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:minLength 1
+    ] ;
+
+    sh:property [
+        sh:path params:expectedAgentType ;
+        sh:name "expectedAgentType" ;
+        sh:description "Expected AAT of the target agent" ;
+        sh:maxCount 1 ;
+        sh:in ( "PlannerAgentType" "ExecutorAgentType" "ObserverAgentType" "AnalystAgentType" )
+    ] ;
+
+    sh:property [
+        sh:path params:deadline ;
+        sh:name "deadline" ;
+        sh:description "Deadline for task completion" ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:dateTime
+    ] ;
+
+    sh:property [
+        sh:path params:credentialChain ;
+        sh:name "credentialChain" ;
+        sh:description "Credentials to pass to the delegated agent"
+    ] .
+
+# -----------------------------------------------------------------------------
+# Aggregate Parameters
+# -----------------------------------------------------------------------------
+
+params:AggregateParamsShape a sh:NodeShape ;
+    sh:targetClass params:AggregateParams ;
+    rdfs:label "Aggregate Parameters Shape"@en ;
+    rdfs:comment "Parameters for aggregating results from multiple delegations."@en ;
+
+    sh:property [
+        sh:path params:delegationIds ;
+        sh:name "delegationIds" ;
+        sh:description "IDs of delegations to aggregate" ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string
+    ] ;
+
+    sh:property [
+        sh:path params:aggregationStrategy ;
+        sh:name "aggregationStrategy" ;
+        sh:description "Strategy for combining results" ;
+        sh:maxCount 1 ;
+        sh:in ( "merge" "consensus" "first" "best" "all" )
+    ] ;
+
+    sh:property [
+        sh:path params:conflictResolution ;
+        sh:name "conflictResolution" ;
+        sh:description "How to handle conflicting results" ;
+        sh:maxCount 1 ;
+        sh:in ( "fail" "arbitrate" "priority" "latest" )
+    ] .
+
+# -----------------------------------------------------------------------------
+# StartWorkflow Parameters
+# -----------------------------------------------------------------------------
+
+params:StartWorkflowParamsShape a sh:NodeShape ;
+    sh:targetClass params:StartWorkflowParams ;
+    rdfs:label "StartWorkflow Parameters Shape"@en ;
+    rdfs:comment "Parameters for starting a new workflow."@en ;
+
+    sh:property [
+        sh:path params:workflowName ;
+        sh:name "workflowName" ;
+        sh:description "Name of the workflow" ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:minLength 1 ;
+        sh:maxLength 128
+    ] ;
+
+    sh:property [
+        sh:path params:goal ;
+        sh:name "goal" ;
+        sh:description "Goal this workflow aims to achieve" ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string
+    ] ;
+
+    sh:property [
+        sh:path params:agents ;
+        sh:name "agents" ;
+        sh:description "DIDs of agents participating in this workflow" ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string
+    ] ;
+
+    sh:property [
+        sh:path params:timeoutSeconds ;
+        sh:name "timeoutSeconds" ;
+        sh:description "Workflow timeout in seconds" ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:integer ;
+        sh:minInclusive 60
+    ] .
+
+# -----------------------------------------------------------------------------
+# CompleteWorkflow Parameters
+# -----------------------------------------------------------------------------
+
+params:CompleteWorkflowParamsShape a sh:NodeShape ;
+    sh:targetClass params:CompleteWorkflowParams ;
+    rdfs:label "CompleteWorkflow Parameters Shape"@en ;
+    rdfs:comment "Parameters for completing a workflow."@en ;
+
+    sh:property [
+        sh:path params:workflowId ;
+        sh:name "workflowId" ;
+        sh:description "ID of the workflow to complete" ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string
+    ] ;
+
+    sh:property [
+        sh:path params:status ;
+        sh:name "status" ;
+        sh:description "Final status of the workflow" ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:in ( "success" "partial" "failed" "cancelled" )
+    ] ;
+
+    sh:property [
+        sh:path params:results ;
+        sh:name "results" ;
+        sh:description "Final results from the workflow"
+    ] ;
+
+    sh:property [
+        sh:path params:summary ;
+        sh:name "summary" ;
+        sh:description "Summary of what was accomplished" ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string
+    ] .
+
+# =============================================================================
+# Analyst Action Parameters
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Analyze Parameters
+# -----------------------------------------------------------------------------
+
+params:AnalyzeParamsShape a sh:NodeShape ;
+    sh:targetClass params:AnalyzeParams ;
+    rdfs:label "Analyze Parameters Shape"@en ;
+    rdfs:comment "Parameters for performing analysis on data."@en ;
+
+    sh:property [
+        sh:path params:dataSources ;
+        sh:name "dataSources" ;
+        sh:description "URIs of data sources to analyze" ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string
+    ] ;
+
+    sh:property [
+        sh:path params:analysisType ;
+        sh:name "analysisType" ;
+        sh:description "Type of analysis to perform" ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:in ( "trend" "anomaly" "correlation" "classification" "summarization" "comparison" )
+    ] ;
+
+    sh:property [
+        sh:path params:timeRange ;
+        sh:name "timeRange" ;
+        sh:description "Time range for analysis"
+    ] ;
+
+    sh:property [
+        sh:path params:filters ;
+        sh:name "filters" ;
+        sh:description "Filters to apply to the data"
+    ] .
+
+# -----------------------------------------------------------------------------
+# EmitInsight Parameters
+# -----------------------------------------------------------------------------
+
+params:EmitInsightParamsShape a sh:NodeShape ;
+    sh:targetClass params:EmitInsightParams ;
+    rdfs:label "EmitInsight Parameters Shape"@en ;
+    rdfs:comment "Parameters for emitting an analytical insight."@en ;
+
+    sh:property [
+        sh:path params:insightType ;
+        sh:name "insightType" ;
+        sh:description "Type of insight" ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:in ( "finding" "recommendation" "warning" "trend" "anomaly" "correlation" )
+    ] ;
+
+    sh:property [
+        sh:path params:title ;
+        sh:name "title" ;
+        sh:description "Short title for the insight" ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:maxLength 200
+    ] ;
+
+    sh:property [
+        sh:path params:description ;
+        sh:name "description" ;
+        sh:description "Detailed description of the insight" ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string
+    ] ;
+
+    sh:property [
+        sh:path params:confidence ;
+        sh:name "confidence" ;
+        sh:description "Confidence level (0.0-1.0)" ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:decimal ;
+        sh:minInclusive 0.0 ;
+        sh:maxInclusive 1.0
+    ] ;
+
+    sh:property [
+        sh:path params:sourceReferences ;
+        sh:name "sourceReferences" ;
+        sh:description "References to source data" ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string
+    ] ;
+
+    sh:property [
+        sh:path params:severity ;
+        sh:name "severity" ;
+        sh:description "Severity or importance level" ;
+        sh:maxCount 1 ;
+        sh:in ( "info" "low" "medium" "high" "critical" )
+    ] .
+
+# -----------------------------------------------------------------------------
+# DetectAnomaly Parameters
+# -----------------------------------------------------------------------------
+
+params:DetectAnomalyParamsShape a sh:NodeShape ;
+    sh:targetClass params:DetectAnomalyParams ;
+    rdfs:label "DetectAnomaly Parameters Shape"@en ;
+    rdfs:comment "Parameters for reporting a detected anomaly."@en ;
+
+    sh:property [
+        sh:path params:anomalyType ;
+        sh:name "anomalyType" ;
+        sh:description "Type of anomaly detected" ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:in ( "outlier" "deviation" "spike" "drop" "pattern-break" "missing-data" )
+    ] ;
+
+    sh:property [
+        sh:path params:metric ;
+        sh:name "metric" ;
+        sh:description "The metric where anomaly was detected" ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string
+    ] ;
+
+    sh:property [
+        sh:path params:expectedValue ;
+        sh:name "expectedValue" ;
+        sh:description "Expected value or range" ;
+        sh:maxCount 1
+    ] ;
+
+    sh:property [
+        sh:path params:actualValue ;
+        sh:name "actualValue" ;
+        sh:description "Actual observed value" ;
+        sh:minCount 1 ;
+        sh:maxCount 1
+    ] ;
+
+    sh:property [
+        sh:path params:confidence ;
+        sh:name "confidence" ;
+        sh:description "Confidence in the anomaly detection" ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:decimal ;
+        sh:minInclusive 0.0 ;
+        sh:maxInclusive 1.0
+    ] ;
+
+    sh:property [
+        sh:path params:detectedAt ;
+        sh:name "detectedAt" ;
+        sh:description "When the anomaly was detected" ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:dateTime
+    ] .
+
+# -----------------------------------------------------------------------------
+# GenerateReport Parameters
+# -----------------------------------------------------------------------------
+
+params:GenerateReportParamsShape a sh:NodeShape ;
+    sh:targetClass params:GenerateReportParams ;
+    rdfs:label "GenerateReport Parameters Shape"@en ;
+    rdfs:comment "Parameters for generating an analytical report."@en ;
+
+    sh:property [
+        sh:path params:reportType ;
+        sh:name "reportType" ;
+        sh:description "Type of report to generate" ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:in ( "summary" "detailed" "executive" "technical" "audit" )
+    ] ;
+
+    sh:property [
+        sh:path params:title ;
+        sh:name "title" ;
+        sh:description "Report title" ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:maxLength 200
+    ] ;
+
+    sh:property [
+        sh:path params:sections ;
+        sh:name "sections" ;
+        sh:description "Sections to include in the report" ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string
+    ] ;
+
+    sh:property [
+        sh:path params:format ;
+        sh:name "format" ;
+        sh:description "Output format" ;
+        sh:maxCount 1 ;
+        sh:in ( "markdown" "html" "json-ld" "pdf" )
+    ] ;
+
+    sh:property [
+        sh:path params:includeCharts ;
+        sh:name "includeCharts" ;
+        sh:description "Whether to include visualizations" ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:boolean
+    ] .
+
+# -----------------------------------------------------------------------------
+# Coordinator/Analyst Properties
+# -----------------------------------------------------------------------------
+
+params:targetAgentDID a rdf:Property ;
+    rdfs:label "targetAgentDID" .
+
+params:taskDescription a rdf:Property ;
+    rdfs:label "taskDescription" .
+
+params:expectedAgentType a rdf:Property ;
+    rdfs:label "expectedAgentType" .
+
+params:deadline a rdf:Property ;
+    rdfs:label "deadline" .
+
+params:credentialChain a rdf:Property ;
+    rdfs:label "credentialChain" .
+
+params:delegationIds a rdf:Property ;
+    rdfs:label "delegationIds" .
+
+params:aggregationStrategy a rdf:Property ;
+    rdfs:label "aggregationStrategy" .
+
+params:conflictResolution a rdf:Property ;
+    rdfs:label "conflictResolution" .
+
+params:workflowName a rdf:Property ;
+    rdfs:label "workflowName" .
+
+params:agents a rdf:Property ;
+    rdfs:label "agents" .
+
+params:timeoutSeconds a rdf:Property ;
+    rdfs:label "timeoutSeconds" .
+
+params:workflowId a rdf:Property ;
+    rdfs:label "workflowId" .
+
+params:results a rdf:Property ;
+    rdfs:label "results" .
+
+params:summary a rdf:Property ;
+    rdfs:label "summary" .
+
+params:dataSources a rdf:Property ;
+    rdfs:label "dataSources" .
+
+params:analysisType a rdf:Property ;
+    rdfs:label "analysisType" .
+
+params:timeRange a rdf:Property ;
+    rdfs:label "timeRange" .
+
+params:filters a rdf:Property ;
+    rdfs:label "filters" .
+
+params:insightType a rdf:Property ;
+    rdfs:label "insightType" .
+
+params:title a rdf:Property ;
+    rdfs:label "title" .
+
+params:description a rdf:Property ;
+    rdfs:label "description" .
+
+params:sourceReferences a rdf:Property ;
+    rdfs:label "sourceReferences" .
+
+params:severity a rdf:Property ;
+    rdfs:label "severity" .
+
+params:anomalyType a rdf:Property ;
+    rdfs:label "anomalyType" .
+
+params:metric a rdf:Property ;
+    rdfs:label "metric" .
+
+params:expectedValue a rdf:Property ;
+    rdfs:label "expectedValue" .
+
+params:actualValue a rdf:Property ;
+    rdfs:label "actualValue" .
+
+params:detectedAt a rdf:Property ;
+    rdfs:label "detectedAt" .
+
+params:reportType a rdf:Property ;
+    rdfs:label "reportType" .
+
+params:sections a rdf:Property ;
+    rdfs:label "sections" .
+
+params:includeCharts a rdf:Property ;
+    rdfs:label "includeCharts" .

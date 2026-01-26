@@ -1,0 +1,288 @@
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix acg: <https://agentcontextgraph.dev/ontology#> .
+@prefix aat: <https://agentcontextgraph.dev/aat#> .
+
+# =============================================================================
+# Abstract Agent Types Ontology
+# =============================================================================
+
+<https://agentcontextgraph.dev/aat>
+    a owl:Ontology ;
+    owl:versionIRI <https://agentcontextgraph.dev/aat/1.0.0> ;
+    dcterms:title "Abstract Agent Types Ontology"@en ;
+    dcterms:description "Defines the type system for agents including behavioral contracts, action spaces, and invariants."@en ;
+    dcterms:created "2026-01-23"^^xsd:date ;
+    owl:imports <https://agentcontextgraph.dev/ontology> .
+
+# =============================================================================
+# Core AAT Classes
+# =============================================================================
+
+aat:AbstractAgentType a owl:Class ;
+    rdfs:label "Abstract Agent Type"@en ;
+    rdfs:comment "A formal specification of agent behavior including allowed/forbidden actions, behavioral invariants, and trace requirements. Defines what an agent CAN do, not what it WILL do."@en .
+
+aat:PerceptSpace a owl:Class ;
+    rdfs:label "Percept Space"@en ;
+    rdfs:comment "The set of percept types an agent can observe."@en .
+
+aat:ActionSpace a owl:Class ;
+    rdfs:label "Action Space"@en ;
+    rdfs:comment "The allowed and forbidden action types for an agent."@en .
+
+aat:ActionType a owl:Class ;
+    rdfs:label "Action Type"@en ;
+    rdfs:comment "A type of action that can appear in an agent's action space."@en .
+
+aat:BehavioralInvariant a owl:Class ;
+    rdfs:label "Behavioral Invariant"@en ;
+    rdfs:comment "A property that must hold for all behaviors of agents of this type."@en .
+
+aat:LivenessGuarantee a owl:Class ;
+    rdfs:label "Liveness Guarantee"@en ;
+    rdfs:comment "A guarantee that certain progress will eventually be made."@en .
+
+aat:CompositionRules a owl:Class ;
+    rdfs:label "Composition Rules"@en ;
+    rdfs:comment "Rules governing how this agent type can compose with others."@en .
+
+# =============================================================================
+# Agent Type Hierarchy
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Planner Agent Type
+# -----------------------------------------------------------------------------
+
+aat:PlannerAgentType a owl:Class ;
+    rdfs:label "Planner Agent Type"@en ;
+    rdfs:subClassOf aat:AbstractAgentType ;
+    rdfs:comment "Agents that produce plans but do not execute actions directly. Planners perceive goals and world state, emit plans for executors."@en ;
+    aat:allowsAction aat:EmitPlan, aat:RequestInfo, aat:RevisePlan, aat:ValidatePlan ;
+    aat:forbidsAction aat:Actuate, aat:WriteExternal, aat:ModifyCredentials ;
+    aat:requiredOutputAction aat:EmitPlan ;
+    aat:canComposeBefore aat:ExecutorAgentType, aat:ArbiterAgentType ;
+    aat:canComposeAfter aat:ObserverAgentType, aat:ArbiterAgentType .
+
+# -----------------------------------------------------------------------------
+# Executor Agent Type
+# -----------------------------------------------------------------------------
+
+aat:ExecutorAgentType a owl:Class ;
+    rdfs:label "Executor Agent Type"@en ;
+    rdfs:subClassOf aat:AbstractAgentType ;
+    rdfs:comment "Agents that execute actions in the world based on approved plans. Executors are the only agent type that can actuate."@en ;
+    aat:allowsAction aat:Act, aat:Report, aat:Abort ;
+    aat:forbidsAction aat:EmitPlan, aat:Approve, aat:Deny ;
+    aat:requiredOutputAction aat:Act ;
+    aat:canComposeBefore aat:ObserverAgentType, aat:ArchivistAgentType ;
+    aat:canComposeAfter aat:PlannerAgentType, aat:ArbiterAgentType .
+
+# -----------------------------------------------------------------------------
+# Arbiter Agent Type
+# -----------------------------------------------------------------------------
+
+aat:ArbiterAgentType a owl:Class ;
+    rdfs:label "Arbiter Agent Type"@en ;
+    rdfs:subClassOf aat:AbstractAgentType ;
+    rdfs:comment "Agents that approve, deny, or transform proposed actions. Arbiters gate the flow between planners and executors."@en ;
+    aat:allowsAction aat:Approve, aat:Deny, aat:RequestModification, aat:Escalate ;
+    aat:forbidsAction aat:Act, aat:EmitPlan, aat:Observe ;
+    aat:canComposeBefore aat:ExecutorAgentType, aat:PlannerAgentType ;
+    aat:canComposeAfter aat:PlannerAgentType, aat:ExecutorAgentType .
+
+# -----------------------------------------------------------------------------
+# Observer Agent Type
+# -----------------------------------------------------------------------------
+
+aat:ObserverAgentType a owl:Class ;
+    rdfs:label "Observer Agent Type"@en ;
+    rdfs:subClassOf aat:AbstractAgentType ;
+    rdfs:comment "Agents that observe and report on world state without causing side effects. Pure perception agents."@en ;
+    aat:allowsAction aat:Observe, aat:Report, aat:Summarize ;
+    aat:forbidsAction aat:Act, aat:Actuate, aat:ModifyState, aat:WriteExternal ;
+    aat:requiredOutputAction aat:Report ;
+    aat:canComposeBefore aat:PlannerAgentType, aat:ArchivistAgentType ;
+    aat:canComposeAfter aat:ExecutorAgentType .
+
+# -----------------------------------------------------------------------------
+# Archivist Agent Type
+# -----------------------------------------------------------------------------
+
+aat:ArchivistAgentType a owl:Class ;
+    rdfs:label "Archivist Agent Type"@en ;
+    rdfs:subClassOf aat:AbstractAgentType ;
+    rdfs:comment "Agents that store, retrieve, and manage traces and knowledge. Curators of the system's memory."@en ;
+    aat:allowsAction aat:Store, aat:Retrieve, aat:Summarize, aat:Index, aat:Version ;
+    aat:forbidsAction aat:Delete, aat:Mutate, aat:FabricateProvenance ;
+    aat:requiredOutputAction aat:Store ;
+    aat:canComposeBefore [ ] ;  # Terminal in pipeline
+    aat:canComposeAfter aat:ObserverAgentType, aat:ExecutorAgentType .
+
+# =============================================================================
+# Enforcement Levels (for Behavioral Invariants)
+# =============================================================================
+
+aat:EnforcementLevel a owl:Class ;
+    rdfs:label "Enforcement Level"@en ;
+    rdfs:comment "How a behavioral invariant is enforced."@en .
+
+aat:StructuralEnforcement a aat:EnforcementLevel ;
+    rdfs:label "Structural Enforcement"@en ;
+    rdfs:comment "Enforced by the system architecture - violation is impossible."@en .
+
+aat:ValidationEnforcement a aat:EnforcementLevel ;
+    rdfs:label "Validation Enforcement"@en ;
+    rdfs:comment "Enforced by runtime validation - violation causes rejection."@en .
+
+aat:AuditEnforcement a aat:EnforcementLevel ;
+    rdfs:label "Audit Enforcement"@en ;
+    rdfs:comment "Enforced via audit - violations are logged for review."@en .
+
+aat:DesignEnforcement a aat:EnforcementLevel ;
+    rdfs:label "Design Enforcement"@en ;
+    rdfs:comment "Enforced at design time through code review and testing."@en .
+
+aat:TestEnforcement a aat:EnforcementLevel ;
+    rdfs:label "Test Enforcement"@en ;
+    rdfs:comment "Enforced through automated testing."@en .
+
+# =============================================================================
+# AAT Properties
+# =============================================================================
+
+aat:allowsAction a owl:ObjectProperty ;
+    rdfs:label "allows action"@en ;
+    rdfs:domain aat:AbstractAgentType ;
+    rdfs:range aat:ActionType ;
+    rdfs:comment "An action type that this agent type is permitted to perform."@en .
+
+aat:forbidsAction a owl:ObjectProperty ;
+    rdfs:label "forbids action"@en ;
+    rdfs:domain aat:AbstractAgentType ;
+    rdfs:range aat:ActionType ;
+    rdfs:comment "An action type that this agent type must never perform."@en .
+
+aat:requiresCapability a owl:ObjectProperty ;
+    rdfs:label "requires capability"@en ;
+    rdfs:domain aat:ActionType ;
+    rdfs:range rdfs:Resource ;
+    rdfs:comment "A capability (credential type) required to perform this action."@en .
+
+aat:requiredOutputAction a owl:ObjectProperty ;
+    rdfs:label "required output action"@en ;
+    rdfs:domain aat:AbstractAgentType ;
+    rdfs:range aat:ActionType ;
+    rdfs:comment "An action that must be traversed before task completion (structural invariant)."@en .
+
+aat:hasInvariant a owl:ObjectProperty ;
+    rdfs:label "has invariant"@en ;
+    rdfs:domain aat:AbstractAgentType ;
+    rdfs:range aat:BehavioralInvariant ;
+    rdfs:comment "A behavioral invariant for this agent type."@en .
+
+aat:hasEnforcement a owl:ObjectProperty ;
+    rdfs:label "has enforcement"@en ;
+    rdfs:domain aat:BehavioralInvariant ;
+    rdfs:range aat:EnforcementLevel ;
+    rdfs:comment "How this invariant is enforced."@en .
+
+aat:canComposeBefore a owl:ObjectProperty ;
+    rdfs:label "can compose before"@en ;
+    rdfs:domain aat:AbstractAgentType ;
+    rdfs:range aat:AbstractAgentType ;
+    rdfs:comment "Agent types this type can feed into (downstream)."@en .
+
+aat:canComposeAfter a owl:ObjectProperty ;
+    rdfs:label "can compose after"@en ;
+    rdfs:domain aat:AbstractAgentType ;
+    rdfs:range aat:AbstractAgentType ;
+    rdfs:comment "Agent types that can feed into this type (upstream)."@en .
+
+aat:hasVersion a owl:DatatypeProperty ;
+    rdfs:label "has version"@en ;
+    rdfs:domain aat:AbstractAgentType ;
+    rdfs:range xsd:string ;
+    rdfs:comment "The semantic version of this AAT specification."@en .
+
+aat:hasFormalRule a owl:DatatypeProperty ;
+    rdfs:label "has formal rule"@en ;
+    rdfs:domain aat:BehavioralInvariant ;
+    rdfs:range xsd:string ;
+    rdfs:comment "The formal (logical) expression of this invariant."@en .
+
+# =============================================================================
+# Parallelization Properties (Gas Town inspired)
+# =============================================================================
+
+aat:parallelizable a owl:DatatypeProperty ;
+    rdfs:label "parallelizable"@en ;
+    rdfs:domain aat:AbstractAgentType ;
+    rdfs:range xsd:boolean ;
+    rdfs:comment "Whether multiple agents of this type can run concurrently. Inspired by Gas Town's Polecat spawning pattern."@en .
+
+aat:maxConcurrent a owl:DatatypeProperty ;
+    rdfs:label "max concurrent"@en ;
+    rdfs:domain aat:AbstractAgentType ;
+    rdfs:range xsd:integer ;
+    rdfs:comment "Maximum number of concurrent instances of this agent type allowed."@en .
+
+aat:requiresIsolation a owl:DatatypeProperty ;
+    rdfs:label "requires isolation"@en ;
+    rdfs:domain aat:AbstractAgentType ;
+    rdfs:range xsd:boolean ;
+    rdfs:comment "Whether agents of this type require isolated execution enclaves."@en .
+
+aat:conflictsWith a owl:ObjectProperty ;
+    rdfs:label "conflicts with"@en ;
+    rdfs:domain aat:AbstractAgentType ;
+    rdfs:range aat:AbstractAgentType ;
+    rdfs:comment "Agent types that cannot run concurrently with this type."@en .
+
+aat:preferredEnclaveScope a owl:DatatypeProperty ;
+    rdfs:label "preferred enclave scope"@en ;
+    rdfs:domain aat:AbstractAgentType ;
+    rdfs:range xsd:string ;
+    rdfs:comment "Default resource scope pattern for enclaves of this agent type."@en .
+
+# =============================================================================
+# Parallelization Rules for Agent Types
+# =============================================================================
+
+# Planner: Limited parallelism (avoid conflicting plans)
+aat:PlannerAgentType
+    aat:parallelizable true ;
+    aat:maxConcurrent 3 ;
+    aat:requiresIsolation false ;
+    aat:conflictsWith aat:PlannerAgentType .  # Two planners shouldn't plan for same goal
+
+# Executor: High parallelism with isolation (like Gas Town Polecats)
+aat:ExecutorAgentType
+    aat:parallelizable true ;
+    aat:maxConcurrent 20 ;
+    aat:requiresIsolation true ;
+    aat:preferredEnclaveScope "file:*,api:read,api:write" .
+
+# Arbiter: No parallelism (single point of approval)
+aat:ArbiterAgentType
+    aat:parallelizable false ;
+    aat:maxConcurrent 1 ;
+    aat:requiresIsolation false ;
+    aat:conflictsWith aat:ArbiterAgentType .
+
+# Observer: High parallelism, no isolation needed (read-only)
+aat:ObserverAgentType
+    aat:parallelizable true ;
+    aat:maxConcurrent 10 ;
+    aat:requiresIsolation false .
+
+# Archivist: Limited parallelism (avoid write conflicts)
+aat:ArchivistAgentType
+    aat:parallelizable true ;
+    aat:maxConcurrent 2 ;
+    aat:requiresIsolation false ;
+    aat:conflictsWith aat:ArchivistAgentType .

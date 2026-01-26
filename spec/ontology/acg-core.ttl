@@ -1,0 +1,823 @@
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix hydra: <http://www.w3.org/ns/hydra/core#> .
+@prefix acg: <https://agentcontextgraph.dev/ontology#> .
+@prefix aat: <https://agentcontextgraph.dev/aat#> .
+@prefix cg: <https://agentcontextgraph.dev/context#> .
+
+# =============================================================================
+# Agent Context Graph Core Ontology
+# =============================================================================
+
+<https://agentcontextgraph.dev/ontology>
+    a owl:Ontology ;
+    owl:versionIRI <https://agentcontextgraph.dev/ontology/1.0.0> ;
+    dcterms:title "Agent Context Graph Core Ontology"@en ;
+    dcterms:description "Core ontology defining agents, contexts, affordances, and their relationships in the Agent Context Graph system."@en ;
+    dcterms:created "2026-01-23"^^xsd:date ;
+    owl:imports <http://www.w3.org/ns/prov#> ;
+    owl:imports <http://www.w3.org/ns/hydra/core> .
+
+# =============================================================================
+# Core Classes
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Agent - An entity that can perceive and act
+# -----------------------------------------------------------------------------
+
+acg:Agent a owl:Class ;
+    rdfs:label "Agent"@en ;
+    rdfs:comment "An autonomous entity identified by a DID that perceives through context graphs and acts through affordance traversals."@en ;
+    rdfs:subClassOf prov:Agent ;
+    rdfs:subClassOf [
+        a owl:Restriction ;
+        owl:onProperty acg:hasDID ;
+        owl:cardinality 1
+    ] ;
+    rdfs:subClassOf [
+        a owl:Restriction ;
+        owl:onProperty acg:hasAgentType ;
+        owl:cardinality 1
+    ] .
+
+# -----------------------------------------------------------------------------
+# ContextGraph - Situational awareness document
+# -----------------------------------------------------------------------------
+
+acg:ContextGraph a owl:Class ;
+    rdfs:label "Context Graph"@en ;
+    rdfs:comment "A runtime, ephemeral document providing an agent with situational awareness including available affordances, verified credentials, and constraints."@en ;
+    rdfs:subClassOf [
+        a owl:Restriction ;
+        owl:onProperty acg:forAgent ;
+        owl:cardinality 1
+    ] ;
+    rdfs:subClassOf [
+        a owl:Restriction ;
+        owl:onProperty acg:hasTimestamp ;
+        owl:cardinality 1
+    ] ;
+    rdfs:subClassOf [
+        a owl:Restriction ;
+        owl:onProperty acg:hasNonce ;
+        owl:cardinality 1
+    ] ;
+    rdfs:subClassOf [
+        a owl:Restriction ;
+        owl:onProperty acg:expiresAt ;
+        owl:cardinality 1
+    ] .
+
+# -----------------------------------------------------------------------------
+# Hypergraph - Explicit multi-party relation model
+# -----------------------------------------------------------------------------
+
+acg:Hypergraph a owl:Class ;
+    rdfs:label "Hypergraph"@en ;
+    rdfs:comment "An explicit hypergraph representation of a context graph, where hyperedges capture multi-party relations (agent, target, credentials, constraints)."@en .
+
+acg:Hypernode a owl:Class ;
+    rdfs:label "Hypernode"@en ;
+    rdfs:comment "A node in a context hypergraph representing an agent, affordance, constraint, credential, target, or resource."@en .
+
+acg:Hyperedge a owl:Class ;
+    rdfs:label "Hyperedge"@en ;
+    rdfs:comment "A hyperedge connecting two or more hypernodes; often corresponds to an affordance."@en .
+
+# -----------------------------------------------------------------------------
+# Category-Theoretic View
+# -----------------------------------------------------------------------------
+
+acg:ContextCategory a owl:Class ;
+    rdfs:label "Context Category"@en ;
+    rdfs:comment "A category-theoretic view of a context graph, with objects as state/resource slices and morphisms as affordance traversals or hyperedges."@en .
+
+acg:CategoryObject a owl:Class ;
+    rdfs:label "Category Object"@en ;
+    rdfs:comment "An object in the context category (state, resource, or scope slice)."@en .
+
+acg:Morphism a owl:Class ;
+    rdfs:label "Morphism"@en ;
+    rdfs:comment "A morphism between category objects, representing an affordance traversal or hyperedge transition."@en .
+
+acg:Composition a owl:Class ;
+    rdfs:label "Composition"@en ;
+    rdfs:comment "A composition record for morphisms (g ∘ f). Used to describe workflow composition at the semantic level."@en .
+
+# -----------------------------------------------------------------------------
+# Affordance - A perceivable action possibility
+# -----------------------------------------------------------------------------
+
+acg:Affordance a owl:Class ;
+    rdfs:label "Affordance"@en ;
+    rdfs:comment "An action possibility that is relational - it depends on the agent, environment, and normative context. Affordances are traversed, not executed."@en ;
+    rdfs:subClassOf hydra:Operation ;
+    rdfs:subClassOf [
+        a owl:Restriction ;
+        owl:onProperty acg:hasActionType ;
+        owl:cardinality 1
+    ] ;
+    rdfs:subClassOf [
+        a owl:Restriction ;
+        owl:onProperty acg:hasTarget ;
+        owl:cardinality 1
+    ] .
+
+# -----------------------------------------------------------------------------
+# Target - The endpoint of an affordance
+# -----------------------------------------------------------------------------
+
+acg:Target a owl:Class ;
+    rdfs:label "Target"@en ;
+    rdfs:comment "The endpoint or mechanism through which an affordance is traversed."@en ;
+    rdfs:subClassOf hydra:Resource .
+
+acg:HTTPTarget a owl:Class ;
+    rdfs:label "HTTP Target"@en ;
+    rdfs:subClassOf acg:Target ;
+    rdfs:comment "An HTTP/REST endpoint target." .
+
+acg:DIDCommTarget a owl:Class ;
+    rdfs:label "DIDComm Target"@en ;
+    rdfs:subClassOf acg:Target ;
+    rdfs:comment "A DIDComm messaging target." .
+
+acg:InternalTarget a owl:Class ;
+    rdfs:label "Internal Target"@en ;
+    rdfs:subClassOf acg:Target ;
+    rdfs:comment "An internal broker-mediated target." .
+
+acg:EventEmitTarget a owl:Class ;
+    rdfs:label "Event Emit Target"@en ;
+    rdfs:subClassOf acg:Target ;
+    rdfs:comment "An event emission target." .
+
+acg:FederatedTarget a owl:Class ;
+    rdfs:label "Federated Target"@en ;
+    rdfs:subClassOf acg:Target ;
+    rdfs:comment "A target that resolves through federation to a remote broker. Enables cross-domain affordance traversal in decentralized deployments."@en .
+
+acg:OID4VCITarget a owl:Class ;
+    rdfs:label "OID4VCI Target"@en ;
+    rdfs:subClassOf acg:Target ;
+    rdfs:comment "An OpenID for Verifiable Credential Issuance target for credential requests."@en .
+
+# -----------------------------------------------------------------------------
+# Constraint - Deontic or outcome-based limitation
+# -----------------------------------------------------------------------------
+
+acg:Constraint a owl:Class ;
+    rdfs:label "Constraint"@en ;
+    rdfs:comment "A limitation or requirement that governs agent behavior or affordance traversal."@en .
+
+acg:DeonticConstraint a owl:Class ;
+    rdfs:label "Deontic Constraint"@en ;
+    rdfs:subClassOf acg:Constraint ;
+    rdfs:comment "A normative constraint expressing obligations, permissions, or prohibitions."@en .
+
+acg:OutcomeConstraint a owl:Class ;
+    rdfs:label "Outcome Constraint"@en ;
+    rdfs:subClassOf acg:Constraint ;
+    rdfs:comment "A constraint on the predicted or actual outcomes of an action."@en .
+
+acg:TemporalConstraint a owl:Class ;
+    rdfs:label "Temporal Constraint"@en ;
+    rdfs:subClassOf acg:Constraint ;
+    rdfs:comment "A time-based constraint."@en .
+
+acg:ResourceConstraint a owl:Class ;
+    rdfs:label "Resource Constraint"@en ;
+    rdfs:subClassOf acg:Constraint ;
+    rdfs:comment "A constraint on resource usage or availability."@en .
+
+# -----------------------------------------------------------------------------
+# VerifiedCredential - Proof of capability
+# -----------------------------------------------------------------------------
+
+acg:VerifiedCredentialRef a owl:Class ;
+    rdfs:label "Verified Credential Reference"@en ;
+    rdfs:comment "A reference to a verified credential that has been validated by the broker."@en .
+
+# -----------------------------------------------------------------------------
+# Effect - Consequences of affordance traversal
+# -----------------------------------------------------------------------------
+
+acg:Effect a owl:Class ;
+    rdfs:label "Effect"@en ;
+    rdfs:comment "A consequence or side-effect of traversing an affordance."@en .
+
+acg:StateChangeEffect a owl:Class ;
+    rdfs:label "State Change Effect"@en ;
+    rdfs:subClassOf acg:Effect .
+
+acg:EventEmitEffect a owl:Class ;
+    rdfs:label "Event Emit Effect"@en ;
+    rdfs:subClassOf acg:Effect .
+
+acg:ResourceCreateEffect a owl:Class ;
+    rdfs:label "Resource Create Effect"@en ;
+    rdfs:subClassOf acg:Effect .
+
+acg:ResourceUpdateEffect a owl:Class ;
+    rdfs:label "Resource Update Effect"@en ;
+    rdfs:subClassOf acg:Effect .
+
+acg:ResourceDeleteEffect a owl:Class ;
+    rdfs:label "Resource Delete Effect"@en ;
+    rdfs:subClassOf acg:Effect .
+
+acg:MessageSendEffect a owl:Class ;
+    rdfs:label "Message Send Effect"@en ;
+    rdfs:subClassOf acg:Effect .
+
+# -----------------------------------------------------------------------------
+# CausalSemantics - Intervention and outcome semantics
+# -----------------------------------------------------------------------------
+
+acg:CausalSemantics a owl:Class ;
+    rdfs:label "Causal Semantics"@en ;
+    rdfs:comment "Describes the causal interpretation of an affordance in terms of do-calculus interventions and outcome variables."@en .
+
+# -----------------------------------------------------------------------------
+# Usage Semantics - Meaning emerges from usage
+# -----------------------------------------------------------------------------
+
+acg:UsageSemantics a owl:Class ;
+    rdfs:label "Usage Semantics"@en ;
+    rdfs:comment "Usage-derived semantics for an affordance, based on observed traversals."@en .
+
+acg:UsageEvent a owl:Class ;
+    rdfs:label "Usage Event"@en ;
+    rdfs:subClassOf prov:Activity ;
+    rdfs:comment "Telemetry event capturing usage of an affordance for semiotic analysis."@en .
+
+# -----------------------------------------------------------------------------
+# TracePolicy - Requirements for provenance emission
+# -----------------------------------------------------------------------------
+
+acg:TracePolicy a owl:Class ;
+    rdfs:label "Trace Policy"@en ;
+    rdfs:comment "Policy governing provenance trace requirements for a context."@en .
+
+# -----------------------------------------------------------------------------
+# ProvTrace - Immutable provenance record
+# -----------------------------------------------------------------------------
+
+acg:ProvTrace a owl:Class ;
+    rdfs:label "Provenance Trace"@en ;
+    rdfs:subClassOf prov:Activity ;
+    rdfs:comment "An immutable record of an affordance traversal including context, parameters, and outcomes."@en .
+
+# -----------------------------------------------------------------------------
+# ExecutionEnclave - Isolated execution environment (Gas Town inspired)
+# -----------------------------------------------------------------------------
+
+acg:ExecutionEnclave a owl:Class ;
+    rdfs:label "Execution Enclave"@en ;
+    rdfs:subClassOf prov:Entity ;
+    rdfs:comment "A DID-bound, isolated execution environment with full PROV tracking. Inspired by Gas Town's git worktree isolation pattern."@en ;
+    rdfs:subClassOf [
+        a owl:Restriction ;
+        owl:onProperty acg:boundToAgent ;
+        owl:cardinality 1
+    ] ;
+    rdfs:subClassOf [
+        a owl:Restriction ;
+        owl:onProperty acg:enclaveWorktree ;
+        owl:cardinality 1
+    ] .
+
+acg:EnclaveStatus a owl:Class ;
+    rdfs:label "Enclave Status"@en ;
+    rdfs:comment "Status of an execution enclave."@en ;
+    owl:oneOf (acg:EnclaveActive acg:EnclaveSealed acg:EnclaveDestroyed) .
+
+acg:EnclaveActive a acg:EnclaveStatus ;
+    rdfs:label "Active"@en .
+
+acg:EnclaveSealed a acg:EnclaveStatus ;
+    rdfs:label "Sealed"@en ;
+    rdfs:comment "Enclave is read-only, work preserved."@en .
+
+acg:EnclaveDestroyed a acg:EnclaveStatus ;
+    rdfs:label "Destroyed"@en ;
+    rdfs:comment "Enclave has been cleaned up."@en .
+
+# -----------------------------------------------------------------------------
+# ContextCheckpoint - Resumable state snapshot (Gas Town inspired)
+# -----------------------------------------------------------------------------
+
+acg:ContextCheckpoint a owl:Class ;
+    rdfs:label "Context Checkpoint"@en ;
+    rdfs:subClassOf prov:Entity ;
+    rdfs:comment "An immutable snapshot of a Context Graph plus agent state, enabling crash recovery while maintaining full provenance. Inspired by Gas Town's Beads/Hooks pattern."@en ;
+    rdfs:subClassOf [
+        a owl:Restriction ;
+        owl:onProperty acg:checkpointOf ;
+        owl:cardinality 1
+    ] ;
+    rdfs:subClassOf [
+        a owl:Restriction ;
+        owl:onProperty acg:checkpointAgent ;
+        owl:cardinality 1
+    ] .
+
+# =============================================================================
+# Object Properties
+# =============================================================================
+
+acg:forAgent a owl:ObjectProperty ;
+    rdfs:label "for agent"@en ;
+    rdfs:domain acg:ContextGraph ;
+    rdfs:range acg:Agent ;
+    rdfs:comment "The agent for whom this context graph was generated."@en .
+
+acg:hasAgentType a owl:ObjectProperty ;
+    rdfs:label "has agent type"@en ;
+    rdfs:domain acg:Agent ;
+    rdfs:range aat:AbstractAgentType ;
+    rdfs:comment "The abstract agent type that constrains this agent's behavior."@en .
+
+acg:hasAffordance a owl:ObjectProperty ;
+    rdfs:label "has affordance"@en ;
+    rdfs:domain acg:ContextGraph ;
+    rdfs:range acg:Affordance ;
+    rdfs:comment "An affordance available in this context."@en .
+
+acg:hasHypergraph a owl:ObjectProperty ;
+    rdfs:label "has hypergraph"@en ;
+    rdfs:domain acg:ContextGraph ;
+    rdfs:range acg:Hypergraph ;
+    rdfs:comment "Optional explicit hypergraph representation of this context."@en .
+
+acg:hasCategory a owl:ObjectProperty ;
+    rdfs:label "has category"@en ;
+    rdfs:domain acg:ContextGraph ;
+    rdfs:range acg:ContextCategory ;
+    rdfs:comment "Optional category-theoretic view of this context."@en .
+
+acg:hasNode a owl:ObjectProperty ;
+    rdfs:label "has node"@en ;
+    rdfs:domain acg:Hypergraph ;
+    rdfs:range acg:Hypernode ;
+    rdfs:comment "A hypernode contained in a hypergraph."@en .
+
+acg:hasHyperedge a owl:ObjectProperty ;
+    rdfs:label "has hyperedge"@en ;
+    rdfs:domain acg:Hypergraph ;
+    rdfs:range acg:Hyperedge ;
+    rdfs:comment "A hyperedge contained in a hypergraph."@en .
+
+acg:connectsNode a owl:ObjectProperty ;
+    rdfs:label "connects node"@en ;
+    rdfs:domain acg:Hyperedge ;
+    rdfs:range acg:Hypernode ;
+    rdfs:comment "Indicates a hypernode incident to a hyperedge."@en .
+
+acg:hasObject a owl:ObjectProperty ;
+    rdfs:label "has object"@en ;
+    rdfs:domain acg:ContextCategory ;
+    rdfs:range acg:CategoryObject ;
+    rdfs:comment "Object contained in the context category."@en .
+
+acg:hasMorphism a owl:ObjectProperty ;
+    rdfs:label "has morphism"@en ;
+    rdfs:domain acg:ContextCategory ;
+    rdfs:range acg:Morphism ;
+    rdfs:comment "Morphism contained in the context category."@en .
+
+acg:hasComposition a owl:ObjectProperty ;
+    rdfs:label "has composition"@en ;
+    rdfs:domain acg:ContextCategory ;
+    rdfs:range acg:Composition ;
+    rdfs:comment "Composition records for morphisms."@en .
+
+acg:hasDomain a owl:ObjectProperty ;
+    rdfs:label "has domain"@en ;
+    rdfs:domain acg:Morphism ;
+    rdfs:range acg:CategoryObject ;
+    rdfs:comment "Domain object(s) of a morphism."@en .
+
+acg:hasCodomain a owl:ObjectProperty ;
+    rdfs:label "has codomain"@en ;
+    rdfs:domain acg:Morphism ;
+    rdfs:range acg:CategoryObject ;
+    rdfs:comment "Codomain object(s) of a morphism."@en .
+
+acg:hasTarget a owl:ObjectProperty ;
+    rdfs:label "has target"@en ;
+    rdfs:domain acg:Affordance ;
+    rdfs:range acg:Target ;
+    rdfs:comment "The target of this affordance."@en .
+
+acg:hasActionType a owl:ObjectProperty ;
+    rdfs:label "has action type"@en ;
+    rdfs:domain acg:Affordance ;
+    rdfs:range aat:ActionType ;
+    rdfs:comment "The type of action this affordance represents."@en .
+
+acg:hasConstraint a owl:ObjectProperty ;
+    rdfs:label "has constraint"@en ;
+    rdfs:domain acg:ContextGraph ;
+    rdfs:range acg:Constraint ;
+    rdfs:comment "A constraint applicable to this context."@en .
+
+acg:hasCredential a owl:ObjectProperty ;
+    rdfs:label "has credential"@en ;
+    rdfs:domain acg:ContextGraph ;
+    rdfs:range acg:VerifiedCredentialRef ;
+    rdfs:comment "A verified credential available in this context."@en .
+
+acg:requiresCredential a owl:ObjectProperty ;
+    rdfs:label "requires credential"@en ;
+    rdfs:domain acg:Affordance ;
+    rdfs:range acg:VerifiedCredentialRef ;
+    rdfs:comment "A credential required to traverse this affordance."@en .
+
+acg:hasEffect a owl:ObjectProperty ;
+    rdfs:label "has effect"@en ;
+    rdfs:domain acg:Affordance ;
+    rdfs:range acg:Effect ;
+    rdfs:comment "An effect of traversing this affordance."@en .
+
+acg:hasCausalSemantics a owl:ObjectProperty ;
+    rdfs:label "has causal semantics"@en ;
+    rdfs:domain acg:Affordance ;
+    rdfs:range acg:CausalSemantics ;
+    rdfs:comment "The causal interpretation of this affordance."@en .
+
+acg:hasUsageSemantics a owl:ObjectProperty ;
+    rdfs:label "has usage semantics"@en ;
+    rdfs:domain acg:Affordance ;
+    rdfs:range acg:UsageSemantics ;
+    rdfs:comment "Usage-based semantics derived from observed traversals."@en .
+
+acg:hasUsageEvent a owl:ObjectProperty ;
+    rdfs:label "has usage event"@en ;
+    rdfs:domain acg:ProvTrace ;
+    rdfs:range acg:UsageEvent ;
+    rdfs:comment "Usage telemetry event associated with a trace."@en .
+
+acg:hasTracePolicy a owl:ObjectProperty ;
+    rdfs:label "has trace policy"@en ;
+    rdfs:domain acg:ContextGraph ;
+    rdfs:range acg:TracePolicy ;
+    rdfs:comment "The trace policy for this context."@en .
+
+acg:generatedTrace a owl:ObjectProperty ;
+    rdfs:label "generated trace"@en ;
+    rdfs:domain acg:Affordance ;
+    rdfs:range acg:ProvTrace ;
+    rdfs:comment "A trace generated by traversing this affordance."@en .
+
+acg:usedContext a owl:ObjectProperty ;
+    rdfs:label "used context"@en ;
+    rdfs:domain acg:ProvTrace ;
+    rdfs:range acg:ContextGraph ;
+    rdfs:comment "The context that was active when this trace was generated."@en .
+
+acg:usedAffordance a owl:ObjectProperty ;
+    rdfs:label "used affordance"@en ;
+    rdfs:domain acg:ProvTrace ;
+    rdfs:range acg:Affordance ;
+    rdfs:comment "The affordance that was traversed."@en .
+
+# -----------------------------------------------------------------------------
+# ExecutionEnclave Properties
+# -----------------------------------------------------------------------------
+
+acg:boundToAgent a owl:ObjectProperty ;
+    rdfs:label "bound to agent"@en ;
+    rdfs:domain acg:ExecutionEnclave ;
+    rdfs:range acg:Agent ;
+    rdfs:comment "The agent DID that owns this enclave."@en .
+
+acg:hasEnclave a owl:ObjectProperty ;
+    rdfs:label "has enclave"@en ;
+    rdfs:domain acg:Agent ;
+    rdfs:range acg:ExecutionEnclave ;
+    owl:inverseOf acg:boundToAgent ;
+    rdfs:comment "An execution enclave owned by this agent."@en .
+
+acg:enclaveCreatedBy a owl:ObjectProperty ;
+    rdfs:label "enclave created by"@en ;
+    rdfs:subPropertyOf prov:wasGeneratedBy ;
+    rdfs:domain acg:ExecutionEnclave ;
+    rdfs:range prov:Activity ;
+    rdfs:comment "The PROV Activity that created this enclave."@en .
+
+acg:hasEnclaveStatus a owl:ObjectProperty ;
+    rdfs:label "has enclave status"@en ;
+    rdfs:domain acg:ExecutionEnclave ;
+    rdfs:range acg:EnclaveStatus ;
+    rdfs:comment "Current status of the enclave."@en .
+
+acg:enclaveScope a owl:ObjectProperty ;
+    rdfs:label "enclave scope"@en ;
+    rdfs:domain acg:ExecutionEnclave ;
+    rdfs:range rdfs:Resource ;
+    rdfs:comment "Resources this enclave can access."@en .
+
+# -----------------------------------------------------------------------------
+# ContextCheckpoint Properties
+# -----------------------------------------------------------------------------
+
+acg:checkpointOf a owl:ObjectProperty ;
+    rdfs:label "checkpoint of"@en ;
+    rdfs:subPropertyOf prov:wasDerivedFrom ;
+    rdfs:domain acg:ContextCheckpoint ;
+    rdfs:range acg:ContextGraph ;
+    rdfs:comment "The context graph this checkpoint snapshots."@en .
+
+acg:checkpointAgent a owl:ObjectProperty ;
+    rdfs:label "checkpoint agent"@en ;
+    rdfs:domain acg:ContextCheckpoint ;
+    rdfs:range acg:Agent ;
+    rdfs:comment "The agent who created this checkpoint."@en .
+
+acg:resumedFrom a owl:ObjectProperty ;
+    rdfs:label "resumed from"@en ;
+    rdfs:subPropertyOf prov:wasDerivedFrom ;
+    rdfs:domain acg:ContextGraph ;
+    rdfs:range acg:ContextCheckpoint ;
+    rdfs:comment "Indicates this context was resumed from a checkpoint."@en .
+
+acg:supersedes a owl:ObjectProperty ;
+    rdfs:label "supersedes"@en ;
+    rdfs:subPropertyOf prov:wasRevisionOf ;
+    rdfs:domain acg:ContextCheckpoint ;
+    rdfs:range acg:ContextCheckpoint ;
+    rdfs:comment "Previous checkpoint this one supersedes."@en .
+
+acg:checkpointCreatedBy a owl:ObjectProperty ;
+    rdfs:label "checkpoint created by"@en ;
+    rdfs:subPropertyOf prov:wasGeneratedBy ;
+    rdfs:domain acg:ContextCheckpoint ;
+    rdfs:range prov:Activity ;
+    rdfs:comment "The PROV Activity that created this checkpoint."@en .
+
+# =============================================================================
+# Datatype Properties
+# =============================================================================
+
+acg:hasDID a owl:DatatypeProperty ;
+    rdfs:label "has DID"@en ;
+    rdfs:domain acg:Agent ;
+    rdfs:range xsd:string ;
+    rdfs:comment "The Decentralized Identifier of the agent."@en .
+
+acg:hasTimestamp a owl:DatatypeProperty ;
+    rdfs:label "has timestamp"@en ;
+    rdfs:range xsd:dateTime ;
+    rdfs:comment "The timestamp when this resource was created."@en .
+
+acg:expiresAt a owl:DatatypeProperty ;
+    rdfs:label "expires at"@en ;
+    rdfs:domain acg:ContextGraph ;
+    rdfs:range xsd:dateTime ;
+    rdfs:comment "When this context graph expires."@en .
+
+acg:hasNonce a owl:DatatypeProperty ;
+    rdfs:label "has nonce"@en ;
+    rdfs:domain acg:ContextGraph ;
+    rdfs:range xsd:string ;
+    rdfs:comment "A unique nonce for replay protection."@en .
+
+acg:isEnabled a owl:DatatypeProperty ;
+    rdfs:label "is enabled"@en ;
+    rdfs:domain acg:Affordance ;
+    rdfs:range xsd:boolean ;
+    rdfs:comment "Whether this affordance is currently enabled."@en .
+
+acg:disabledReason a owl:DatatypeProperty ;
+    rdfs:label "disabled reason"@en ;
+    rdfs:domain acg:Affordance ;
+    rdfs:range xsd:string ;
+    rdfs:comment "Why this affordance is disabled, if applicable."@en .
+
+acg:hasRule a owl:DatatypeProperty ;
+    rdfs:label "has rule"@en ;
+    rdfs:domain acg:Constraint ;
+    rdfs:range xsd:string ;
+    rdfs:comment "The rule expression for this constraint."@en .
+
+acg:hasEnforcementLevel a owl:DatatypeProperty ;
+    rdfs:label "has enforcement level"@en ;
+    rdfs:domain acg:Constraint ;
+    rdfs:range xsd:string ;
+    rdfs:comment "The enforcement level: strict, advisory, or audit-only."@en .
+
+acg:isReversible a owl:DatatypeProperty ;
+    rdfs:label "is reversible"@en ;
+    rdfs:domain acg:Effect ;
+    rdfs:range xsd:boolean ;
+    rdfs:comment "Whether this effect can be undone."@en .
+
+acg:interventionLabel a owl:DatatypeProperty ;
+    rdfs:label "intervention label"@en ;
+    rdfs:domain acg:CausalSemantics ;
+    rdfs:range xsd:string ;
+    rdfs:comment "The do-calculus intervention label, e.g., do(action, params)."@en .
+
+acg:usageStability a owl:DatatypeProperty ;
+    rdfs:label "usage stability"@en ;
+    rdfs:domain acg:UsageSemantics ;
+    rdfs:range xsd:decimal ;
+    rdfs:comment "Stability score for relation usage (0..1)."@en .
+
+acg:usageDrift a owl:DatatypeProperty ;
+    rdfs:label "usage drift"@en ;
+    rdfs:domain acg:UsageSemantics ;
+    rdfs:range xsd:decimal ;
+    rdfs:comment "Drift score for usage changes over a window (0..1)."@en .
+
+acg:usagePolysemy a owl:DatatypeProperty ;
+    rdfs:label "usage polysemy"@en ;
+    rdfs:domain acg:UsageSemantics ;
+    rdfs:range xsd:decimal ;
+    rdfs:comment "Estimated polysemy (usage cluster count or ratio)."@en .
+
+acg:usageEvidenceWindow a owl:DatatypeProperty ;
+    rdfs:label "usage evidence window"@en ;
+    rdfs:domain acg:UsageSemantics ;
+    rdfs:range xsd:duration ;
+    rdfs:comment "ISO 8601 duration for aggregation window."@en .
+
+acg:usageLastObservedAt a owl:DatatypeProperty ;
+    rdfs:label "usage last observed at"@en ;
+    rdfs:domain acg:UsageSemantics ;
+    rdfs:range xsd:dateTime ;
+    rdfs:comment "Most recent usage observation timestamp."@en .
+
+acg:usageExampleTrace a owl:DatatypeProperty ;
+    rdfs:label "usage example trace"@en ;
+    rdfs:domain acg:UsageSemantics ;
+    rdfs:range xsd:string ;
+    rdfs:comment "Trace IDs or example references used as evidence."@en .
+
+acg:usageNotes a owl:DatatypeProperty ;
+    rdfs:label "usage notes"@en ;
+    rdfs:domain acg:UsageSemantics ;
+    rdfs:range xsd:string ;
+    rdfs:comment "Free-form notes about usage semantics."@en .
+
+acg:usageRel a owl:DatatypeProperty ;
+    rdfs:label "usage relation"@en ;
+    rdfs:domain acg:UsageEvent ;
+    rdfs:range xsd:string ;
+    rdfs:comment "Relation label used in the affordance traversal."@en .
+
+acg:usageRelVersion a owl:DatatypeProperty ;
+    rdfs:label "usage relation version"@en ;
+    rdfs:domain acg:UsageEvent ;
+    rdfs:range xsd:string ;
+    rdfs:comment "Relation version used in the affordance traversal."@en .
+
+acg:usageActionType a owl:DatatypeProperty ;
+    rdfs:label "usage action type"@en ;
+    rdfs:domain acg:UsageEvent ;
+    rdfs:range xsd:string ;
+    rdfs:comment "Action type used in the affordance traversal."@en .
+
+acg:usageOutcomeStatus a owl:DatatypeProperty ;
+    rdfs:label "usage outcome status"@en ;
+    rdfs:domain acg:UsageEvent ;
+    rdfs:range xsd:string ;
+    rdfs:comment "Outcome status of the traversal."@en .
+
+acg:usageTimestamp a owl:DatatypeProperty ;
+    rdfs:label "usage timestamp"@en ;
+    rdfs:domain acg:UsageEvent ;
+    rdfs:range xsd:dateTime ;
+    rdfs:comment "Timestamp for the usage event."@en .
+
+acg:relVersion a owl:DatatypeProperty ;
+    rdfs:label "relation version"@en ;
+    rdfs:domain acg:Affordance ;
+    rdfs:range xsd:string ;
+    rdfs:comment "The semantic version of the relation type."@en .
+
+# ---------------------------------------------------------------------------
+# Hypergraph + Category Datatype Properties
+# ---------------------------------------------------------------------------
+
+acg:hypernodeKind a owl:DatatypeProperty ;
+    rdfs:label "hypernode kind"@en ;
+    rdfs:domain acg:Hypernode ;
+    rdfs:range xsd:string ;
+    rdfs:comment "Optional kind label for a hypernode."@en .
+
+acg:hypernodeRef a owl:DatatypeProperty ;
+    rdfs:label "hypernode reference"@en ;
+    rdfs:domain acg:Hypernode ;
+    rdfs:range xsd:string ;
+    rdfs:comment "Reference to the underlying graph entity (URI or local id)."@en .
+
+acg:hyperedgeRelation a owl:DatatypeProperty ;
+    rdfs:label "hyperedge relation"@en ;
+    rdfs:domain acg:Hyperedge ;
+    rdfs:range xsd:string ;
+    rdfs:comment "Relation label for a hyperedge."@en .
+
+acg:affordanceRef a owl:DatatypeProperty ;
+    rdfs:label "affordance reference"@en ;
+    rdfs:domain acg:Hyperedge ;
+    rdfs:range xsd:string ;
+    rdfs:comment "Reference to an affordance id associated with this hyperedge."@en .
+
+acg:hyperedgeRef a owl:DatatypeProperty ;
+    rdfs:label "hyperedge reference"@en ;
+    rdfs:domain acg:Morphism ;
+    rdfs:range xsd:string ;
+    rdfs:comment "Reference to a hyperedge id associated with this morphism."@en .
+
+acg:roleBindings a owl:DatatypeProperty ;
+    rdfs:label "role bindings"@en ;
+    rdfs:domain acg:Hyperedge ;
+    rdfs:range xsd:string ;
+    rdfs:comment "JSON-serialized role bindings for hyperedge incidence roles."@en .
+
+acg:compositionOf a owl:DatatypeProperty ;
+    rdfs:label "composition of"@en ;
+    rdfs:domain acg:Composition ;
+    rdfs:range xsd:string ;
+    rdfs:comment "Ordered list of morphism ids composing to the composite (serialized)."@en .
+
+acg:compositeMorphism a owl:DatatypeProperty ;
+    rdfs:label "composite morphism"@en ;
+    rdfs:domain acg:Composition ;
+    rdfs:range xsd:string ;
+    rdfs:comment "Morphism id representing the composite."@en .
+
+# -----------------------------------------------------------------------------
+# ExecutionEnclave Datatype Properties
+# -----------------------------------------------------------------------------
+
+acg:enclaveWorktree a owl:DatatypeProperty ;
+    rdfs:label "enclave worktree"@en ;
+    rdfs:domain acg:ExecutionEnclave ;
+    rdfs:range xsd:string ;
+    rdfs:comment "Git worktree path for this enclave."@en .
+
+acg:enclaveRepository a owl:DatatypeProperty ;
+    rdfs:label "enclave repository"@en ;
+    rdfs:domain acg:ExecutionEnclave ;
+    rdfs:range xsd:string ;
+    rdfs:comment "Base git repository URL."@en .
+
+acg:enclaveBranch a owl:DatatypeProperty ;
+    rdfs:label "enclave branch"@en ;
+    rdfs:domain acg:ExecutionEnclave ;
+    rdfs:range xsd:string ;
+    rdfs:comment "Git branch name for this enclave."@en .
+
+acg:enclaveCreatedAt a owl:DatatypeProperty ;
+    rdfs:label "enclave created at"@en ;
+    rdfs:domain acg:ExecutionEnclave ;
+    rdfs:range xsd:dateTime ;
+    rdfs:comment "When this enclave was created."@en .
+
+acg:enclaveSealedAt a owl:DatatypeProperty ;
+    rdfs:label "enclave sealed at"@en ;
+    rdfs:domain acg:ExecutionEnclave ;
+    rdfs:range xsd:dateTime ;
+    rdfs:comment "When this enclave was sealed (made read-only)."@en .
+
+# -----------------------------------------------------------------------------
+# ContextCheckpoint Datatype Properties
+# -----------------------------------------------------------------------------
+
+acg:checkpointCreatedAt a owl:DatatypeProperty ;
+    rdfs:label "checkpoint created at"@en ;
+    rdfs:domain acg:ContextCheckpoint ;
+    rdfs:range xsd:dateTime ;
+    rdfs:comment "When this checkpoint was created."@en .
+
+acg:checkpointState a owl:DatatypeProperty ;
+    rdfs:label "checkpoint state"@en ;
+    rdfs:domain acg:ContextCheckpoint ;
+    rdfs:range xsd:string ;
+    rdfs:comment "Serialized agent state at checkpoint time (JSON)."@en .
+
+acg:checkpointContextSnapshot a owl:DatatypeProperty ;
+    rdfs:label "checkpoint context snapshot"@en ;
+    rdfs:domain acg:ContextCheckpoint ;
+    rdfs:range xsd:string ;
+    rdfs:comment "Serialized context graph snapshot (JSON-LD)."@en .
+
+acg:checkpointHash a owl:DatatypeProperty ;
+    rdfs:label "checkpoint hash"@en ;
+    rdfs:domain acg:ContextCheckpoint ;
+    rdfs:range xsd:string ;
+    rdfs:comment "SHA-256 hash of checkpoint contents for integrity."@en .
+
+acg:checkpointSignature a owl:DatatypeProperty ;
+    rdfs:label "checkpoint signature"@en ;
+    rdfs:domain acg:ContextCheckpoint ;
+    rdfs:range xsd:string ;
+    rdfs:comment "Agent's cryptographic signature of the checkpoint."@en .

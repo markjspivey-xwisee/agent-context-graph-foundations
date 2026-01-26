@@ -1,0 +1,372 @@
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix hydra: <http://www.w3.org/ns/hydra/core#> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix acg: <https://agentcontextgraph.dev/ontology#> .
+@prefix aat: <https://agentcontextgraph.dev/aat#> .
+@prefix api: <https://agentcontextgraph.dev/api#> .
+
+# =============================================================================
+# Agent Context Graph API Documentation (Hydra)
+# =============================================================================
+
+<https://agentcontextgraph.dev/api>
+    a hydra:ApiDocumentation ;
+    hydra:title "Agent Context Graph API"@en ;
+    hydra:description "RESTful API for the Agent Context Graph broker. Provides context graphs, affordance traversal, and provenance traces."@en ;
+    hydra:entrypoint <https://agentcontextgraph.dev/api/> ;
+    hydra:supportedClass
+        api:ContextGraphCollection,
+        api:ContextGraph,
+        api:TraversalRequest,
+        api:TraversalResult,
+        api:TraceCollection,
+        api:ProvTrace,
+        api:AATCollection,
+        api:AbstractAgentType,
+        api:OntologyCollection .
+
+# =============================================================================
+# Entry Point
+# =============================================================================
+
+api:EntryPoint a hydra:Class ;
+    rdfs:label "API Entry Point"@en ;
+    hydra:supportedOperation [
+        a hydra:Operation ;
+        hydra:method "GET" ;
+        hydra:title "API entry point"@en ;
+        hydra:returns api:EntryPoint
+    ] ;
+    hydra:supportedProperty [
+        hydra:property api:contexts ;
+        hydra:title "Contexts"@en ;
+        hydra:readable true ;
+        hydra:required true
+    ] ;
+    hydra:supportedProperty [
+        hydra:property api:traces ;
+        hydra:title "Traces"@en ;
+        hydra:readable true ;
+        hydra:required true
+    ] ;
+    hydra:supportedProperty [
+        hydra:property api:aats ;
+        hydra:title "Abstract Agent Types"@en ;
+        hydra:readable true ;
+        hydra:required true
+    ] ;
+    hydra:supportedProperty [
+        hydra:property api:ontology ;
+        hydra:title "Ontology"@en ;
+        hydra:readable true ;
+        hydra:required true
+    ] .
+
+# =============================================================================
+# Context Graph Resources
+# =============================================================================
+
+api:ContextGraphCollection a hydra:Class ;
+    rdfs:label "Context Graph Collection"@en ;
+    rdfs:subClassOf hydra:Collection ;
+    hydra:supportedOperation [
+        a hydra:Operation ;
+        hydra:method "POST" ;
+        hydra:title "Request a Context Graph"@en ;
+        hydra:description "Generate a new context graph for an agent based on their DID, credentials, and scope."@en ;
+        hydra:expects api:ContextRequest ;
+        hydra:returns acg:ContextGraph ;
+        hydra:statusCodes [
+            hydra:code 200 ;
+            hydra:description "Context graph generated successfully"
+        ] , [
+            hydra:code 400 ;
+            hydra:description "Invalid request - missing agentDID or invalid credentials"
+        ] , [
+            hydra:code 403 ;
+            hydra:description "Agent not authorized for requested scope"
+        ]
+    ] .
+
+api:ContextGraph a hydra:Class ;
+    rdfs:label "Context Graph"@en ;
+    rdfs:subClassOf acg:ContextGraph ;
+    hydra:supportedProperty [
+        hydra:property api:hypergraph ;
+        hydra:title "Hypergraph"@en ;
+        hydra:description "Optional explicit hypergraph representation of the context graph."@en ;
+        hydra:required false ;
+        hydra:readable true
+    ] ;
+    hydra:supportedProperty [
+        hydra:property api:category ;
+        hydra:title "Category"@en ;
+        hydra:description "Optional category-theoretic view of the context graph."@en ;
+        hydra:required false ;
+        hydra:readable true
+    ] .
+
+api:ContextRequest a hydra:Class ;
+    rdfs:label "Context Request"@en ;
+    rdfs:comment "Request body for generating a context graph."@en ;
+    hydra:supportedProperty [
+        hydra:property api:agentDID ;
+        hydra:title "Agent DID"@en ;
+        hydra:description "The Decentralized Identifier of the requesting agent."@en ;
+        hydra:required true ;
+        hydra:readable true ;
+        hydra:writeable true
+    ] ;
+    hydra:supportedProperty [
+        hydra:property api:agentType ;
+        hydra:title "Agent Type"@en ;
+        hydra:description "The AAT ID of the agent (e.g., aat:PlannerAgentType)."@en ;
+        hydra:required false ;
+        hydra:readable true ;
+        hydra:writeable true
+    ] ;
+    hydra:supportedProperty [
+        hydra:property api:credentials ;
+        hydra:title "Credentials"@en ;
+        hydra:description "Verifiable Presentations proving capabilities."@en ;
+        hydra:required false ;
+        hydra:readable true ;
+        hydra:writeable true
+    ] ;
+    hydra:supportedProperty [
+        hydra:property api:scope ;
+        hydra:title "Scope"@en ;
+        hydra:description "Requested scope (domain, resources, actions)."@en ;
+        hydra:required false ;
+        hydra:readable true ;
+        hydra:writeable true
+    ] .
+
+# =============================================================================
+# Traversal Resources
+# =============================================================================
+
+api:TraversalRequest a hydra:Class ;
+    rdfs:label "Traversal Request"@en ;
+    rdfs:comment "Request to traverse an affordance."@en ;
+    hydra:supportedProperty [
+        hydra:property api:contextId ;
+        hydra:title "Context ID"@en ;
+        hydra:description "The ID of the active context graph."@en ;
+        hydra:required true ;
+        hydra:readable true ;
+        hydra:writeable true
+    ] ;
+    hydra:supportedProperty [
+        hydra:property api:affordanceId ;
+        hydra:title "Affordance ID"@en ;
+        hydra:description "The ID of the affordance to traverse."@en ;
+        hydra:required true ;
+        hydra:readable true ;
+        hydra:writeable true
+    ] ;
+    hydra:supportedProperty [
+        hydra:property api:parameters ;
+        hydra:title "Parameters"@en ;
+        hydra:description "Parameters for the affordance, validated against its SHACL shape."@en ;
+        hydra:required false ;
+        hydra:readable true ;
+        hydra:writeable true
+    ] .
+
+api:TraversalEndpoint a hydra:Class ;
+    rdfs:label "Traversal Endpoint"@en ;
+    hydra:supportedOperation [
+        a hydra:Operation ;
+        hydra:method "POST" ;
+        hydra:title "Traverse an Affordance"@en ;
+        hydra:description "Execute an affordance traversal, generating a PROV trace."@en ;
+        hydra:expects api:TraversalRequest ;
+        hydra:returns api:TraversalResult ;
+        hydra:statusCodes [
+            hydra:code 200 ;
+            hydra:description "Traversal completed successfully"
+        ] , [
+            hydra:code 400 ;
+            hydra:description "Invalid parameters or SHACL validation failed"
+        ] , [
+            hydra:code 403 ;
+            hydra:description "Affordance not enabled or credentials insufficient"
+        ] , [
+            hydra:code 404 ;
+            hydra:description "Context or affordance not found"
+        ] , [
+            hydra:code 410 ;
+            hydra:description "Context has expired"
+        ]
+    ] .
+
+api:TraversalResult a hydra:Class ;
+    rdfs:label "Traversal Result"@en ;
+    rdfs:comment "Result of an affordance traversal."@en ;
+    hydra:supportedProperty [
+        hydra:property api:success ;
+        hydra:title "Success"@en ;
+        hydra:readable true
+    ] ;
+    hydra:supportedProperty [
+        hydra:property api:result ;
+        hydra:title "Result"@en ;
+        hydra:description "The result data from the traversal."@en ;
+        hydra:readable true
+    ] ;
+    hydra:supportedProperty [
+        hydra:property api:trace ;
+        hydra:title "Trace"@en ;
+        hydra:description "The PROV trace generated by this traversal."@en ;
+        hydra:readable true
+    ] ;
+    hydra:supportedProperty [
+        hydra:property api:newContext ;
+        hydra:title "New Context"@en ;
+        hydra:description "Updated context graph after traversal."@en ;
+        hydra:readable true
+    ] .
+
+# =============================================================================
+# Trace Resources
+# =============================================================================
+
+api:TraceCollection a hydra:Class ;
+    rdfs:label "Trace Collection"@en ;
+    rdfs:subClassOf hydra:Collection ;
+    hydra:supportedOperation [
+        a hydra:Operation ;
+        hydra:method "GET" ;
+        hydra:title "Query Traces"@en ;
+        hydra:description "Query provenance traces with filters."@en ;
+        hydra:returns api:TraceCollection
+    ] ;
+    hydra:supportedProperty [
+        hydra:property hydra:member ;
+        hydra:title "Traces"@en ;
+        hydra:readable true
+    ] .
+
+api:ProvTrace a hydra:Class ;
+    rdfs:label "Provenance Trace"@en ;
+    rdfs:subClassOf acg:ProvTrace ;
+    hydra:supportedOperation [
+        a hydra:Operation ;
+        hydra:method "GET" ;
+        hydra:title "Get Trace"@en ;
+        hydra:description "Retrieve a specific provenance trace by ID."@en ;
+        hydra:returns acg:ProvTrace
+    ] .
+
+# =============================================================================
+# AAT Resources
+# =============================================================================
+
+api:AATCollection a hydra:Class ;
+    rdfs:label "AAT Collection"@en ;
+    rdfs:subClassOf hydra:Collection ;
+    hydra:supportedOperation [
+        a hydra:Operation ;
+        hydra:method "GET" ;
+        hydra:title "List AATs"@en ;
+        hydra:description "List all registered Abstract Agent Types."@en ;
+        hydra:returns api:AATCollection
+    ] .
+
+api:AbstractAgentType a hydra:Class ;
+    rdfs:label "Abstract Agent Type"@en ;
+    rdfs:subClassOf aat:AbstractAgentType ;
+    hydra:supportedOperation [
+        a hydra:Operation ;
+        hydra:method "GET" ;
+        hydra:title "Get AAT"@en ;
+        hydra:description "Retrieve a specific AAT definition."@en ;
+        hydra:returns aat:AbstractAgentType
+    ] .
+
+# =============================================================================
+# Ontology Resources
+# =============================================================================
+
+api:OntologyCollection a hydra:Class ;
+    rdfs:label "Ontology Collection"@en ;
+    rdfs:subClassOf hydra:Collection ;
+    hydra:supportedOperation [
+        a hydra:Operation ;
+        hydra:method "GET" ;
+        hydra:title "Get Ontology"@en ;
+        hydra:description "Retrieve the system ontology."@en ;
+        hydra:returns api:OntologyCollection
+    ] .
+
+# =============================================================================
+# Properties
+# =============================================================================
+
+api:contexts a hydra:Link ;
+    rdfs:label "contexts"@en ;
+    rdfs:range api:ContextGraphCollection .
+
+api:traces a hydra:Link ;
+    rdfs:label "traces"@en ;
+    rdfs:range api:TraceCollection .
+
+api:aats a hydra:Link ;
+    rdfs:label "aats"@en ;
+    rdfs:range api:AATCollection .
+
+api:ontology a hydra:Link ;
+    rdfs:label "ontology"@en ;
+    rdfs:range api:OntologyCollection .
+
+api:agentDID a rdf:Property ;
+    rdfs:label "agentDID"@en ;
+    rdfs:range xsd:string .
+
+api:agentType a rdf:Property ;
+    rdfs:label "agentType"@en ;
+    rdfs:range xsd:string .
+
+api:credentials a rdf:Property ;
+    rdfs:label "credentials"@en .
+
+api:scope a rdf:Property ;
+    rdfs:label "scope"@en .
+
+api:contextId a rdf:Property ;
+    rdfs:label "contextId"@en ;
+    rdfs:range xsd:string .
+
+api:affordanceId a rdf:Property ;
+    rdfs:label "affordanceId"@en ;
+    rdfs:range xsd:string .
+
+api:parameters a rdf:Property ;
+    rdfs:label "parameters"@en .
+
+api:success a rdf:Property ;
+    rdfs:label "success"@en ;
+    rdfs:range xsd:boolean .
+
+api:result a rdf:Property ;
+    rdfs:label "result"@en .
+
+api:trace a rdf:Property ;
+    rdfs:label "trace"@en ;
+    rdfs:range acg:ProvTrace .
+
+api:newContext a rdf:Property ;
+    rdfs:label "newContext"@en ;
+    rdfs:range acg:ContextGraph .
+
+api:hypergraph a rdf:Property ;
+    rdfs:label "hypergraph"@en ;
+    rdfs:range acg:Hypergraph .
+
+api:category a rdf:Property ;
+    rdfs:label "category"@en ;
+    rdfs:range acg:ContextCategory .

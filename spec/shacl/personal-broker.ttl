@@ -1,0 +1,439 @@
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix pb: <https://agentcontextgraph.dev/personal-broker#> .
+@prefix id: <https://agentcontextgraph.dev/identity#> .
+@prefix ds: <https://agentcontextgraph.dev/data-space#> .
+@prefix shapes: <https://agentcontextgraph.dev/shacl/personal-broker#> .
+
+# =============================================================================
+# SHACL Shapes for Personal Broker Ontology
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# PersonalBroker Shape
+# -----------------------------------------------------------------------------
+
+shapes:PersonalBrokerShape a sh:NodeShape ;
+    sh:targetClass pb:PersonalBroker ;
+    sh:name "Personal Broker Shape" ;
+    sh:description "Validates a personal broker instance." ;
+
+    # Required: owner identity
+    sh:property [
+        sh:path pb:ownerIdentity ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:name "owner identity" ;
+        sh:message "Personal broker must have exactly one owner identity."
+    ] ;
+
+    # Required: at least one data space
+    sh:property [
+        sh:path pb:hasDataSpace ;
+        sh:minCount 1 ;
+        sh:class ds:DataSpace ;
+        sh:name "data space" ;
+        sh:message "Personal broker must have at least one data space."
+    ] ;
+
+    # Optional: display name
+    sh:property [
+        sh:path pb:brokerDisplayName ;
+        sh:datatype xsd:string ;
+        sh:maxLength 100 ;
+        sh:name "display name"
+    ] ;
+
+    # Optional: timezone
+    sh:property [
+        sh:path pb:brokerTimezone ;
+        sh:datatype xsd:string ;
+        sh:pattern "^[A-Za-z]+/[A-Za-z_]+$" ;
+        sh:name "timezone" ;
+        sh:message "Timezone must be in format 'Region/City'."
+    ] ;
+
+    # Optional: locale
+    sh:property [
+        sh:path pb:brokerLocale ;
+        sh:datatype xsd:string ;
+        sh:pattern "^[a-z]{2}(-[A-Z]{2})?$" ;
+        sh:name "locale" ;
+        sh:message "Locale must be in format 'en' or 'en-US'."
+    ] .
+
+# -----------------------------------------------------------------------------
+# Conversation Shape
+# -----------------------------------------------------------------------------
+
+shapes:ConversationShape a sh:NodeShape ;
+    sh:targetClass pb:Conversation ;
+    sh:name "Conversation Shape" ;
+    sh:description "Validates a conversation instance." ;
+
+    # Required: belongs to broker
+    sh:property [
+        sh:path pb:belongsToBroker ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:class pb:PersonalBroker ;
+        sh:name "belongs to broker" ;
+        sh:message "Conversation must belong to exactly one broker."
+    ] ;
+
+    # Required: status
+    sh:property [
+        sh:path pb:conversationStatus ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:in (pb:ConversationActive pb:ConversationPaused pb:ConversationEnded pb:ConversationArchived) ;
+        sh:name "status"
+    ] ;
+
+    # Required: started timestamp
+    sh:property [
+        sh:path pb:conversationStarted ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:dateTime ;
+        sh:name "started"
+    ] ;
+
+    # Optional: title
+    sh:property [
+        sh:path pb:conversationTitle ;
+        sh:datatype xsd:string ;
+        sh:maxLength 500 ;
+        sh:name "title"
+    ] .
+
+# -----------------------------------------------------------------------------
+# Message Shape
+# -----------------------------------------------------------------------------
+
+shapes:MessageShape a sh:NodeShape ;
+    sh:targetClass pb:Message ;
+    sh:name "Message Shape" ;
+    sh:description "Validates a message instance." ;
+
+    # Required: in conversation
+    sh:property [
+        sh:path pb:inConversation ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:class pb:Conversation ;
+        sh:name "in conversation"
+    ] ;
+
+    # Required: role
+    sh:property [
+        sh:path pb:messageRole ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:in (pb:UserMessage pb:AssistantMessage pb:AgentMessage pb:SystemMessage pb:RemoteMessage) ;
+        sh:name "role"
+    ] ;
+
+    # Required: content
+    sh:property [
+        sh:path pb:messageContent ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+        sh:name "content"
+    ] ;
+
+    # Required: timestamp
+    sh:property [
+        sh:path pb:messageTimestamp ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:dateTime ;
+        sh:name "timestamp"
+    ] .
+
+# -----------------------------------------------------------------------------
+# Channel Shape
+# -----------------------------------------------------------------------------
+
+shapes:ChannelShape a sh:NodeShape ;
+    sh:targetClass pb:Channel ;
+    sh:name "Channel Shape" ;
+    sh:description "Validates a channel instance." ;
+
+    # Required: connected to broker
+    sh:property [
+        sh:path pb:connectedToBroker ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:class pb:PersonalBroker ;
+        sh:name "connected to broker"
+    ] ;
+
+    # Required: channel type
+    sh:property [
+        sh:path pb:channelType ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:in (pb:WebChannel pb:CLIChannel pb:WhatsAppChannel pb:TelegramChannel
+               pb:DiscordChannel pb:SlackChannel pb:MatrixChannel pb:EmailChannel
+               pb:SMSChannel pb:VoiceChannel pb:APIChannel) ;
+        sh:name "channel type"
+    ] ;
+
+    # Required: status
+    sh:property [
+        sh:path pb:channelStatus ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:in (pb:ChannelConnected pb:ChannelDisconnected pb:ChannelError pb:ChannelRateLimited) ;
+        sh:name "status"
+    ] .
+
+# -----------------------------------------------------------------------------
+# Memory Entry Shape
+# -----------------------------------------------------------------------------
+
+shapes:MemoryEntryShape a sh:NodeShape ;
+    sh:targetClass pb:MemoryEntry ;
+    sh:name "Memory Entry Shape" ;
+    sh:description "Validates a memory entry instance." ;
+
+    # Required: content
+    sh:property [
+        sh:path pb:entryContent ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+        sh:name "content"
+    ] ;
+
+    # Required: created timestamp
+    sh:property [
+        sh:path pb:entryCreated ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:dateTime ;
+        sh:name "created"
+    ] ;
+
+    # Optional: importance score (0-1)
+    sh:property [
+        sh:path pb:entryImportance ;
+        sh:datatype xsd:float ;
+        sh:minInclusive 0.0 ;
+        sh:maxInclusive 1.0 ;
+        sh:name "importance"
+    ] .
+
+# -----------------------------------------------------------------------------
+# Routine Shape
+# -----------------------------------------------------------------------------
+
+shapes:RoutineShape a sh:NodeShape ;
+    sh:targetClass pb:Routine ;
+    sh:name "Routine Shape" ;
+    sh:description "Validates a routine instance." ;
+
+    # Required: name
+    sh:property [
+        sh:path pb:routineName ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+        sh:maxLength 200 ;
+        sh:name "name"
+    ] ;
+
+    # Required: trigger
+    sh:property [
+        sh:path pb:routineTrigger ;
+        sh:minCount 1 ;
+        sh:in (pb:ScheduledTrigger pb:EventTrigger pb:CommandTrigger pb:ContextTrigger) ;
+        sh:name "trigger"
+    ] ;
+
+    # Required: enabled flag
+    sh:property [
+        sh:path pb:routineEnabled ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:boolean ;
+        sh:name "enabled"
+    ] ;
+
+    # Optional: schedule (cron format)
+    sh:property [
+        sh:path pb:routineSchedule ;
+        sh:datatype xsd:string ;
+        sh:name "schedule"
+    ] .
+
+# -----------------------------------------------------------------------------
+# Tool Shape
+# -----------------------------------------------------------------------------
+
+shapes:ToolShape a sh:NodeShape ;
+    sh:targetClass pb:Tool ;
+    sh:name "Tool Shape" ;
+    sh:description "Validates a tool instance." ;
+
+    # Required: name
+    sh:property [
+        sh:path pb:toolName ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+        sh:maxLength 100 ;
+        sh:name "name"
+    ] ;
+
+    # Required: category
+    sh:property [
+        sh:path pb:toolCategory ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:in (pb:SearchTool pb:ProductivityTool pb:SmartHomeTool pb:CommunicationTool
+               pb:FinanceTool pb:MediaTool pb:DeveloperTool pb:CustomTool) ;
+        sh:name "category"
+    ] ;
+
+    # Required: enabled flag
+    sh:property [
+        sh:path pb:toolEnabled ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:boolean ;
+        sh:name "enabled"
+    ] .
+
+# -----------------------------------------------------------------------------
+# Contact Shape
+# -----------------------------------------------------------------------------
+
+shapes:ContactShape a sh:NodeShape ;
+    sh:targetClass pb:Contact ;
+    sh:name "Contact Shape" ;
+    sh:description "Validates a contact instance." ;
+
+    # Required: contact broker
+    sh:property [
+        sh:path pb:contactBroker ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:class pb:PersonalBroker ;
+        sh:name "contact broker"
+    ] ;
+
+    # Required: status
+    sh:property [
+        sh:path pb:contactStatus ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:in (pb:ContactPending pb:ContactAccepted pb:ContactBlocked pb:ContactMuted) ;
+        sh:name "status"
+    ] ;
+
+    # Required: trust level
+    sh:property [
+        sh:path pb:contactTrustLevel ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:in (pb:TrustPublic pb:TrustFriend pb:TrustClose pb:TrustFamily) ;
+        sh:name "trust level"
+    ] ;
+
+    # Required: added timestamp
+    sh:property [
+        sh:path pb:contactAddedAt ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:dateTime ;
+        sh:name "added at"
+    ] .
+
+# -----------------------------------------------------------------------------
+# Group Shape
+# -----------------------------------------------------------------------------
+
+shapes:GroupShape a sh:NodeShape ;
+    sh:targetClass pb:Group ;
+    sh:name "Group Shape" ;
+    sh:description "Validates a group instance." ;
+
+    # Required: name
+    sh:property [
+        sh:path pb:groupName ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+        sh:maxLength 200 ;
+        sh:name "name"
+    ] ;
+
+    # Required: owner
+    sh:property [
+        sh:path pb:groupOwner ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:class pb:PersonalBroker ;
+        sh:name "owner"
+    ] ;
+
+    # Required: created timestamp
+    sh:property [
+        sh:path pb:groupCreatedAt ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:dateTime ;
+        sh:name "created at"
+    ] .
+
+# -----------------------------------------------------------------------------
+# Shared Workflow Shape
+# -----------------------------------------------------------------------------
+
+shapes:SharedWorkflowShape a sh:NodeShape ;
+    sh:targetClass pb:SharedWorkflow ;
+    sh:name "Shared Workflow Shape" ;
+    sh:description "Validates a shared workflow instance." ;
+
+    # Required: at least one participant
+    sh:property [
+        sh:path pb:hasParticipant ;
+        sh:minCount 1 ;
+        sh:class pb:WorkflowParticipant ;
+        sh:name "participant"
+    ] ;
+
+    # Required: shared context
+    sh:property [
+        sh:path pb:sharedContext ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:name "shared context"
+    ] .
+
+# -----------------------------------------------------------------------------
+# Workflow Participant Shape
+# -----------------------------------------------------------------------------
+
+shapes:WorkflowParticipantShape a sh:NodeShape ;
+    sh:targetClass pb:WorkflowParticipant ;
+    sh:name "Workflow Participant Shape" ;
+    sh:description "Validates a workflow participant instance." ;
+
+    # Required: broker
+    sh:property [
+        sh:path pb:participantBroker ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:class pb:PersonalBroker ;
+        sh:name "broker"
+    ] ;
+
+    # Required: role
+    sh:property [
+        sh:path pb:participantRole ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:in (pb:WorkflowOwner pb:WorkflowContributor pb:WorkflowObserver pb:WorkflowAgent) ;
+        sh:name "role"
+    ] .

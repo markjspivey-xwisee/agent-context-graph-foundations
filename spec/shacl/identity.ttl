@@ -1,0 +1,197 @@
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix acg: <https://agentcontextgraph.dev/ontology#> .
+@prefix id: <https://agentcontextgraph.dev/identity#> .
+@prefix shapes: <https://agentcontextgraph.dev/shacl/identity#> .
+
+# =============================================================================
+# SHACL Shapes for ACG Identity (WebID + DID Bridging)
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# DID Identity Shape
+# -----------------------------------------------------------------------------
+
+shapes:DIDIdentityShape a sh:NodeShape ;
+    sh:targetClass id:DIDIdentity ;
+    rdfs:label "DID Identity Shape"@en ;
+    rdfs:comment "Validates DID-based identity assertions."@en ;
+
+    sh:property [
+        sh:path id:didString ;
+        sh:name "DID String" ;
+        sh:description "The full DID string" ;
+        sh:datatype xsd:string ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:pattern "^did:[a-z0-9]+:.+" ;
+        sh:message "DID string must follow the did:<method>:<identifier> format"
+    ] ;
+
+    sh:property [
+        sh:path id:didMethod ;
+        sh:name "DID Method" ;
+        sh:description "The DID method" ;
+        sh:datatype xsd:string ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:in ("web" "key" "dht" "plc" "peer") ;
+        sh:message "DID method must be one of: web, key, dht, plc, peer"
+    ] ;
+
+    sh:property [
+        sh:path id:hasVerificationMethod ;
+        sh:name "Verification Methods" ;
+        sh:description "Cryptographic verification methods" ;
+        sh:class id:VerificationMethod ;
+        sh:minCount 0
+    ] .
+
+# -----------------------------------------------------------------------------
+# WebID Identity Shape
+# -----------------------------------------------------------------------------
+
+shapes:WebIDIdentityShape a sh:NodeShape ;
+    sh:targetClass id:WebIDIdentity ;
+    rdfs:label "WebID Identity Shape"@en ;
+    rdfs:comment "Validates WebID-based identity assertions."@en ;
+
+    sh:property [
+        sh:path id:webIdUri ;
+        sh:name "WebID URI" ;
+        sh:description "The WebID URI" ;
+        sh:datatype xsd:anyURI ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:pattern "^https?://.+" ;
+        sh:message "WebID URI must be an HTTP(S) URI"
+    ] ;
+
+    sh:property [
+        sh:path id:hasProfile ;
+        sh:name "Profile Document" ;
+        sh:description "RDF profile document for this WebID" ;
+        sh:class id:WebIDProfile ;
+        sh:maxCount 1
+    ] ;
+
+    sh:property [
+        sh:path id:storage ;
+        sh:name "Solid Storage" ;
+        sh:description "Solid Pod storage locations" ;
+        sh:datatype xsd:anyURI ;
+        sh:minCount 0
+    ] ;
+
+    sh:property [
+        sh:path id:oidcIssuer ;
+        sh:name "OIDC Issuer" ;
+        sh:description "Trusted OpenID Connect issuers" ;
+        sh:datatype xsd:anyURI ;
+        sh:minCount 0
+    ] .
+
+# -----------------------------------------------------------------------------
+# Verification Method Shape
+# -----------------------------------------------------------------------------
+
+shapes:VerificationMethodShape a sh:NodeShape ;
+    sh:targetClass id:VerificationMethod ;
+    rdfs:label "Verification Method Shape"@en ;
+    rdfs:comment "Validates cryptographic verification methods."@en ;
+
+    sh:property [
+        sh:path id:publicKeyPem ;
+        sh:name "Public Key PEM" ;
+        sh:description "Public key in PEM format" ;
+        sh:datatype xsd:string ;
+        sh:maxCount 1
+    ] ;
+
+    sh:property [
+        sh:path id:publicKeyJwk ;
+        sh:name "Public Key JWK" ;
+        sh:description "Public key as JSON Web Key" ;
+        sh:datatype xsd:string ;
+        sh:maxCount 1
+    ] ;
+
+    sh:property [
+        sh:path id:publicKeyMultibase ;
+        sh:name "Public Key Multibase" ;
+        sh:description "Public key in multibase format" ;
+        sh:datatype xsd:string ;
+        sh:maxCount 1
+    ] ;
+
+    # At least one key format must be present
+    sh:or (
+        [ sh:property [ sh:path id:publicKeyPem ; sh:minCount 1 ] ]
+        [ sh:property [ sh:path id:publicKeyJwk ; sh:minCount 1 ] ]
+        [ sh:property [ sh:path id:publicKeyMultibase ; sh:minCount 1 ] ]
+    ) .
+
+# -----------------------------------------------------------------------------
+# Identity Bridge Shape
+# -----------------------------------------------------------------------------
+
+shapes:IdentityBridgeShape a sh:NodeShape ;
+    sh:targetClass id:IdentityBridge ;
+    rdfs:label "Identity Bridge Shape"@en ;
+    rdfs:comment "Validates identity bridges linking DID and WebID."@en ;
+
+    sh:property [
+        sh:path id:bridgesDID ;
+        sh:name "Bridges DID" ;
+        sh:description "The DID identity in this bridge" ;
+        sh:class id:DIDIdentity ;
+        sh:minCount 1 ;
+        sh:maxCount 1
+    ] ;
+
+    sh:property [
+        sh:path id:bridgesWebID ;
+        sh:name "Bridges WebID" ;
+        sh:description "The WebID identity in this bridge" ;
+        sh:class id:WebIDIdentity ;
+        sh:minCount 1 ;
+        sh:maxCount 1
+    ] ;
+
+    sh:property [
+        sh:path id:bridgeProofType ;
+        sh:name "Proof Type" ;
+        sh:description "Type of cryptographic proof" ;
+        sh:datatype xsd:string ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:in ("LinkedDataSignature" "JWTProof")
+    ] ;
+
+    sh:property [
+        sh:path id:bridgeProofValue ;
+        sh:name "Proof Value" ;
+        sh:description "The cryptographic proof value" ;
+        sh:datatype xsd:string ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:minLength 1
+    ] ;
+
+    sh:property [
+        sh:path id:bridgeCreated ;
+        sh:name "Created" ;
+        sh:description "When the bridge was created" ;
+        sh:datatype xsd:dateTime ;
+        sh:minCount 1 ;
+        sh:maxCount 1
+    ] ;
+
+    sh:property [
+        sh:path id:bridgeExpires ;
+        sh:name "Expires" ;
+        sh:description "When the bridge expires" ;
+        sh:datatype xsd:dateTime ;
+        sh:maxCount 1
+    ] .

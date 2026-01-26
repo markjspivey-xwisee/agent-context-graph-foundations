@@ -1,0 +1,332 @@
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix odrl: <http://www.w3.org/ns/odrl/2/> .
+@prefix acg: <https://agentcontextgraph.dev/ontology#> .
+@prefix interop: <https://agentcontextgraph.dev/interop#> .
+@prefix shapes: <https://agentcontextgraph.dev/shacl/interop#> .
+
+# =============================================================================
+# SHACL Shapes for ACG Interoperability (MCP, A2A, ODRL)
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# MCP Tool Mapping Shape
+# -----------------------------------------------------------------------------
+
+shapes:MCPToolMappingShape a sh:NodeShape ;
+    sh:targetClass interop:MCPToolMapping ;
+    rdfs:label "MCP Tool Mapping Shape"@en ;
+    rdfs:comment "Validates MCP tool mappings for affordances."@en ;
+
+    sh:property [
+        sh:path interop:mcpToolName ;
+        sh:name "Tool Name" ;
+        sh:description "MCP tool name (snake_case recommended)" ;
+        sh:datatype xsd:string ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:minLength 1 ;
+        sh:maxLength 64 ;
+        sh:pattern "^[a-z][a-z0-9_]*$" ;
+        sh:message "MCP tool name should be snake_case (lowercase with underscores)"
+    ] ;
+
+    sh:property [
+        sh:path interop:mcpToolDescription ;
+        sh:name "Tool Description" ;
+        sh:description "Human-readable description for LLM" ;
+        sh:datatype xsd:string ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:minLength 10 ;
+        sh:maxLength 1000 ;
+        sh:message "Tool description should be 10-1000 characters"
+    ] ;
+
+    sh:property [
+        sh:path interop:mcpInputSchema ;
+        sh:name "Input Schema" ;
+        sh:description "JSON Schema for tool input" ;
+        sh:datatype xsd:string ;
+        sh:maxCount 1
+    ] ;
+
+    sh:property [
+        sh:path interop:mcpOutputSchema ;
+        sh:name "Output Schema" ;
+        sh:description "JSON Schema for tool output" ;
+        sh:datatype xsd:string ;
+        sh:maxCount 1
+    ] .
+
+# -----------------------------------------------------------------------------
+# A2A Capability Mapping Shape
+# -----------------------------------------------------------------------------
+
+shapes:A2ACapabilityMappingShape a sh:NodeShape ;
+    sh:targetClass interop:A2ACapabilityMapping ;
+    rdfs:label "A2A Capability Mapping Shape"@en ;
+    rdfs:comment "Validates A2A capability mappings for affordances."@en ;
+
+    sh:property [
+        sh:path interop:a2aCapabilityId ;
+        sh:name "Capability ID" ;
+        sh:description "A2A capability identifier" ;
+        sh:datatype xsd:string ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:minLength 1
+    ] ;
+
+    sh:property [
+        sh:path interop:a2aCapabilityName ;
+        sh:name "Capability Name" ;
+        sh:description "Human-readable capability name" ;
+        sh:datatype xsd:string ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:minLength 1 ;
+        sh:maxLength 100
+    ] ;
+
+    sh:property [
+        sh:path interop:a2aInputModes ;
+        sh:name "Input Modes" ;
+        sh:description "Supported input modes" ;
+        sh:datatype xsd:string ;
+        sh:in ("text" "file" "data")
+    ] ;
+
+    sh:property [
+        sh:path interop:a2aOutputModes ;
+        sh:name "Output Modes" ;
+        sh:description "Supported output modes" ;
+        sh:datatype xsd:string ;
+        sh:in ("text" "file" "data")
+    ] .
+
+# -----------------------------------------------------------------------------
+# A2A Agent Card Shape
+# -----------------------------------------------------------------------------
+
+shapes:A2AAgentCardShape a sh:NodeShape ;
+    sh:targetClass interop:A2AAgentCard ;
+    rdfs:label "A2A Agent Card Shape"@en ;
+    rdfs:comment "Validates A2A Agent Card definitions."@en .
+
+# -----------------------------------------------------------------------------
+# ODRL Policy Shape (ACG Extension)
+# -----------------------------------------------------------------------------
+
+shapes:ACGPolicyShape a sh:NodeShape ;
+    sh:targetClass interop:ACGPolicy ;
+    rdfs:label "ACG Policy Shape"@en ;
+    rdfs:comment "Validates ACG-extended ODRL policies."@en ;
+
+    # At least one rule type must be present
+    sh:or (
+        [ sh:property [ sh:path odrl:permission ; sh:minCount 1 ] ]
+        [ sh:property [ sh:path odrl:prohibition ; sh:minCount 1 ] ]
+        [ sh:property [ sh:path odrl:obligation ; sh:minCount 1 ] ]
+    ) .
+
+# -----------------------------------------------------------------------------
+# ACG Permission Shape
+# -----------------------------------------------------------------------------
+
+shapes:ACGPermissionShape a sh:NodeShape ;
+    sh:targetClass interop:ACGPermission ;
+    rdfs:label "ACG Permission Shape"@en ;
+    rdfs:comment "Validates ACG-extended ODRL permissions."@en ;
+
+    sh:property [
+        sh:path odrl:target ;
+        sh:name "Target" ;
+        sh:description "The resource or affordance this permission targets" ;
+        sh:minCount 1 ;
+        sh:maxCount 1
+    ] ;
+
+    sh:property [
+        sh:path odrl:action ;
+        sh:name "Action" ;
+        sh:description "The permitted action(s)" ;
+        sh:minCount 1
+    ] ;
+
+    sh:property [
+        sh:path odrl:assignee ;
+        sh:name "Assignee" ;
+        sh:description "The agent granted this permission" ;
+        sh:maxCount 1
+    ] ;
+
+    sh:property [
+        sh:path odrl:constraint ;
+        sh:name "Constraints" ;
+        sh:description "Constraints on this permission" ;
+        sh:class odrl:Constraint
+    ] .
+
+# -----------------------------------------------------------------------------
+# ACG Prohibition Shape
+# -----------------------------------------------------------------------------
+
+shapes:ACGProhibitionShape a sh:NodeShape ;
+    sh:targetClass interop:ACGProhibition ;
+    rdfs:label "ACG Prohibition Shape"@en ;
+    rdfs:comment "Validates ACG-extended ODRL prohibitions."@en ;
+
+    sh:property [
+        sh:path odrl:target ;
+        sh:name "Target" ;
+        sh:description "The resource or affordance this prohibition targets" ;
+        sh:minCount 1 ;
+        sh:maxCount 1
+    ] ;
+
+    sh:property [
+        sh:path odrl:action ;
+        sh:name "Action" ;
+        sh:description "The prohibited action(s)" ;
+        sh:minCount 1
+    ] ;
+
+    sh:property [
+        sh:path odrl:assignee ;
+        sh:name "Assignee" ;
+        sh:description "The agent this prohibition applies to" ;
+        sh:maxCount 1
+    ] .
+
+# -----------------------------------------------------------------------------
+# ACG Obligation Shape
+# -----------------------------------------------------------------------------
+
+shapes:ACGObligationShape a sh:NodeShape ;
+    sh:targetClass interop:ACGObligation ;
+    rdfs:label "ACG Obligation Shape"@en ;
+    rdfs:comment "Validates ACG-extended ODRL obligations."@en ;
+
+    sh:property [
+        sh:path odrl:action ;
+        sh:name "Action" ;
+        sh:description "The required action(s)" ;
+        sh:minCount 1
+    ] ;
+
+    sh:property [
+        sh:path odrl:target ;
+        sh:name "Target" ;
+        sh:description "The target of this obligation" ;
+        sh:maxCount 1
+    ] ;
+
+    sh:property [
+        sh:path odrl:assignee ;
+        sh:name "Assignee" ;
+        sh:description "The agent obligated to perform this duty" ;
+        sh:maxCount 1
+    ] .
+
+# -----------------------------------------------------------------------------
+# Causal Constraint Shape
+# -----------------------------------------------------------------------------
+
+shapes:CausalConstraintShape a sh:NodeShape ;
+    sh:targetClass interop:CausalConstraint ;
+    rdfs:label "Causal Constraint Shape"@en ;
+    rdfs:comment "Validates causal model constraints for ODRL policies."@en ;
+
+    sh:property [
+        sh:path odrl:leftOperand ;
+        sh:name "Left Operand" ;
+        sh:description "Causal operand type" ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:in (interop:causalModel interop:predictedOutcome)
+    ] ;
+
+    sh:property [
+        sh:path interop:causalModel ;
+        sh:name "Causal Model" ;
+        sh:description "Reference to the causal model" ;
+        sh:maxCount 1
+    ] ;
+
+    sh:property [
+        sh:path interop:confidenceThreshold ;
+        sh:name "Confidence Threshold" ;
+        sh:description "Minimum prediction confidence (0-1)" ;
+        sh:datatype xsd:decimal ;
+        sh:maxCount 1 ;
+        sh:minInclusive 0.0 ;
+        sh:maxInclusive 1.0
+    ] .
+
+# -----------------------------------------------------------------------------
+# Interop Config Shape
+# -----------------------------------------------------------------------------
+
+shapes:InteropConfigShape a sh:NodeShape ;
+    sh:targetClass interop:InteropConfig ;
+    rdfs:label "Interop Configuration Shape"@en ;
+    rdfs:comment "Validates interoperability configuration."@en ;
+
+    sh:property [
+        sh:path interop:mcpEnabled ;
+        sh:name "MCP Enabled" ;
+        sh:description "Whether MCP protocol is enabled" ;
+        sh:datatype xsd:boolean ;
+        sh:maxCount 1
+    ] ;
+
+    sh:property [
+        sh:path interop:a2aEnabled ;
+        sh:name "A2A Enabled" ;
+        sh:description "Whether A2A protocol is enabled" ;
+        sh:datatype xsd:boolean ;
+        sh:maxCount 1
+    ] ;
+
+    sh:property [
+        sh:path interop:odrlEnforcement ;
+        sh:name "ODRL Enforcement" ;
+        sh:description "ODRL policy enforcement level" ;
+        sh:datatype xsd:string ;
+        sh:maxCount 1 ;
+        sh:in ("strict" "advisory" "audit")
+    ] .
+
+# -----------------------------------------------------------------------------
+# Affordance with Interop Mapping
+# -----------------------------------------------------------------------------
+
+shapes:AffordanceInteropShape a sh:NodeShape ;
+    sh:targetClass acg:Affordance ;
+    rdfs:label "Affordance Interop Shape"@en ;
+    rdfs:comment "Validates interop mappings on affordances."@en ;
+
+    sh:property [
+        sh:path interop:hasMCPMapping ;
+        sh:name "MCP Mapping" ;
+        sh:description "MCP tool mapping for this affordance" ;
+        sh:class interop:MCPToolMapping ;
+        sh:maxCount 1
+    ] ;
+
+    sh:property [
+        sh:path interop:hasA2AMapping ;
+        sh:name "A2A Mapping" ;
+        sh:description "A2A capability mapping for this affordance" ;
+        sh:class interop:A2ACapabilityMapping ;
+        sh:maxCount 1
+    ] ;
+
+    sh:property [
+        sh:path interop:schemaActionType ;
+        sh:name "Schema.org Action Type" ;
+        sh:description "Schema.org action type alignment" ;
+        sh:maxCount 1
+    ] .

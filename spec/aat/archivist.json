@@ -1,0 +1,236 @@
+{
+  "@context": [
+    "https://www.w3.org/ns/prov#",
+    {
+      "xsd": "http://www.w3.org/2001/XMLSchema#",
+      "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+      "owl": "http://www.w3.org/2002/07/owl#",
+      "dcterms": "http://purl.org/dc/terms/",
+
+      "acg": "https://agentcontextgraph.dev/ontology#",
+      "aat": "https://agentcontextgraph.dev/aat#",
+
+      "id": "@id",
+      "type": "@type",
+      "AbstractAgentType": "aat:AbstractAgentType",
+      "name": "rdfs:label",
+      "description": "rdfs:comment",
+      "version": "owl:versionInfo",
+
+      "perceptSpace": "aat:hasPerceptSpace",
+      "PerceptSpace": "aat:PerceptSpace",
+      "perceptTypes": { "@id": "aat:hasPerceptType", "@container": "@set" },
+
+      "actionSpace": "aat:hasActionSpace",
+      "ActionSpace": "aat:ActionSpace",
+      "allowed": { "@id": "aat:allowsAction", "@container": "@set" },
+      "forbidden": { "@id": "aat:forbidsAction", "@container": "@set" },
+      "ActionType": "aat:ActionType",
+      "requiresCapability": { "@id": "acg:requiresCapability", "@type": "@id" },
+      "rationale": "aat:forbiddenRationale",
+
+      "internalState": "aat:hasInternalState",
+      "components": { "@id": "aat:hasStateComponent", "@container": "@set" },
+
+      "behavioralInvariants": { "@id": "aat:hasBehavioralInvariant", "@container": "@set" },
+      "BehavioralInvariant": "aat:BehavioralInvariant",
+      "formalRule": "aat:formalRule",
+      "enforcement": "aat:enforcementLevel",
+
+      "traceRequirements": "acg:hasTracePolicy",
+      "mustEmitProvActivity": "acg:mustEmitProvActivity",
+      "requiredFields": { "@id": "acg:requiredTraceFields", "@container": "@list" },
+      "retentionPolicy": "acg:retentionPolicy",
+
+      "livenessGuarantees": { "@id": "aat:hasLivenessGuarantee", "@container": "@set" },
+      "LivenessGuarantee": "aat:LivenessGuarantee",
+
+      "compositionRules": "aat:hasCompositionRules",
+      "CompositionRules": "aat:CompositionRules",
+      "canComposeBefore": { "@id": "aat:canComposeBefore", "@type": "@id", "@container": "@set" },
+      "canComposeAfter": { "@id": "aat:canComposeAfter", "@type": "@id", "@container": "@set" },
+      "notes": "rdfs:comment"
+    }
+  ],
+  "type": ["aat:AbstractAgentType", "aat:ArchivistAgentType"],
+  "id": "aat:ArchivistAgentType",
+  "name": "Archivist Agent Type",
+  "version": "1.0.0",
+  "description": "Abstract Agent Type for trace/memory curator agents. Archivists store, retrieve, and manage knowledge and traces.",
+
+  "perceptSpace": {
+    "type": "aat:PerceptSpace",
+    "description": "What the archivist can perceive",
+    "perceptTypes": [
+      {
+        "type": "aat:PerceptType",
+        "name": "Event",
+        "description": "System events to record"
+      },
+      {
+        "type": "aat:PerceptType",
+        "name": "Document",
+        "description": "Artifacts to archive"
+      },
+      {
+        "type": "aat:PerceptType",
+        "name": "DecisionTrace",
+        "description": "PROV traces from agent decisions"
+      },
+      {
+        "type": "aat:PerceptType",
+        "name": "Query",
+        "description": "Retrieval requests"
+      }
+    ]
+  },
+
+  "actionSpace": {
+    "type": "aat:ActionSpace",
+    "allowed": [
+      {
+        "type": "aat:ActionType",
+        "id": "aat:Store",
+        "name": "Store",
+        "description": "Persist a record to storage",
+        "requiresCapability": "acg:ArchivistCapability"
+      },
+      {
+        "type": "aat:ActionType",
+        "id": "aat:Retrieve",
+        "name": "Retrieve",
+        "description": "Fetch records matching a query",
+        "requiresCapability": "acg:ArchivistCapability"
+      },
+      {
+        "type": "aat:ActionType",
+        "id": "aat:Summarize",
+        "name": "Summarize",
+        "description": "Produce a summary over a time span or topic",
+        "requiresCapability": "acg:ArchivistCapability"
+      },
+      {
+        "type": "aat:ActionType",
+        "id": "aat:Index",
+        "name": "Index",
+        "description": "Update indices for faster retrieval",
+        "requiresCapability": "acg:ArchivistCapability"
+      },
+      {
+        "type": "aat:ActionType",
+        "id": "aat:Version",
+        "name": "Version",
+        "description": "Create a versioned snapshot",
+        "requiresCapability": "acg:ArchivistCapability"
+      }
+    ],
+    "forbidden": [
+      {
+        "type": "aat:ActionType",
+        "id": "aat:Delete",
+        "name": "Delete",
+        "description": "Permanent deletion of trace records",
+        "rationale": "Traces are append-only for audit purposes"
+      },
+      {
+        "type": "aat:ActionType",
+        "id": "aat:Mutate",
+        "name": "Mutate",
+        "description": "Modifying existing records",
+        "rationale": "Records are immutable once stored"
+      },
+      {
+        "type": "aat:ActionType",
+        "id": "aat:FabricateProvenance",
+        "name": "FabricateProvenance",
+        "description": "Creating false provenance",
+        "rationale": "Provenance must be authentic"
+      }
+    ]
+  },
+
+  "internalState": {
+    "type": "aat:InternalState",
+    "description": "Abstract state the archivist may maintain",
+    "components": [
+      {
+        "type": "aat:StateComponent",
+        "name": "storageIndex",
+        "description": "Index of stored records"
+      },
+      {
+        "type": "aat:StateComponent",
+        "name": "retentionPolicies",
+        "description": "Rules for how long to keep data"
+      },
+      {
+        "type": "aat:StateComponent",
+        "name": "accessPolicies",
+        "description": "Who can retrieve what"
+      }
+    ]
+  },
+
+  "behavioralInvariants": [
+    {
+      "type": "aat:BehavioralInvariant",
+      "id": "aat:ArchivistAgentType/invariant/append-only-traces",
+      "name": "append-only-traces",
+      "description": "Trace records are never mutated or deleted",
+      "formalRule": "∀ trace: once(stored(trace)) → always(stored(trace) ∧ unchanged(trace))",
+      "enforcement": "structural"
+    },
+    {
+      "type": "aat:BehavioralInvariant",
+      "id": "aat:ArchivistAgentType/invariant/provenance-complete",
+      "name": "provenance-complete",
+      "description": "All stored records have complete PROV links",
+      "formalRule": "∀ record ∈ Store: hasCompleteProvenance(record)",
+      "enforcement": "validation"
+    },
+    {
+      "type": "aat:BehavioralInvariant",
+      "id": "aat:ArchivistAgentType/invariant/retrievable",
+      "name": "retrievable",
+      "description": "Anything stored can be retrieved",
+      "formalRule": "Store(record) ~> canRetrieve(record)",
+      "enforcement": "test"
+    }
+  ],
+
+  "traceRequirements": {
+    "type": "acg:TracePolicy",
+    "mustEmitProvActivity": true,
+    "requiredFields": [
+      "contextSnapshot",
+      "affordance",
+      "recordsAffected",
+      "outcome"
+    ],
+    "retentionPolicy": "indefinite"
+  },
+
+  "livenessGuarantees": [
+    {
+      "type": "aat:LivenessGuarantee",
+      "id": "aat:ArchivistAgentType/liveness/eventual-storage",
+      "name": "eventual-storage",
+      "description": "Any Store request eventually completes",
+      "formalRule": "Store(record) ~> stored(record)"
+    },
+    {
+      "type": "aat:LivenessGuarantee",
+      "id": "aat:ArchivistAgentType/liveness/eventual-retrieval",
+      "name": "eventual-retrieval",
+      "description": "Any valid Retrieve query eventually returns",
+      "formalRule": "Retrieve(query) ~> response(query)"
+    }
+  ],
+
+  "compositionRules": {
+    "type": "aat:CompositionRules",
+    "canComposeBefore": ["aat:AnyAgentType"],
+    "canComposeAfter": ["aat:AnyAgentType"],
+    "notes": "Archivist is orthogonal - subscribes to all agent outputs for trace storage."
+  }
+}

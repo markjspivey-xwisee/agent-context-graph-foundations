@@ -1,0 +1,229 @@
+{
+  "@context": [
+    "https://www.w3.org/ns/prov#",
+    {
+      "xsd": "http://www.w3.org/2001/XMLSchema#",
+      "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+      "owl": "http://www.w3.org/2002/07/owl#",
+      "dcterms": "http://purl.org/dc/terms/",
+
+      "acg": "https://agentcontextgraph.dev/ontology#",
+      "aat": "https://agentcontextgraph.dev/aat#",
+
+      "id": "@id",
+      "type": "@type",
+      "AbstractAgentType": "aat:AbstractAgentType",
+      "name": "rdfs:label",
+      "description": "rdfs:comment",
+      "version": "owl:versionInfo",
+
+      "perceptSpace": "aat:hasPerceptSpace",
+      "PerceptSpace": "aat:PerceptSpace",
+      "perceptTypes": { "@id": "aat:hasPerceptType", "@container": "@set" },
+
+      "actionSpace": "aat:hasActionSpace",
+      "ActionSpace": "aat:ActionSpace",
+      "allowed": { "@id": "aat:allowsAction", "@container": "@set" },
+      "forbidden": { "@id": "aat:forbidsAction", "@container": "@set" },
+      "ActionType": "aat:ActionType",
+      "requiresCapability": { "@id": "acg:requiresCapability", "@type": "@id" },
+      "rationale": "aat:forbiddenRationale",
+
+      "internalState": "aat:hasInternalState",
+      "components": { "@id": "aat:hasStateComponent", "@container": "@set" },
+
+      "behavioralInvariants": { "@id": "aat:hasBehavioralInvariant", "@container": "@set" },
+      "BehavioralInvariant": "aat:BehavioralInvariant",
+      "formalRule": "aat:formalRule",
+      "enforcement": "aat:enforcementLevel",
+
+      "traceRequirements": "acg:hasTracePolicy",
+      "mustEmitProvActivity": "acg:mustEmitProvActivity",
+      "requiredFields": { "@id": "acg:requiredTraceFields", "@container": "@list" },
+      "retentionPolicy": "acg:retentionPolicy",
+
+      "livenessGuarantees": { "@id": "aat:hasLivenessGuarantee", "@container": "@set" },
+      "LivenessGuarantee": "aat:LivenessGuarantee",
+
+      "compositionRules": "aat:hasCompositionRules",
+      "CompositionRules": "aat:CompositionRules",
+      "canComposeBefore": { "@id": "aat:canComposeBefore", "@type": "@id", "@container": "@set" },
+      "canComposeAfter": { "@id": "aat:canComposeAfter", "@type": "@id", "@container": "@set" },
+      "notes": "rdfs:comment"
+    }
+  ],
+  "type": ["aat:AbstractAgentType", "aat:ObserverAgentType"],
+  "id": "aat:ObserverAgentType",
+  "name": "Observer Agent Type",
+  "version": "1.0.0",
+  "description": "Abstract Agent Type for observer agents. Observers watch and report but cause no side effects.",
+
+  "perceptSpace": {
+    "type": "aat:PerceptSpace",
+    "description": "What the observer can perceive",
+    "perceptTypes": [
+      {
+        "type": "aat:PerceptType",
+        "name": "EventDelta",
+        "description": "Changes in the environment"
+      },
+      {
+        "type": "aat:PerceptType",
+        "name": "Message",
+        "description": "Communications from other agents"
+      },
+      {
+        "type": "aat:PerceptType",
+        "name": "StateSnapshot",
+        "description": "Point-in-time state captures"
+      },
+      {
+        "type": "aat:PerceptType",
+        "name": "Document",
+        "description": "Structured data artifacts"
+      }
+    ]
+  },
+
+  "actionSpace": {
+    "type": "aat:ActionSpace",
+    "allowed": [
+      {
+        "type": "aat:ActionType",
+        "id": "aat:Report",
+        "name": "Report",
+        "description": "Emit an observation report",
+        "requiresCapability": "acg:ObserverCapability"
+      },
+      {
+        "type": "aat:ActionType",
+        "id": "aat:Summarize",
+        "name": "Summarize",
+        "description": "Produce a summary of observations",
+        "requiresCapability": "acg:ObserverCapability"
+      },
+      {
+        "type": "aat:ActionType",
+        "id": "aat:Flag",
+        "name": "Flag",
+        "description": "Flag an anomaly or notable event",
+        "requiresCapability": "acg:ObserverCapability"
+      },
+      {
+        "type": "aat:ActionType",
+        "id": "aat:Query",
+        "name": "Query",
+        "description": "Request additional data for observation",
+        "requiresCapability": null
+      }
+    ],
+    "forbidden": [
+      {
+        "type": "aat:ActionType",
+        "id": "aat:Actuate",
+        "name": "Actuate",
+        "description": "Any action that modifies external state",
+        "rationale": "Observers are read-only"
+      },
+      {
+        "type": "aat:ActionType",
+        "id": "aat:EmitPlan",
+        "name": "EmitPlan",
+        "description": "Creating execution plans",
+        "rationale": "Observers report, they don't plan"
+      },
+      {
+        "type": "aat:ActionType",
+        "id": "aat:ModifyState",
+        "name": "ModifyState",
+        "description": "Changing any persistent state",
+        "rationale": "No side effects allowed"
+      },
+      {
+        "type": "aat:ActionType",
+        "id": "aat:FabricateData",
+        "name": "FabricateData",
+        "description": "Reporting observations not from percepts",
+        "rationale": "Reports must derive from actual observations"
+      }
+    ]
+  },
+
+  "internalState": {
+    "type": "aat:InternalState",
+    "description": "Abstract state the observer may maintain",
+    "components": [
+      {
+        "type": "aat:StateComponent",
+        "name": "observationBuffer",
+        "description": "Recent observations pending report"
+      },
+      {
+        "type": "aat:StateComponent",
+        "name": "anomalyThresholds",
+        "description": "Criteria for flagging anomalies"
+      },
+      {
+        "type": "aat:StateComponent",
+        "name": "reportHistory",
+        "description": "Previously emitted reports"
+      }
+    ]
+  },
+
+  "behavioralInvariants": [
+    {
+      "type": "aat:BehavioralInvariant",
+      "id": "aat:ObserverAgentType/invariant/no-side-effects",
+      "name": "no-side-effects",
+      "description": "Observer must not cause any external state changes",
+      "formalRule": "∀ action ∈ outputs: isSideEffectFree(action) = true",
+      "enforcement": "structural"
+    },
+    {
+      "type": "aat:BehavioralInvariant",
+      "id": "aat:ObserverAgentType/invariant/reports-from-percepts",
+      "name": "reports-from-percepts",
+      "description": "All reports must derive from actual percepts",
+      "formalRule": "∀ report ∈ Report: ∃ percepts: derives(report, percepts)",
+      "enforcement": "audit"
+    },
+    {
+      "type": "aat:BehavioralInvariant",
+      "id": "aat:ObserverAgentType/invariant/no-fabrication",
+      "name": "no-fabrication",
+      "description": "Cannot report data that wasn't observed",
+      "formalRule": "∀ report ∈ Report: content(report) ⊆ observed(agent)",
+      "enforcement": "audit"
+    }
+  ],
+
+  "traceRequirements": {
+    "type": "acg:TracePolicy",
+    "mustEmitProvActivity": true,
+    "requiredFields": [
+      "contextSnapshot",
+      "affordance",
+      "inputPercepts",
+      "outputReport"
+    ],
+    "retentionPolicy": "configurable"
+  },
+
+  "livenessGuarantees": [
+    {
+      "type": "aat:LivenessGuarantee",
+      "id": "aat:ObserverAgentType/liveness/eventual-reporting",
+      "name": "eventual-reporting",
+      "description": "If an event occurs, the observer eventually reports it",
+      "formalRule": "eventOccurs ~> Report"
+    }
+  ],
+
+  "compositionRules": {
+    "type": "aat:CompositionRules",
+    "canComposeBefore": ["aat:PlannerAgentType", "aat:ArbiterAgentType", "aat:ArchivistAgentType"],
+    "canComposeAfter": ["aat:AnyAgentType"],
+    "notes": "Observer can feed into any agent type. Safe to parallelize multiple observers."
+  }
+}

@@ -1,0 +1,202 @@
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix ds: <https://agentcontextgraph.dev/data-space#> .
+@prefix id: <https://agentcontextgraph.dev/identity#> .
+@prefix shapes: <https://agentcontextgraph.dev/shacl/data-space#> .
+
+# =============================================================================
+# SHACL Shapes for ACG Data Spaces
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Data Space Shape
+# -----------------------------------------------------------------------------
+
+shapes:DataSpaceShape a sh:NodeShape ;
+    sh:targetClass ds:DataSpace ;
+    rdfs:label "Data Space Shape"@en ;
+    rdfs:comment "Validates Data Space definitions."@en ;
+
+    sh:property [
+        sh:path ds:owner ;
+        sh:name "Owner" ;
+        sh:description "The identity that owns this data space" ;
+        sh:class id:AgentIdentity ;
+        sh:minCount 1 ;
+        sh:maxCount 1
+    ] ;
+
+    sh:property [
+        sh:path ds:storageEndpoint ;
+        sh:name "Storage Endpoint" ;
+        sh:description "HTTP endpoint for accessing this data space" ;
+        sh:datatype xsd:anyURI ;
+        sh:minCount 1 ;
+        sh:pattern "^https?://.+" ;
+        sh:message "Storage endpoint must be an HTTP(S) URI"
+    ] ;
+
+    sh:property [
+        sh:path ds:sparqlEndpoint ;
+        sh:name "SPARQL Endpoint" ;
+        sh:description "Optional SPARQL endpoint for queries" ;
+        sh:datatype xsd:anyURI ;
+        sh:maxCount 1 ;
+        sh:pattern "^https?://.+"
+    ] ;
+
+    sh:property [
+        sh:path ds:accessControlType ;
+        sh:name "Access Control Type" ;
+        sh:description "Type of access control mechanism" ;
+        sh:maxCount 1 ;
+        sh:in (ds:WebACLControl ds:ODRLControl ds:ACGPolicyControl ds:CapabilityControl)
+    ] ;
+
+    sh:property [
+        sh:path ds:dataSpaceType ;
+        sh:name "Data Space Type" ;
+        sh:description "Type of data space" ;
+        sh:datatype xsd:string ;
+        sh:maxCount 1 ;
+        sh:in ("Personal" "Agent" "Organizational" "Shared")
+    ] ;
+
+    sh:property [
+        sh:path ds:quotaBytes ;
+        sh:name "Quota (bytes)" ;
+        sh:description "Storage quota in bytes" ;
+        sh:datatype xsd:long ;
+        sh:maxCount 1 ;
+        sh:minInclusive 0
+    ] ;
+
+    sh:property [
+        sh:path ds:usedBytes ;
+        sh:name "Used (bytes)" ;
+        sh:description "Current storage usage in bytes" ;
+        sh:datatype xsd:long ;
+        sh:maxCount 1 ;
+        sh:minInclusive 0
+    ] ;
+
+    sh:property [
+        sh:path ds:retentionPolicy ;
+        sh:name "Retention Policy" ;
+        sh:description "Data retention policy (ISO duration or 'forever')" ;
+        sh:datatype xsd:string ;
+        sh:maxCount 1
+    ] ;
+
+    sh:property [
+        sh:path ds:encryptionEnabled ;
+        sh:name "Encryption Enabled" ;
+        sh:description "Whether encryption at rest is enabled" ;
+        sh:datatype xsd:boolean ;
+        sh:maxCount 1
+    ] ;
+
+    sh:property [
+        sh:path ds:createdAt ;
+        sh:name "Created At" ;
+        sh:description "When this data space was created" ;
+        sh:datatype xsd:dateTime ;
+        sh:maxCount 1
+    ] .
+
+# -----------------------------------------------------------------------------
+# Context Container Shape
+# -----------------------------------------------------------------------------
+
+shapes:ContextContainerShape a sh:NodeShape ;
+    sh:targetClass ds:ContextContainer ;
+    rdfs:label "Context Container Shape"@en ;
+    rdfs:comment "Validates context graph containers."@en .
+
+# -----------------------------------------------------------------------------
+# Trace Container Shape
+# -----------------------------------------------------------------------------
+
+shapes:TraceContainerShape a sh:NodeShape ;
+    sh:targetClass ds:TraceContainer ;
+    rdfs:label "Trace Container Shape"@en ;
+    rdfs:comment "Validates provenance trace containers (append-only)."@en .
+
+# -----------------------------------------------------------------------------
+# Credential Container Shape
+# -----------------------------------------------------------------------------
+
+shapes:CredentialContainerShape a sh:NodeShape ;
+    sh:targetClass ds:CredentialContainer ;
+    rdfs:label "Credential Container Shape"@en ;
+    rdfs:comment "Validates credential containers."@en .
+
+# -----------------------------------------------------------------------------
+# Policy Container Shape
+# -----------------------------------------------------------------------------
+
+shapes:PolicyContainerShape a sh:NodeShape ;
+    sh:targetClass ds:PolicyContainer ;
+    rdfs:label "Policy Container Shape"@en ;
+    rdfs:comment "Validates policy containers."@en .
+
+# -----------------------------------------------------------------------------
+# Storage Provider Shape
+# -----------------------------------------------------------------------------
+
+shapes:StorageProviderShape a sh:NodeShape ;
+    sh:targetClass ds:StorageProvider ;
+    rdfs:label "Storage Provider Shape"@en ;
+    rdfs:comment "Validates storage provider definitions."@en ;
+
+    sh:property [
+        sh:path ds:providerName ;
+        sh:name "Provider Name" ;
+        sh:description "Human-readable name of the provider" ;
+        sh:datatype xsd:string ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:minLength 1
+    ] ;
+
+    sh:property [
+        sh:path ds:providerEndpoint ;
+        sh:name "Provider Endpoint" ;
+        sh:description "Base endpoint for the provider" ;
+        sh:datatype xsd:anyURI ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:pattern "^https?://.+"
+    ] ;
+
+    sh:property [
+        sh:path ds:providerType ;
+        sh:name "Provider Type" ;
+        sh:description "Type of storage provider" ;
+        sh:maxCount 1 ;
+        sh:in (ds:SelfHosted ds:CloudHosted ds:FederatedHosted ds:SolidPodProvider)
+    ] .
+
+# -----------------------------------------------------------------------------
+# Data Space Consistency Rules
+# -----------------------------------------------------------------------------
+
+# Used bytes cannot exceed quota
+shapes:DataSpaceQuotaRule a sh:NodeShape ;
+    sh:targetClass ds:DataSpace ;
+    rdfs:label "Data Space Quota Rule"@en ;
+    rdfs:comment "Ensures used bytes do not exceed quota."@en ;
+
+    sh:sparql [
+        sh:message "Used bytes ({?used}) exceeds quota ({?quota})" ;
+        sh:prefixes shapes: ;
+        sh:select """
+            SELECT $this ?used ?quota
+            WHERE {
+                $this ds:usedBytes ?used .
+                $this ds:quotaBytes ?quota .
+                FILTER (?used > ?quota)
+            }
+        """
+    ] .

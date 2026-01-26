@@ -1,0 +1,877 @@
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix as: <https://www.w3.org/ns/activitystreams#> .
+@prefix ldp: <http://www.w3.org/ns/ldp#> .
+@prefix acl: <http://www.w3.org/ns/auth/acl#> .
+@prefix acg: <https://agentcontextgraph.dev/ontology#> .
+@prefix fed: <https://agentcontextgraph.dev/federation#> .
+@prefix pb: <https://agentcontextgraph.dev/personal-broker#> .
+@prefix soc: <https://agentcontextgraph.dev/social#> .
+@prefix ds: <https://agentcontextgraph.dev/data-space#> .
+@prefix sc: <https://agentcontextgraph.dev/shared-context#> .
+
+# =============================================================================
+# Agent Context Graph Shared Context Ontology
+# =============================================================================
+# Defines Shared Contexts - multiplayer context graphs that are collaboratively
+# owned, synchronized across federated brokers, and access-controlled via WebACL.
+# Enables real-time collaborative agent workflows and shared AI experiences.
+# =============================================================================
+
+<https://agentcontextgraph.dev/shared-context>
+    a owl:Ontology ;
+    owl:versionIRI <https://agentcontextgraph.dev/shared-context/1.0.0> ;
+    dcterms:title "Agent Context Graph Shared Context Ontology"@en ;
+    dcterms:description "Defines Shared Contexts for multiplayer agent experiences. Enables collaborative context graphs synchronized across federated brokers with fine-grained access control."@en ;
+    dcterms:created "2026-01-25"^^xsd:date ;
+    owl:imports <https://agentcontextgraph.dev/social> ;
+    owl:imports <https://agentcontextgraph.dev/data-space> ;
+    owl:imports <http://www.w3.org/ns/auth/acl#> .
+
+# =============================================================================
+# Shared Context Core Classes
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# SharedContext - A multiplayer context graph
+# -----------------------------------------------------------------------------
+
+sc:SharedContext a owl:Class ;
+    rdfs:label "Shared Context"@en ;
+    rdfs:subClassOf acg:ContextGraph, soc:CollaborativeContext ;
+    rdfs:comment "A context graph shared between multiple personal brokers for collaborative agent work. Synchronized via CRDT or operational transforms, with WebACL access control."@en ;
+    rdfs:subClassOf [
+        a owl:Restriction ;
+        owl:onProperty sc:contextOwner ;
+        owl:cardinality 1
+    ] .
+
+sc:ContextType a owl:Class ;
+    rdfs:label "Context Type"@en ;
+    owl:oneOf (sc:ProjectContext sc:ConversationContext sc:WorkflowContext
+               sc:KnowledgeContext sc:TaskContext sc:MeetingContext) .
+
+sc:ProjectContext a sc:ContextType ;
+    rdfs:label "Project Context"@en ;
+    rdfs:comment "A shared context for collaborative projects."@en .
+
+sc:ConversationContext a sc:ContextType ;
+    rdfs:label "Conversation Context"@en ;
+    rdfs:comment "A shared context for group conversations."@en .
+
+sc:WorkflowContext a sc:ContextType ;
+    rdfs:label "Workflow Context"@en ;
+    rdfs:comment "A shared context for collaborative workflows."@en .
+
+sc:KnowledgeContext a sc:ContextType ;
+    rdfs:label "Knowledge Context"@en ;
+    rdfs:comment "A shared context for collective knowledge."@en .
+
+sc:TaskContext a sc:ContextType ;
+    rdfs:label "Task Context"@en ;
+    rdfs:comment "A shared context for task management."@en .
+
+sc:MeetingContext a sc:ContextType ;
+    rdfs:label "Meeting Context"@en ;
+    rdfs:comment "A shared context for meetings and sessions."@en .
+
+# -----------------------------------------------------------------------------
+# ContextParticipant - A participant in a shared context
+# -----------------------------------------------------------------------------
+
+sc:ContextParticipant a owl:Class ;
+    rdfs:label "Context Participant"@en ;
+    rdfs:comment "A participant in a shared context, with associated permissions and role."@en ;
+    rdfs:subClassOf [
+        a owl:Restriction ;
+        owl:onProperty sc:participantBroker ;
+        owl:cardinality 1
+    ] .
+
+sc:ParticipantRole a owl:Class ;
+    rdfs:label "Participant Role"@en ;
+    owl:oneOf (sc:ContextOwner sc:ContextEditor sc:ContextContributor
+               sc:ContextViewer sc:ContextAgent) .
+
+sc:ContextOwner a sc:ParticipantRole ;
+    rdfs:label "Owner"@en ;
+    rdfs:comment "Full ownership and control over the context."@en ;
+    acl:mode acl:Control .
+
+sc:ContextEditor a sc:ParticipantRole ;
+    rdfs:label "Editor"@en ;
+    rdfs:comment "Can read, write, and delete content."@en ;
+    acl:mode acl:Read, acl:Write .
+
+sc:ContextContributor a sc:ParticipantRole ;
+    rdfs:label "Contributor"@en ;
+    rdfs:comment "Can read and add content, but not modify others' content."@en ;
+    acl:mode acl:Read, acl:Append .
+
+sc:ContextViewer a sc:ParticipantRole ;
+    rdfs:label "Viewer"@en ;
+    rdfs:comment "Can only read content."@en ;
+    acl:mode acl:Read .
+
+sc:ContextAgent a sc:ParticipantRole ;
+    rdfs:label "Agent"@en ;
+    rdfs:comment "An autonomous agent participating in the context."@en ;
+    acl:mode acl:Read, acl:Append .
+
+# =============================================================================
+# Synchronization Classes
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# SyncStrategy - How the context is synchronized
+# -----------------------------------------------------------------------------
+
+sc:SyncStrategy a owl:Class ;
+    rdfs:label "Sync Strategy"@en ;
+    rdfs:comment "The strategy used for synchronizing shared context across brokers."@en ;
+    owl:oneOf (sc:CRDTSync sc:OTSync sc:LastWriteWins sc:VersionVector sc:EventSourcing) .
+
+sc:CRDTSync a sc:SyncStrategy ;
+    rdfs:label "CRDT Sync"@en ;
+    rdfs:comment "Conflict-free Replicated Data Types for automatic merge."@en .
+
+sc:OTSync a sc:SyncStrategy ;
+    rdfs:label "Operational Transform"@en ;
+    rdfs:comment "Operational transformation for real-time editing."@en .
+
+sc:LastWriteWins a sc:SyncStrategy ;
+    rdfs:label "Last Write Wins"@en ;
+    rdfs:comment "Simple timestamp-based conflict resolution."@en .
+
+sc:VersionVector a sc:SyncStrategy ;
+    rdfs:label "Version Vector"@en ;
+    rdfs:comment "Vector clocks for causality tracking."@en .
+
+sc:EventSourcing a sc:SyncStrategy ;
+    rdfs:label "Event Sourcing"@en ;
+    rdfs:comment "Event log with replay for synchronization."@en .
+
+# -----------------------------------------------------------------------------
+# ContextReplica - A broker's local copy of the shared context
+# -----------------------------------------------------------------------------
+
+sc:ContextReplica a owl:Class ;
+    rdfs:label "Context Replica"@en ;
+    rdfs:comment "A local replica of a shared context at a specific broker. Contains sync state and local modifications."@en ;
+    rdfs:subClassOf [
+        a owl:Restriction ;
+        owl:onProperty sc:replicaOf ;
+        owl:cardinality 1
+    ] ;
+    rdfs:subClassOf [
+        a owl:Restriction ;
+        owl:onProperty sc:hostedAt ;
+        owl:cardinality 1
+    ] .
+
+sc:ReplicaState a owl:Class ;
+    rdfs:label "Replica State"@en ;
+    owl:oneOf (sc:ReplicaSynced sc:ReplicaSyncing sc:ReplicaConflict
+               sc:ReplicaStale sc:ReplicaOffline) .
+
+sc:ReplicaSynced a sc:ReplicaState ;
+    rdfs:label "Synced"@en ;
+    rdfs:comment "Replica is fully synchronized with peers."@en .
+
+sc:ReplicaSyncing a sc:ReplicaState ;
+    rdfs:label "Syncing"@en ;
+    rdfs:comment "Replica is currently synchronizing."@en .
+
+sc:ReplicaConflict a sc:ReplicaState ;
+    rdfs:label "Conflict"@en ;
+    rdfs:comment "Replica has unresolved conflicts."@en .
+
+sc:ReplicaStale a sc:ReplicaState ;
+    rdfs:label "Stale"@en ;
+    rdfs:comment "Replica is outdated and needs sync."@en .
+
+sc:ReplicaOffline a sc:ReplicaState ;
+    rdfs:label "Offline"@en ;
+    rdfs:comment "Replica is offline, changes buffered locally."@en .
+
+# -----------------------------------------------------------------------------
+# ContextChange - A change to the shared context
+# -----------------------------------------------------------------------------
+
+sc:ContextChange a owl:Class ;
+    rdfs:label "Context Change"@en ;
+    rdfs:subClassOf prov:Activity ;
+    rdfs:comment "A change made to a shared context. Forms the event log for synchronization."@en .
+
+sc:ChangeType a owl:Class ;
+    rdfs:label "Change Type"@en ;
+    owl:oneOf (sc:AddTriple sc:RemoveTriple sc:UpdateTriple
+               sc:AddAffordance sc:RemoveAffordance sc:UpdateAffordance
+               sc:AddParticipant sc:RemoveParticipant sc:UpdatePermission) .
+
+sc:AddTriple a sc:ChangeType ;
+    rdfs:label "Add Triple"@en .
+
+sc:RemoveTriple a sc:ChangeType ;
+    rdfs:label "Remove Triple"@en .
+
+sc:UpdateTriple a sc:ChangeType ;
+    rdfs:label "Update Triple"@en .
+
+sc:AddAffordance a sc:ChangeType ;
+    rdfs:label "Add Affordance"@en .
+
+sc:RemoveAffordance a sc:ChangeType ;
+    rdfs:label "Remove Affordance"@en .
+
+sc:UpdateAffordance a sc:ChangeType ;
+    rdfs:label "Update Affordance"@en .
+
+sc:AddParticipant a sc:ChangeType ;
+    rdfs:label "Add Participant"@en .
+
+sc:RemoveParticipant a sc:ChangeType ;
+    rdfs:label "Remove Participant"@en .
+
+sc:UpdatePermission a sc:ChangeType ;
+    rdfs:label "Update Permission"@en .
+
+# -----------------------------------------------------------------------------
+# Conflict - A synchronization conflict
+# -----------------------------------------------------------------------------
+
+sc:Conflict a owl:Class ;
+    rdfs:label "Conflict"@en ;
+    rdfs:comment "A conflict between concurrent changes to the shared context."@en .
+
+sc:ConflictResolution a owl:Class ;
+    rdfs:label "Conflict Resolution"@en ;
+    owl:oneOf (sc:AutoMerge sc:LastWriterWins sc:FirstWriterWins
+               sc:ManualResolution sc:OwnerDecides sc:VotingResolution) .
+
+sc:AutoMerge a sc:ConflictResolution ;
+    rdfs:label "Auto Merge"@en ;
+    rdfs:comment "Automatically merge via CRDT semantics."@en .
+
+sc:LastWriterWins a sc:ConflictResolution ;
+    rdfs:label "Last Writer Wins"@en ;
+    rdfs:comment "Latest timestamp wins."@en .
+
+sc:FirstWriterWins a sc:ConflictResolution ;
+    rdfs:label "First Writer Wins"@en ;
+    rdfs:comment "First to submit wins."@en .
+
+sc:ManualResolution a sc:ConflictResolution ;
+    rdfs:label "Manual Resolution"@en ;
+    rdfs:comment "Requires human intervention."@en .
+
+sc:OwnerDecides a sc:ConflictResolution ;
+    rdfs:label "Owner Decides"@en ;
+    rdfs:comment "Context owner resolves conflicts."@en .
+
+sc:VotingResolution a sc:ConflictResolution ;
+    rdfs:label "Voting Resolution"@en ;
+    rdfs:comment "Participants vote on resolution."@en .
+
+# =============================================================================
+# Access Control Classes (WebACL Extension)
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# ContextACL - Access Control List for shared context
+# -----------------------------------------------------------------------------
+
+sc:ContextACL a owl:Class ;
+    rdfs:label "Context ACL"@en ;
+    rdfs:subClassOf acl:Authorization ;
+    rdfs:comment "An access control rule for a shared context. Extends WebACL with ACG-specific permissions."@en .
+
+sc:ACGMode a owl:Class ;
+    rdfs:label "ACG Access Mode"@en ;
+    rdfs:comment "ACG-specific access modes extending WebACL."@en ;
+    owl:oneOf (sc:ModeTraverse sc:ModeExecute sc:ModeInvoke sc:ModeDelegate) .
+
+sc:ModeTraverse a sc:ACGMode ;
+    rdfs:label "Traverse"@en ;
+    rdfs:comment "Can traverse affordances in the context."@en .
+
+sc:ModeExecute a sc:ACGMode ;
+    rdfs:label "Execute"@en ;
+    rdfs:comment "Can execute actions via affordances."@en .
+
+sc:ModeInvoke a sc:ACGMode ;
+    rdfs:label "Invoke"@en ;
+    rdfs:comment "Can invoke agents in the context."@en .
+
+sc:ModeDelegate a sc:ACGMode ;
+    rdfs:label "Delegate"@en ;
+    rdfs:comment "Can delegate permissions to others."@en .
+
+# =============================================================================
+# Real-time Collaboration Classes
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# PresenceAwareness - Awareness of who's working on what
+# -----------------------------------------------------------------------------
+
+sc:PresenceAwareness a owl:Class ;
+    rdfs:label "Presence Awareness"@en ;
+    rdfs:comment "Real-time awareness of other participants' presence and activity in the context."@en .
+
+sc:CursorPosition a owl:Class ;
+    rdfs:label "Cursor Position"@en ;
+    rdfs:comment "A participant's cursor/focus position in the context."@en .
+
+sc:Selection a owl:Class ;
+    rdfs:label "Selection"@en ;
+    rdfs:comment "A participant's current selection in the context."@en .
+
+sc:ActivityIndicator a owl:Class ;
+    rdfs:label "Activity Indicator"@en ;
+    rdfs:comment "Indicator of what a participant is currently doing."@en ;
+    owl:oneOf (sc:ActivityViewing sc:ActivityEditing sc:ActivityTyping
+               sc:ActivityRunningWorkflow sc:ActivityIdle) .
+
+sc:ActivityViewing a sc:ActivityIndicator ;
+    rdfs:label "Viewing"@en .
+
+sc:ActivityEditing a sc:ActivityIndicator ;
+    rdfs:label "Editing"@en .
+
+sc:ActivityTyping a sc:ActivityIndicator ;
+    rdfs:label "Typing"@en .
+
+sc:ActivityRunningWorkflow a sc:ActivityIndicator ;
+    rdfs:label "Running Workflow"@en .
+
+sc:ActivityIdle a sc:ActivityIndicator ;
+    rdfs:label "Idle"@en .
+
+# -----------------------------------------------------------------------------
+# Comment - A comment on context content
+# -----------------------------------------------------------------------------
+
+sc:Comment a owl:Class ;
+    rdfs:label "Comment"@en ;
+    rdfs:subClassOf as:Note ;
+    rdfs:comment "A comment on a specific part of the shared context."@en .
+
+sc:CommentThread a owl:Class ;
+    rdfs:label "Comment Thread"@en ;
+    rdfs:subClassOf as:Collection ;
+    rdfs:comment "A thread of comments discussing a context element."@en .
+
+# =============================================================================
+# Object Properties
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Shared Context Properties
+# -----------------------------------------------------------------------------
+
+sc:contextOwner a owl:ObjectProperty, owl:FunctionalProperty ;
+    rdfs:label "context owner"@en ;
+    rdfs:domain sc:SharedContext ;
+    rdfs:range pb:PersonalBroker ;
+    rdfs:comment "The broker that owns this shared context."@en .
+
+sc:hasParticipant a owl:ObjectProperty ;
+    rdfs:label "has participant"@en ;
+    rdfs:domain sc:SharedContext ;
+    rdfs:range sc:ContextParticipant ;
+    rdfs:comment "A participant in this shared context."@en .
+
+sc:contextType a owl:ObjectProperty ;
+    rdfs:label "context type"@en ;
+    rdfs:domain sc:SharedContext ;
+    rdfs:range sc:ContextType ;
+    rdfs:comment "The type of this shared context."@en .
+
+sc:syncStrategy a owl:ObjectProperty ;
+    rdfs:label "sync strategy"@en ;
+    rdfs:domain sc:SharedContext ;
+    rdfs:range sc:SyncStrategy ;
+    rdfs:comment "The synchronization strategy for this context."@en .
+
+sc:hasReplica a owl:ObjectProperty ;
+    rdfs:label "has replica"@en ;
+    rdfs:domain sc:SharedContext ;
+    rdfs:range sc:ContextReplica ;
+    rdfs:comment "A replica of this shared context."@en .
+
+sc:hasACL a owl:ObjectProperty ;
+    rdfs:label "has ACL"@en ;
+    rdfs:domain sc:SharedContext ;
+    rdfs:range sc:ContextACL ;
+    rdfs:comment "Access control list for this context."@en .
+
+sc:conflictResolutionPolicy a owl:ObjectProperty ;
+    rdfs:label "conflict resolution policy"@en ;
+    rdfs:domain sc:SharedContext ;
+    rdfs:range sc:ConflictResolution ;
+    rdfs:comment "How conflicts are resolved in this context."@en .
+
+sc:hasChangeLog a owl:ObjectProperty ;
+    rdfs:label "has change log"@en ;
+    rdfs:domain sc:SharedContext ;
+    rdfs:range ldp:Container ;
+    rdfs:comment "Container holding the change log for this context."@en .
+
+sc:hasCommentThread a owl:ObjectProperty ;
+    rdfs:label "has comment thread"@en ;
+    rdfs:domain sc:SharedContext ;
+    rdfs:range sc:CommentThread ;
+    rdfs:comment "A comment thread on this context."@en .
+
+# -----------------------------------------------------------------------------
+# Participant Properties
+# -----------------------------------------------------------------------------
+
+sc:participantBroker a owl:ObjectProperty, owl:FunctionalProperty ;
+    rdfs:label "participant broker"@en ;
+    rdfs:domain sc:ContextParticipant ;
+    rdfs:range pb:PersonalBroker ;
+    rdfs:comment "The broker this participant represents."@en .
+
+sc:participantRole a owl:ObjectProperty ;
+    rdfs:label "participant role"@en ;
+    rdfs:domain sc:ContextParticipant ;
+    rdfs:range sc:ParticipantRole ;
+    rdfs:comment "The role of this participant."@en .
+
+sc:participantIn a owl:ObjectProperty ;
+    rdfs:label "participant in"@en ;
+    rdfs:domain sc:ContextParticipant ;
+    rdfs:range sc:SharedContext ;
+    rdfs:comment "The context this participant is in."@en .
+
+sc:hasPresenceAwareness a owl:ObjectProperty ;
+    rdfs:label "has presence awareness"@en ;
+    rdfs:domain sc:ContextParticipant ;
+    rdfs:range sc:PresenceAwareness ;
+    rdfs:comment "Presence awareness info for this participant."@en .
+
+# -----------------------------------------------------------------------------
+# Replica Properties
+# -----------------------------------------------------------------------------
+
+sc:replicaOf a owl:ObjectProperty, owl:FunctionalProperty ;
+    rdfs:label "replica of"@en ;
+    rdfs:domain sc:ContextReplica ;
+    rdfs:range sc:SharedContext ;
+    rdfs:comment "The shared context this is a replica of."@en .
+
+sc:hostedAt a owl:ObjectProperty, owl:FunctionalProperty ;
+    rdfs:label "hosted at"@en ;
+    rdfs:domain sc:ContextReplica ;
+    rdfs:range pb:PersonalBroker ;
+    rdfs:comment "The broker hosting this replica."@en .
+
+sc:replicaState a owl:ObjectProperty ;
+    rdfs:label "replica state"@en ;
+    rdfs:domain sc:ContextReplica ;
+    rdfs:range sc:ReplicaState ;
+    rdfs:comment "Current state of this replica."@en .
+
+sc:syncPeers a owl:ObjectProperty ;
+    rdfs:label "sync peers"@en ;
+    rdfs:domain sc:ContextReplica ;
+    rdfs:range sc:ContextReplica ;
+    rdfs:comment "Peer replicas this replica syncs with."@en .
+
+sc:hasConflict a owl:ObjectProperty ;
+    rdfs:label "has conflict"@en ;
+    rdfs:domain sc:ContextReplica ;
+    rdfs:range sc:Conflict ;
+    rdfs:comment "An unresolved conflict on this replica."@en .
+
+# -----------------------------------------------------------------------------
+# Change Properties
+# -----------------------------------------------------------------------------
+
+sc:changeType a owl:ObjectProperty ;
+    rdfs:label "change type"@en ;
+    rdfs:domain sc:ContextChange ;
+    rdfs:range sc:ChangeType ;
+    rdfs:comment "The type of this change."@en .
+
+sc:changedContext a owl:ObjectProperty ;
+    rdfs:label "changed context"@en ;
+    rdfs:domain sc:ContextChange ;
+    rdfs:range sc:SharedContext ;
+    rdfs:comment "The context that was changed."@en .
+
+sc:changedBy a owl:ObjectProperty ;
+    rdfs:label "changed by"@en ;
+    rdfs:domain sc:ContextChange ;
+    rdfs:range sc:ContextParticipant ;
+    rdfs:comment "Who made this change."@en .
+
+sc:changedElement a owl:ObjectProperty ;
+    rdfs:label "changed element"@en ;
+    rdfs:domain sc:ContextChange ;
+    rdfs:range rdfs:Resource ;
+    rdfs:comment "The element that was changed."@en .
+
+# -----------------------------------------------------------------------------
+# Conflict Properties
+# -----------------------------------------------------------------------------
+
+sc:conflictingChanges a owl:ObjectProperty ;
+    rdfs:label "conflicting changes"@en ;
+    rdfs:domain sc:Conflict ;
+    rdfs:range sc:ContextChange ;
+    rdfs:comment "Changes that conflict with each other."@en .
+
+sc:conflictResolved a owl:ObjectProperty ;
+    rdfs:label "conflict resolved"@en ;
+    rdfs:domain sc:Conflict ;
+    rdfs:range sc:ConflictResolution ;
+    rdfs:comment "How this conflict was resolved."@en .
+
+sc:resolvedBy a owl:ObjectProperty ;
+    rdfs:label "resolved by"@en ;
+    rdfs:domain sc:Conflict ;
+    rdfs:range sc:ContextParticipant ;
+    rdfs:comment "Who resolved this conflict."@en .
+
+sc:winningChange a owl:ObjectProperty ;
+    rdfs:label "winning change"@en ;
+    rdfs:domain sc:Conflict ;
+    rdfs:range sc:ContextChange ;
+    rdfs:comment "The change that won the conflict resolution."@en .
+
+# -----------------------------------------------------------------------------
+# Presence Properties
+# -----------------------------------------------------------------------------
+
+sc:cursorAt a owl:ObjectProperty ;
+    rdfs:label "cursor at"@en ;
+    rdfs:domain sc:PresenceAwareness ;
+    rdfs:range sc:CursorPosition ;
+    rdfs:comment "Current cursor position."@en .
+
+sc:currentSelection a owl:ObjectProperty ;
+    rdfs:label "current selection"@en ;
+    rdfs:domain sc:PresenceAwareness ;
+    rdfs:range sc:Selection ;
+    rdfs:comment "Current selection."@en .
+
+sc:currentActivity a owl:ObjectProperty ;
+    rdfs:label "current activity"@en ;
+    rdfs:domain sc:PresenceAwareness ;
+    rdfs:range sc:ActivityIndicator ;
+    rdfs:comment "What the participant is currently doing."@en .
+
+# -----------------------------------------------------------------------------
+# Comment Properties
+# -----------------------------------------------------------------------------
+
+sc:commentOn a owl:ObjectProperty ;
+    rdfs:label "comment on"@en ;
+    rdfs:domain sc:Comment ;
+    rdfs:range rdfs:Resource ;
+    rdfs:comment "The resource this comment is about."@en .
+
+sc:commentAuthor a owl:ObjectProperty ;
+    rdfs:label "comment author"@en ;
+    rdfs:domain sc:Comment ;
+    rdfs:range sc:ContextParticipant ;
+    rdfs:comment "Who wrote this comment."@en .
+
+sc:replyTo a owl:ObjectProperty ;
+    rdfs:label "reply to"@en ;
+    rdfs:domain sc:Comment ;
+    rdfs:range sc:Comment ;
+    rdfs:comment "Comment this is a reply to."@en .
+
+sc:inThread a owl:ObjectProperty ;
+    rdfs:label "in thread"@en ;
+    rdfs:domain sc:Comment ;
+    rdfs:range sc:CommentThread ;
+    rdfs:comment "The thread this comment belongs to."@en .
+
+sc:threadOn a owl:ObjectProperty ;
+    rdfs:label "thread on"@en ;
+    rdfs:domain sc:CommentThread ;
+    rdfs:range rdfs:Resource ;
+    rdfs:comment "Resource this thread discusses."@en .
+
+sc:hasComment a owl:ObjectProperty ;
+    rdfs:label "has comment"@en ;
+    rdfs:domain sc:CommentThread ;
+    rdfs:range sc:Comment ;
+    rdfs:comment "A comment in this thread."@en .
+
+# =============================================================================
+# Datatype Properties
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Shared Context Datatype Properties
+# -----------------------------------------------------------------------------
+
+sc:contextName a owl:DatatypeProperty ;
+    rdfs:label "context name"@en ;
+    rdfs:domain sc:SharedContext ;
+    rdfs:range xsd:string ;
+    rdfs:comment "Name of the shared context."@en .
+
+sc:contextDescription a owl:DatatypeProperty ;
+    rdfs:label "context description"@en ;
+    rdfs:domain sc:SharedContext ;
+    rdfs:range xsd:string ;
+    rdfs:comment "Description of the shared context."@en .
+
+sc:contextCreated a owl:DatatypeProperty ;
+    rdfs:label "context created"@en ;
+    rdfs:domain sc:SharedContext ;
+    rdfs:range xsd:dateTime ;
+    rdfs:comment "When the context was created."@en .
+
+sc:contextModified a owl:DatatypeProperty ;
+    rdfs:label "context modified"@en ;
+    rdfs:domain sc:SharedContext ;
+    rdfs:range xsd:dateTime ;
+    rdfs:comment "When the context was last modified."@en .
+
+sc:contextVersion a owl:DatatypeProperty ;
+    rdfs:label "context version"@en ;
+    rdfs:domain sc:SharedContext ;
+    rdfs:range xsd:integer ;
+    rdfs:comment "Version number of the context."@en .
+
+sc:maxParticipants a owl:DatatypeProperty ;
+    rdfs:label "max participants"@en ;
+    rdfs:domain sc:SharedContext ;
+    rdfs:range xsd:integer ;
+    rdfs:comment "Maximum number of participants allowed."@en .
+
+sc:isPublic a owl:DatatypeProperty ;
+    rdfs:label "is public"@en ;
+    rdfs:domain sc:SharedContext ;
+    rdfs:range xsd:boolean ;
+    rdfs:comment "Whether the context is publicly visible."@en .
+
+sc:isArchived a owl:DatatypeProperty ;
+    rdfs:label "is archived"@en ;
+    rdfs:domain sc:SharedContext ;
+    rdfs:range xsd:boolean ;
+    rdfs:comment "Whether the context is archived."@en .
+
+# -----------------------------------------------------------------------------
+# Participant Datatype Properties
+# -----------------------------------------------------------------------------
+
+sc:participantJoined a owl:DatatypeProperty ;
+    rdfs:label "participant joined"@en ;
+    rdfs:domain sc:ContextParticipant ;
+    rdfs:range xsd:dateTime ;
+    rdfs:comment "When this participant joined."@en .
+
+sc:participantLastActive a owl:DatatypeProperty ;
+    rdfs:label "participant last active"@en ;
+    rdfs:domain sc:ContextParticipant ;
+    rdfs:range xsd:dateTime ;
+    rdfs:comment "When this participant was last active."@en .
+
+sc:canInvite a owl:DatatypeProperty ;
+    rdfs:label "can invite"@en ;
+    rdfs:domain sc:ContextParticipant ;
+    rdfs:range xsd:boolean ;
+    rdfs:comment "Whether participant can invite others."@en .
+
+# -----------------------------------------------------------------------------
+# Replica Datatype Properties
+# -----------------------------------------------------------------------------
+
+sc:replicaVersion a owl:DatatypeProperty ;
+    rdfs:label "replica version"@en ;
+    rdfs:domain sc:ContextReplica ;
+    rdfs:range xsd:string ;
+    rdfs:comment "Version vector or clock for this replica."@en .
+
+sc:lastSyncTime a owl:DatatypeProperty ;
+    rdfs:label "last sync time"@en ;
+    rdfs:domain sc:ContextReplica ;
+    rdfs:range xsd:dateTime ;
+    rdfs:comment "When this replica was last synchronized."@en .
+
+sc:pendingChanges a owl:DatatypeProperty ;
+    rdfs:label "pending changes"@en ;
+    rdfs:domain sc:ContextReplica ;
+    rdfs:range xsd:integer ;
+    rdfs:comment "Number of pending local changes."@en .
+
+sc:bytesStored a owl:DatatypeProperty ;
+    rdfs:label "bytes stored"@en ;
+    rdfs:domain sc:ContextReplica ;
+    rdfs:range xsd:long ;
+    rdfs:comment "Storage used by this replica."@en .
+
+# -----------------------------------------------------------------------------
+# Change Datatype Properties
+# -----------------------------------------------------------------------------
+
+sc:changeTimestamp a owl:DatatypeProperty ;
+    rdfs:label "change timestamp"@en ;
+    rdfs:domain sc:ContextChange ;
+    rdfs:range xsd:dateTime ;
+    rdfs:comment "When this change was made."@en .
+
+sc:changeSequence a owl:DatatypeProperty ;
+    rdfs:label "change sequence"@en ;
+    rdfs:domain sc:ContextChange ;
+    rdfs:range xsd:integer ;
+    rdfs:comment "Sequence number of this change."@en .
+
+sc:changePayload a owl:DatatypeProperty ;
+    rdfs:label "change payload"@en ;
+    rdfs:domain sc:ContextChange ;
+    rdfs:range xsd:string ;
+    rdfs:comment "Serialized change payload (JSON-LD or N-Quads)."@en .
+
+sc:vectorClock a owl:DatatypeProperty ;
+    rdfs:label "vector clock"@en ;
+    rdfs:domain sc:ContextChange ;
+    rdfs:range xsd:string ;
+    rdfs:comment "Vector clock for causality tracking."@en .
+
+# -----------------------------------------------------------------------------
+# Conflict Datatype Properties
+# -----------------------------------------------------------------------------
+
+sc:conflictDetected a owl:DatatypeProperty ;
+    rdfs:label "conflict detected"@en ;
+    rdfs:domain sc:Conflict ;
+    rdfs:range xsd:dateTime ;
+    rdfs:comment "When the conflict was detected."@en .
+
+sc:conflictResolutionTime a owl:DatatypeProperty ;
+    rdfs:label "conflict resolution time"@en ;
+    rdfs:domain sc:Conflict ;
+    rdfs:range xsd:dateTime ;
+    rdfs:comment "When the conflict was resolved."@en .
+
+sc:conflictDescription a owl:DatatypeProperty ;
+    rdfs:label "conflict description"@en ;
+    rdfs:domain sc:Conflict ;
+    rdfs:range xsd:string ;
+    rdfs:comment "Human-readable description of the conflict."@en .
+
+# -----------------------------------------------------------------------------
+# Presence Datatype Properties
+# -----------------------------------------------------------------------------
+
+sc:presenceUpdated a owl:DatatypeProperty ;
+    rdfs:label "presence updated"@en ;
+    rdfs:domain sc:PresenceAwareness ;
+    rdfs:range xsd:dateTime ;
+    rdfs:comment "When presence was last updated."@en .
+
+sc:cursorX a owl:DatatypeProperty ;
+    rdfs:label "cursor X"@en ;
+    rdfs:domain sc:CursorPosition ;
+    rdfs:range xsd:float ;
+    rdfs:comment "X coordinate of cursor."@en .
+
+sc:cursorY a owl:DatatypeProperty ;
+    rdfs:label "cursor Y"@en ;
+    rdfs:domain sc:CursorPosition ;
+    rdfs:range xsd:float ;
+    rdfs:comment "Y coordinate of cursor."@en .
+
+sc:cursorTarget a owl:DatatypeProperty ;
+    rdfs:label "cursor target"@en ;
+    rdfs:domain sc:CursorPosition ;
+    rdfs:range xsd:anyURI ;
+    rdfs:comment "URI of element cursor is on."@en .
+
+# -----------------------------------------------------------------------------
+# Comment Datatype Properties
+# -----------------------------------------------------------------------------
+
+sc:commentText a owl:DatatypeProperty ;
+    rdfs:label "comment text"@en ;
+    rdfs:domain sc:Comment ;
+    rdfs:range xsd:string ;
+    rdfs:comment "Text content of the comment."@en .
+
+sc:commentCreated a owl:DatatypeProperty ;
+    rdfs:label "comment created"@en ;
+    rdfs:domain sc:Comment ;
+    rdfs:range xsd:dateTime ;
+    rdfs:comment "When the comment was created."@en .
+
+sc:commentEdited a owl:DatatypeProperty ;
+    rdfs:label "comment edited"@en ;
+    rdfs:domain sc:Comment ;
+    rdfs:range xsd:dateTime ;
+    rdfs:comment "When the comment was last edited."@en .
+
+sc:commentResolved a owl:DatatypeProperty ;
+    rdfs:label "comment resolved"@en ;
+    rdfs:domain sc:Comment ;
+    rdfs:range xsd:boolean ;
+    rdfs:comment "Whether this comment thread is resolved."@en .
+
+# =============================================================================
+# Shared Context Actions
+# =============================================================================
+
+sc:CreateSharedContext a acg:ActionType ;
+    rdfs:label "Create Shared Context"@en ;
+    rdfs:comment "Create a new shared context."@en .
+
+sc:DeleteSharedContext a acg:ActionType ;
+    rdfs:label "Delete Shared Context"@en ;
+    rdfs:comment "Delete a shared context."@en .
+
+sc:InviteToContext a acg:ActionType ;
+    rdfs:label "Invite to Context"@en ;
+    rdfs:comment "Invite a connection to a shared context."@en .
+
+sc:JoinContext a acg:ActionType ;
+    rdfs:label "Join Context"@en ;
+    rdfs:comment "Join a shared context."@en .
+
+sc:LeaveContext a acg:ActionType ;
+    rdfs:label "Leave Context"@en ;
+    rdfs:comment "Leave a shared context."@en .
+
+sc:UpdateContextPermission a acg:ActionType ;
+    rdfs:label "Update Context Permission"@en ;
+    rdfs:comment "Update participant permissions in a context."@en .
+
+sc:SyncContext a acg:ActionType ;
+    rdfs:label "Sync Context"@en ;
+    rdfs:comment "Synchronize context with peers."@en .
+
+sc:ResolveConflict a acg:ActionType ;
+    rdfs:label "Resolve Conflict"@en ;
+    rdfs:comment "Resolve a synchronization conflict."@en .
+
+sc:AddComment a acg:ActionType ;
+    rdfs:label "Add Comment"@en ;
+    rdfs:comment "Add a comment to the context."@en .
+
+sc:UpdatePresence a acg:ActionType ;
+    rdfs:label "Update Presence"@en ;
+    rdfs:comment "Update presence in a shared context."@en .
+
+sc:ForkContext a acg:ActionType ;
+    rdfs:label "Fork Context"@en ;
+    rdfs:comment "Create a fork/copy of a shared context."@en .
+
+sc:MergeContexts a acg:ActionType ;
+    rdfs:label "Merge Contexts"@en ;
+    rdfs:comment "Merge two contexts together."@en .
+
+sc:ArchiveContext a acg:ActionType ;
+    rdfs:label "Archive Context"@en ;
+    rdfs:comment "Archive a shared context."@en .

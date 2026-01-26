@@ -1,0 +1,384 @@
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix schema: <https://schema.org/> .
+@prefix odrl: <http://www.w3.org/ns/odrl/2/> .
+@prefix hydra: <http://www.w3.org/ns/hydra/core#> .
+@prefix acg: <https://agentcontextgraph.dev/ontology#> .
+@prefix aat: <https://agentcontextgraph.dev/aat#> .
+@prefix interop: <https://agentcontextgraph.dev/interop#> .
+
+# =============================================================================
+# Agent Context Graph Interoperability Ontology
+# =============================================================================
+# Defines alignments with external protocols and standards:
+# - Model Context Protocol (MCP) for LLM tool use
+# - Agent-to-Agent (A2A) protocol for agent communication
+# - ODRL for policy expression
+# - Schema.org for action vocabulary alignment
+# =============================================================================
+
+<https://agentcontextgraph.dev/interop>
+    a owl:Ontology ;
+    owl:versionIRI <https://agentcontextgraph.dev/interop/1.0.0> ;
+    dcterms:title "Agent Context Graph Interoperability Ontology"@en ;
+    dcterms:description "Defines alignments between ACG concepts and external protocols including MCP, A2A, ODRL, and Schema.org. Enables ACG agents to participate in broader AI agent ecosystems."@en ;
+    dcterms:created "2026-01-25"^^xsd:date ;
+    owl:imports <https://agentcontextgraph.dev/ontology> ;
+    owl:imports <http://www.w3.org/ns/odrl/2/> .
+
+# =============================================================================
+# MCP (Model Context Protocol) Alignment
+# =============================================================================
+# MCP is Anthropic's protocol for LLM tool use.
+# ACG Affordances can be exposed as MCP tools.
+
+# -----------------------------------------------------------------------------
+# MCP Tool Mapping
+# -----------------------------------------------------------------------------
+
+interop:MCPToolMapping a owl:Class ;
+    rdfs:label "MCP Tool Mapping"@en ;
+    rdfs:comment "Maps an ACG Affordance to an MCP tool definition, enabling LLMs to invoke affordances via MCP."@en .
+
+interop:MCPTool a owl:Class ;
+    rdfs:label "MCP Tool"@en ;
+    rdfs:comment "An MCP tool definition that can be invoked by an LLM."@en .
+
+interop:MCPResource a owl:Class ;
+    rdfs:label "MCP Resource"@en ;
+    rdfs:comment "An MCP resource that provides context to the LLM."@en .
+
+interop:MCPPrompt a owl:Class ;
+    rdfs:label "MCP Prompt"@en ;
+    rdfs:comment "An MCP prompt template for guiding LLM interactions."@en .
+
+# -----------------------------------------------------------------------------
+# MCP Properties
+# -----------------------------------------------------------------------------
+
+interop:hasMCPMapping a owl:ObjectProperty ;
+    rdfs:label "has MCP mapping"@en ;
+    rdfs:domain acg:Affordance ;
+    rdfs:range interop:MCPToolMapping ;
+    rdfs:comment "Maps this affordance to an MCP tool."@en .
+
+interop:mcpToolName a owl:DatatypeProperty ;
+    rdfs:label "MCP tool name"@en ;
+    rdfs:domain interop:MCPToolMapping ;
+    rdfs:range xsd:string ;
+    rdfs:comment "The MCP tool name (e.g., 'emit_plan', 'execute_action')."@en .
+
+interop:mcpToolDescription a owl:DatatypeProperty ;
+    rdfs:label "MCP tool description"@en ;
+    rdfs:domain interop:MCPToolMapping ;
+    rdfs:range xsd:string ;
+    rdfs:comment "Human-readable description for LLM understanding."@en .
+
+interop:mcpInputSchema a owl:DatatypeProperty ;
+    rdfs:label "MCP input schema"@en ;
+    rdfs:domain interop:MCPToolMapping ;
+    rdfs:range xsd:string ;
+    rdfs:comment "JSON Schema for MCP tool input (serialized JSON)."@en .
+
+interop:mcpOutputSchema a owl:DatatypeProperty ;
+    rdfs:label "MCP output schema"@en ;
+    rdfs:domain interop:MCPToolMapping ;
+    rdfs:range xsd:string ;
+    rdfs:comment "JSON Schema for MCP tool output (serialized JSON)."@en .
+
+# MCP Server endpoint
+interop:mcpServerEndpoint a owl:DatatypeProperty ;
+    rdfs:label "MCP server endpoint"@en ;
+    rdfs:domain acg:ContextGraph ;
+    rdfs:range xsd:anyURI ;
+    rdfs:comment "MCP server endpoint exposing this context's affordances as tools."@en .
+
+# =============================================================================
+# A2A (Agent-to-Agent) Protocol Alignment
+# =============================================================================
+# A2A is Google's protocol for agent-to-agent communication.
+# ACG Affordances can be exposed as A2A capabilities.
+
+# -----------------------------------------------------------------------------
+# A2A Capability Mapping
+# -----------------------------------------------------------------------------
+
+interop:A2ACapabilityMapping a owl:Class ;
+    rdfs:label "A2A Capability Mapping"@en ;
+    rdfs:comment "Maps an ACG Affordance to an A2A capability, enabling agent-to-agent invocation."@en .
+
+interop:A2AAgentCard a owl:Class ;
+    rdfs:label "A2A Agent Card"@en ;
+    rdfs:comment "An A2A Agent Card describing an agent's capabilities in the A2A format."@en .
+
+interop:A2ATask a owl:Class ;
+    rdfs:label "A2A Task"@en ;
+    rdfs:comment "An A2A Task representing work delegated between agents."@en .
+
+# -----------------------------------------------------------------------------
+# A2A Properties
+# -----------------------------------------------------------------------------
+
+interop:hasA2AMapping a owl:ObjectProperty ;
+    rdfs:label "has A2A mapping"@en ;
+    rdfs:domain acg:Affordance ;
+    rdfs:range interop:A2ACapabilityMapping ;
+    rdfs:comment "Maps this affordance to an A2A capability."@en .
+
+interop:a2aCapabilityId a owl:DatatypeProperty ;
+    rdfs:label "A2A capability ID"@en ;
+    rdfs:domain interop:A2ACapabilityMapping ;
+    rdfs:range xsd:string ;
+    rdfs:comment "The A2A capability identifier."@en .
+
+interop:a2aCapabilityName a owl:DatatypeProperty ;
+    rdfs:label "A2A capability name"@en ;
+    rdfs:domain interop:A2ACapabilityMapping ;
+    rdfs:range xsd:string ;
+    rdfs:comment "Human-readable name for the capability."@en .
+
+interop:a2aInputModes a owl:DatatypeProperty ;
+    rdfs:label "A2A input modes"@en ;
+    rdfs:domain interop:A2ACapabilityMapping ;
+    rdfs:range xsd:string ;
+    rdfs:comment "Supported input modes (e.g., 'text', 'file', 'data')."@en .
+
+interop:a2aOutputModes a owl:DatatypeProperty ;
+    rdfs:label "A2A output modes"@en ;
+    rdfs:domain interop:A2ACapabilityMapping ;
+    rdfs:range xsd:string ;
+    rdfs:comment "Supported output modes (e.g., 'text', 'file', 'data')."@en .
+
+# A2A Agent Card for ACG agents
+interop:hasAgentCard a owl:ObjectProperty ;
+    rdfs:label "has agent card"@en ;
+    rdfs:domain acg:Agent ;
+    rdfs:range interop:A2AAgentCard ;
+    rdfs:comment "The A2A Agent Card for this agent."@en .
+
+interop:agentCardEndpoint a owl:DatatypeProperty ;
+    rdfs:label "agent card endpoint"@en ;
+    rdfs:domain acg:Agent ;
+    rdfs:range xsd:anyURI ;
+    rdfs:comment "Endpoint serving this agent's A2A Agent Card."@en .
+
+# =============================================================================
+# ODRL (Open Digital Rights Language) Alignment
+# =============================================================================
+# ODRL is W3C standard for expressing policies, permissions, and obligations.
+# ACG's deontic constraints align with ODRL semantics.
+
+# -----------------------------------------------------------------------------
+# ODRL Policy Alignment
+# -----------------------------------------------------------------------------
+
+# ACG Constraint maps to ODRL Rule
+acg:Constraint rdfs:subClassOf odrl:Rule .
+
+# ACG DeonticConstraint maps to ODRL Policy
+acg:DeonticConstraint rdfs:subClassOf odrl:Policy .
+
+# ACG specific ODRL extensions
+interop:ACGPolicy a owl:Class ;
+    rdfs:label "ACG Policy"@en ;
+    rdfs:subClassOf odrl:Policy ;
+    rdfs:comment "An ODRL-compliant policy with ACG-specific extensions for causal constraints."@en .
+
+interop:ACGPermission a owl:Class ;
+    rdfs:label "ACG Permission"@en ;
+    rdfs:subClassOf odrl:Permission ;
+    rdfs:comment "ODRL permission with ACG affordance targeting."@en .
+
+interop:ACGProhibition a owl:Class ;
+    rdfs:label "ACG Prohibition"@en ;
+    rdfs:subClassOf odrl:Prohibition ;
+    rdfs:comment "ODRL prohibition with ACG affordance targeting."@en .
+
+interop:ACGObligation a owl:Class ;
+    rdfs:label "ACG Obligation"@en ;
+    rdfs:subClassOf odrl:Duty ;
+    rdfs:comment "ODRL duty/obligation with ACG affordance targeting."@en .
+
+# -----------------------------------------------------------------------------
+# ODRL Action Alignment
+# -----------------------------------------------------------------------------
+
+# Map ACG action types to ODRL actions
+interop:TraverseAffordance a odrl:Action ;
+    rdfs:label "Traverse Affordance"@en ;
+    rdfs:comment "ODRL action for traversing an ACG affordance."@en .
+
+interop:EmitTrace a odrl:Action ;
+    rdfs:label "Emit Trace"@en ;
+    rdfs:comment "ODRL action for emitting a PROV trace."@en .
+
+interop:RequestContext a odrl:Action ;
+    rdfs:label "Request Context"@en ;
+    rdfs:comment "ODRL action for requesting a context graph."@en .
+
+interop:StoreData a odrl:Action ;
+    rdfs:label "Store Data"@en ;
+    rdfs:comment "ODRL action for storing data in a data space."@en .
+
+interop:QueryData a odrl:Action ;
+    rdfs:label "Query Data"@en ;
+    rdfs:comment "ODRL action for querying data via SPARQL."@en .
+
+# -----------------------------------------------------------------------------
+# ODRL Constraint Extensions for Causal Semantics
+# -----------------------------------------------------------------------------
+
+interop:CausalConstraint a owl:Class ;
+    rdfs:label "Causal Constraint"@en ;
+    rdfs:subClassOf odrl:Constraint ;
+    rdfs:comment "An ODRL constraint based on causal model predictions."@en .
+
+interop:causalModel a owl:ObjectProperty ;
+    rdfs:label "causal model"@en ;
+    rdfs:subPropertyOf odrl:leftOperand ;
+    rdfs:domain interop:CausalConstraint ;
+    rdfs:comment "The causal model to evaluate."@en .
+
+interop:predictedOutcome a owl:ObjectProperty ;
+    rdfs:label "predicted outcome"@en ;
+    rdfs:subPropertyOf odrl:leftOperand ;
+    rdfs:domain interop:CausalConstraint ;
+    rdfs:comment "The predicted outcome variable to constrain."@en .
+
+interop:confidenceThreshold a owl:DatatypeProperty ;
+    rdfs:label "confidence threshold"@en ;
+    rdfs:domain interop:CausalConstraint ;
+    rdfs:range xsd:decimal ;
+    rdfs:comment "Minimum confidence required for prediction."@en .
+
+# -----------------------------------------------------------------------------
+# ODRL Properties for ACG
+# -----------------------------------------------------------------------------
+
+interop:hasODRLPolicy a owl:ObjectProperty ;
+    rdfs:label "has ODRL policy"@en ;
+    rdfs:domain acg:ContextGraph ;
+    rdfs:range interop:ACGPolicy ;
+    rdfs:comment "An ODRL-compliant policy governing this context."@en .
+
+interop:targetAffordance a owl:ObjectProperty ;
+    rdfs:label "target affordance"@en ;
+    rdfs:subPropertyOf odrl:target ;
+    rdfs:range acg:Affordance ;
+    rdfs:comment "The affordance this rule targets."@en .
+
+interop:assigneeAgent a owl:ObjectProperty ;
+    rdfs:label "assignee agent"@en ;
+    rdfs:subPropertyOf odrl:assignee ;
+    rdfs:range acg:Agent ;
+    rdfs:comment "The agent this rule applies to."@en .
+
+# =============================================================================
+# Schema.org Action Alignment
+# =============================================================================
+# Schema.org defines a rich vocabulary for actions.
+# ACG actions align with Schema.org for broader web interoperability.
+
+# Action type alignment
+acg:Affordance rdfs:subClassOf schema:Action .
+
+# Specific action alignments
+aat:Read owl:equivalentClass schema:ReadAction .
+aat:Write owl:equivalentClass schema:WriteAction .
+aat:Create owl:equivalentClass schema:CreateAction .
+aat:Update owl:equivalentClass schema:UpdateAction .
+aat:Delete owl:equivalentClass schema:DeleteAction .
+aat:Search owl:equivalentClass schema:SearchAction .
+aat:Send owl:equivalentClass schema:SendAction .
+
+# Schema.org properties
+interop:schemaActionType a owl:ObjectProperty ;
+    rdfs:label "schema.org action type"@en ;
+    rdfs:domain acg:Affordance ;
+    rdfs:range schema:Action ;
+    rdfs:comment "The Schema.org action type for this affordance."@en .
+
+interop:schemaAgent a owl:ObjectProperty ;
+    rdfs:label "schema.org agent"@en ;
+    rdfs:subPropertyOf schema:agent ;
+    rdfs:domain acg:Affordance ;
+    rdfs:range acg:Agent ;
+    rdfs:comment "The agent performing this action (schema.org alignment)."@en .
+
+interop:schemaObject a owl:ObjectProperty ;
+    rdfs:label "schema.org object"@en ;
+    rdfs:subPropertyOf schema:object ;
+    rdfs:domain acg:Affordance ;
+    rdfs:comment "The object of this action (schema.org alignment)."@en .
+
+interop:schemaResult a owl:ObjectProperty ;
+    rdfs:label "schema.org result"@en ;
+    rdfs:subPropertyOf schema:result ;
+    rdfs:domain acg:Affordance ;
+    rdfs:comment "The result of this action (schema.org alignment)."@en .
+
+# =============================================================================
+# Interop Configuration Classes
+# =============================================================================
+
+interop:InteropConfig a owl:Class ;
+    rdfs:label "Interop Configuration"@en ;
+    rdfs:comment "Configuration for protocol interoperability at a broker or agent level."@en .
+
+interop:MCPConfig a owl:Class ;
+    rdfs:label "MCP Configuration"@en ;
+    rdfs:subClassOf interop:InteropConfig ;
+    rdfs:comment "Configuration for MCP protocol support."@en .
+
+interop:A2AConfig a owl:Class ;
+    rdfs:label "A2A Configuration"@en ;
+    rdfs:subClassOf interop:InteropConfig ;
+    rdfs:comment "Configuration for A2A protocol support."@en .
+
+interop:ODRLConfig a owl:Class ;
+    rdfs:label "ODRL Configuration"@en ;
+    rdfs:subClassOf interop:InteropConfig ;
+    rdfs:comment "Configuration for ODRL policy enforcement."@en .
+
+# Config properties
+interop:hasInteropConfig a owl:ObjectProperty ;
+    rdfs:label "has interop config"@en ;
+    rdfs:domain acg:ContextGraph ;
+    rdfs:range interop:InteropConfig ;
+    rdfs:comment "Interoperability configuration for this context."@en .
+
+interop:mcpEnabled a owl:DatatypeProperty ;
+    rdfs:label "MCP enabled"@en ;
+    rdfs:domain interop:MCPConfig ;
+    rdfs:range xsd:boolean ;
+    rdfs:comment "Whether MCP protocol is enabled."@en .
+
+interop:a2aEnabled a owl:DatatypeProperty ;
+    rdfs:label "A2A enabled"@en ;
+    rdfs:domain interop:A2AConfig ;
+    rdfs:range xsd:boolean ;
+    rdfs:comment "Whether A2A protocol is enabled."@en .
+
+interop:odrlEnforcement a owl:DatatypeProperty ;
+    rdfs:label "ODRL enforcement"@en ;
+    rdfs:domain interop:ODRLConfig ;
+    rdfs:range xsd:string ;
+    rdfs:comment "ODRL enforcement level: 'strict', 'advisory', 'audit'."@en .
+
+# =============================================================================
+# FOAF Alignment (Identity)
+# =============================================================================
+
+# ACG Agent is equivalent to FOAF Agent
+acg:Agent owl:equivalentClass <http://xmlns.com/foaf/0.1/Agent> .
+
+# =============================================================================
+# Dublin Core Alignment (Metadata)
+# =============================================================================
+
+acg:hasTimestamp rdfs:subPropertyOf dcterms:created .
+acg:ContextGraph rdfs:subClassOf dcterms:Dataset .
+acg:ProvTrace rdfs:subClassOf dcterms:Event .

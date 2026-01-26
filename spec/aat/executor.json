@@ -1,0 +1,238 @@
+{
+  "@context": [
+    "https://www.w3.org/ns/prov#",
+    {
+      "xsd": "http://www.w3.org/2001/XMLSchema#",
+      "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+      "owl": "http://www.w3.org/2002/07/owl#",
+      "dcterms": "http://purl.org/dc/terms/",
+
+      "acg": "https://agentcontextgraph.dev/ontology#",
+      "aat": "https://agentcontextgraph.dev/aat#",
+
+      "id": "@id",
+      "type": "@type",
+      "AbstractAgentType": "aat:AbstractAgentType",
+      "name": "rdfs:label",
+      "description": "rdfs:comment",
+      "version": "owl:versionInfo",
+
+      "perceptSpace": "aat:hasPerceptSpace",
+      "PerceptSpace": "aat:PerceptSpace",
+      "perceptTypes": { "@id": "aat:hasPerceptType", "@container": "@set" },
+
+      "actionSpace": "aat:hasActionSpace",
+      "ActionSpace": "aat:ActionSpace",
+      "allowed": { "@id": "aat:allowsAction", "@container": "@set" },
+      "forbidden": { "@id": "aat:forbidsAction", "@container": "@set" },
+      "ActionType": "aat:ActionType",
+      "requiresCapability": { "@id": "acg:requiresCapability", "@type": "@id" },
+      "rationale": "aat:forbiddenRationale",
+
+      "internalState": "aat:hasInternalState",
+      "components": { "@id": "aat:hasStateComponent", "@container": "@set" },
+
+      "behavioralInvariants": { "@id": "aat:hasBehavioralInvariant", "@container": "@set" },
+      "BehavioralInvariant": "aat:BehavioralInvariant",
+      "formalRule": "aat:formalRule",
+      "enforcement": "aat:enforcementLevel",
+      "requiredOutputAction": { "@id": "aat:requiredOutputAction", "@type": "@id" },
+
+      "traceRequirements": "acg:hasTracePolicy",
+      "mustEmitProvActivity": "acg:mustEmitProvActivity",
+      "requiredFields": { "@id": "acg:requiredTraceFields", "@container": "@list" },
+      "retentionPolicy": "acg:retentionPolicy",
+
+      "livenessGuarantees": { "@id": "aat:hasLivenessGuarantee", "@container": "@set" },
+      "LivenessGuarantee": "aat:LivenessGuarantee",
+
+      "compositionRules": "aat:hasCompositionRules",
+      "CompositionRules": "aat:CompositionRules",
+      "canComposeBefore": { "@id": "aat:canComposeBefore", "@type": "@id", "@container": "@set" },
+      "canComposeAfter": { "@id": "aat:canComposeAfter", "@type": "@id", "@container": "@set" },
+      "notes": "rdfs:comment"
+    }
+  ],
+  "type": ["aat:AbstractAgentType", "aat:ExecutorAgentType"],
+  "id": "aat:ExecutorAgentType",
+  "name": "Executor Agent Type",
+  "version": "1.0.0",
+  "description": "Abstract Agent Type for execution agents. Executors perform actions in the world based on authorized plans.",
+
+  "perceptSpace": {
+    "type": "aat:PerceptSpace",
+    "description": "What the executor can observe",
+    "perceptTypes": [
+      {
+        "type": "aat:PerceptType",
+        "name": "Plan",
+        "description": "A validated plan to execute"
+      },
+      {
+        "type": "aat:PerceptType",
+        "name": "Authorization",
+        "description": "Credentials granting execution permission"
+      },
+      {
+        "type": "aat:PerceptType",
+        "name": "EnvironmentState",
+        "description": "Current state of the execution environment"
+      },
+      {
+        "type": "aat:PerceptType",
+        "name": "ExecutionFeedback",
+        "description": "Results from previous action attempts"
+      }
+    ]
+  },
+
+  "actionSpace": {
+    "type": "aat:ActionSpace",
+    "allowed": [
+      {
+        "type": "aat:ActionType",
+        "id": "aat:Act",
+        "name": "Act",
+        "description": "Execute a command/action in the environment",
+        "requiresCapability": "acg:ExecutorCapability"
+      },
+      {
+        "type": "aat:ActionType",
+        "id": "aat:ReportOutcome",
+        "name": "ReportOutcome",
+        "description": "Report the result of an action",
+        "requiresCapability": null
+      },
+      {
+        "type": "aat:ActionType",
+        "id": "aat:RequestAuthorization",
+        "name": "RequestAuthorization",
+        "description": "Request additional authorization for an action",
+        "requiresCapability": null
+      },
+      {
+        "type": "aat:ActionType",
+        "id": "aat:RollbackAction",
+        "name": "RollbackAction",
+        "description": "Reverse a previous action if possible",
+        "requiresCapability": "acg:ExecutorCapability"
+      }
+    ],
+    "forbidden": [
+      {
+        "type": "aat:ActionType",
+        "id": "aat:EmitPlan",
+        "name": "EmitPlan",
+        "description": "Creating plans",
+        "rationale": "Executors follow plans, they don't create them"
+      },
+      {
+        "type": "aat:ActionType",
+        "id": "aat:BypassAuthorization",
+        "name": "BypassAuthorization",
+        "description": "Acting without proper credentials",
+        "rationale": "All actions require explicit authorization"
+      },
+      {
+        "type": "aat:ActionType",
+        "id": "aat:SilentAction",
+        "name": "SilentAction",
+        "description": "Acting without trace emission",
+        "rationale": "All actions must be traceable"
+      }
+    ]
+  },
+
+  "internalState": {
+    "type": "aat:InternalState",
+    "description": "Abstract state the executor may maintain",
+    "components": [
+      {
+        "type": "aat:StateComponent",
+        "name": "currentPlan",
+        "description": "The plan being executed"
+      },
+      {
+        "type": "aat:StateComponent",
+        "name": "executionProgress",
+        "description": "Which steps have been completed"
+      },
+      {
+        "type": "aat:StateComponent",
+        "name": "activeAuthorizations",
+        "description": "Current valid credentials"
+      },
+      {
+        "type": "aat:StateComponent",
+        "name": "rollbackStack",
+        "description": "Compensating actions for rollback"
+      }
+    ]
+  },
+
+  "behavioralInvariants": [
+    {
+      "type": "aat:BehavioralInvariant",
+      "id": "aat:ExecutorAgentType/invariant/authorized-only",
+      "name": "authorized-only",
+      "description": "Executor must only act when properly authorized",
+      "formalRule": "∀ act ∈ Act: hasValidAuthorization(act) = true",
+      "enforcement": "structural"
+    },
+    {
+      "type": "aat:BehavioralInvariant",
+      "id": "aat:ExecutorAgentType/invariant/plan-adherence",
+      "name": "plan-adherence",
+      "description": "Actions must correspond to plan steps",
+      "formalRule": "∀ act ∈ Act: act ∈ currentPlan.steps",
+      "enforcement": "validation"
+    },
+    {
+      "type": "aat:BehavioralInvariant",
+      "id": "aat:ExecutorAgentType/invariant/trace-required",
+      "name": "trace-required",
+      "description": "Every action must emit a trace",
+      "formalRule": "∀ act ∈ Act: emitsTrace(act) = true",
+      "enforcement": "structural"
+    },
+    {
+      "type": "aat:BehavioralInvariant",
+      "id": "aat:ExecutorAgentType/invariant/idempotency-or-compensation",
+      "name": "idempotency-or-compensation",
+      "description": "Actions must be idempotent or have compensating actions",
+      "formalRule": "∀ act ∈ Act: isIdempotent(act) ∨ hasCompensation(act)",
+      "enforcement": "design"
+    }
+  ],
+
+  "traceRequirements": {
+    "type": "acg:TracePolicy",
+    "mustEmitProvActivity": true,
+    "requiredFields": [
+      "contextSnapshot",
+      "affordance",
+      "parameters",
+      "credentials",
+      "outcome",
+      "stateChanges"
+    ],
+    "retentionPolicy": "indefinite"
+  },
+
+  "livenessGuarantees": [
+    {
+      "type": "aat:LivenessGuarantee",
+      "id": "aat:ExecutorAgentType/liveness/eventual-execution",
+      "name": "eventual-execution",
+      "description": "Given authorization and valid plan, eventually attempts next step or reports failure",
+      "formalRule": "(authorization ∧ validPlan) ~> (Act ∨ ReportOutcome.failure)"
+    }
+  ],
+
+  "compositionRules": {
+    "type": "aat:CompositionRules",
+    "canComposeBefore": ["aat:ArchivistAgentType", "aat:ObserverAgentType"],
+    "canComposeAfter": ["aat:PlannerAgentType", "aat:ArbiterAgentType"],
+    "notes": "Executor receives plans from Planner. Arbiter gates authorization. Output goes to Archivist."
+  }
+}

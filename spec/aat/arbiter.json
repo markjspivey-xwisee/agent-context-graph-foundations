@@ -1,0 +1,238 @@
+{
+  "@context": [
+    "https://www.w3.org/ns/prov#",
+    {
+      "xsd": "http://www.w3.org/2001/XMLSchema#",
+      "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+      "owl": "http://www.w3.org/2002/07/owl#",
+      "dcterms": "http://purl.org/dc/terms/",
+
+      "acg": "https://agentcontextgraph.dev/ontology#",
+      "aat": "https://agentcontextgraph.dev/aat#",
+
+      "id": "@id",
+      "type": "@type",
+      "AbstractAgentType": "aat:AbstractAgentType",
+      "name": "rdfs:label",
+      "description": "rdfs:comment",
+      "version": "owl:versionInfo",
+
+      "perceptSpace": "aat:hasPerceptSpace",
+      "PerceptSpace": "aat:PerceptSpace",
+      "perceptTypes": { "@id": "aat:hasPerceptType", "@container": "@set" },
+
+      "actionSpace": "aat:hasActionSpace",
+      "ActionSpace": "aat:ActionSpace",
+      "allowed": { "@id": "aat:allowsAction", "@container": "@set" },
+      "forbidden": { "@id": "aat:forbidsAction", "@container": "@set" },
+      "ActionType": "aat:ActionType",
+      "requiresCapability": { "@id": "acg:requiresCapability", "@type": "@id" },
+      "rationale": "aat:forbiddenRationale",
+
+      "internalState": "aat:hasInternalState",
+      "components": { "@id": "aat:hasStateComponent", "@container": "@set" },
+
+      "behavioralInvariants": { "@id": "aat:hasBehavioralInvariant", "@container": "@set" },
+      "BehavioralInvariant": "aat:BehavioralInvariant",
+      "formalRule": "aat:formalRule",
+      "enforcement": "aat:enforcementLevel",
+
+      "traceRequirements": "acg:hasTracePolicy",
+      "mustEmitProvActivity": "acg:mustEmitProvActivity",
+      "requiredFields": { "@id": "acg:requiredTraceFields", "@container": "@list" },
+      "retentionPolicy": "acg:retentionPolicy",
+
+      "livenessGuarantees": { "@id": "aat:hasLivenessGuarantee", "@container": "@set" },
+      "LivenessGuarantee": "aat:LivenessGuarantee",
+
+      "compositionRules": "aat:hasCompositionRules",
+      "CompositionRules": "aat:CompositionRules",
+      "canComposeBefore": { "@id": "aat:canComposeBefore", "@type": "@id", "@container": "@set" },
+      "canComposeAfter": { "@id": "aat:canComposeAfter", "@type": "@id", "@container": "@set" },
+      "notes": "rdfs:comment"
+    }
+  ],
+  "type": ["aat:AbstractAgentType", "aat:ArbiterAgentType"],
+  "id": "aat:ArbiterAgentType",
+  "name": "Arbiter Agent Type",
+  "version": "1.0.0",
+  "description": "Abstract Agent Type for policy/safety gate agents. Arbiters approve, deny, or transform proposed actions.",
+
+  "perceptSpace": {
+    "type": "aat:PerceptSpace",
+    "description": "What the arbiter can perceive",
+    "perceptTypes": [
+      {
+        "type": "aat:PerceptType",
+        "name": "ProposedAction",
+        "description": "An action awaiting approval"
+      },
+      {
+        "type": "aat:PerceptType",
+        "name": "Context",
+        "description": "Current situational context"
+      },
+      {
+        "type": "aat:PerceptType",
+        "name": "PolicyUpdate",
+        "description": "Changes to governing policies"
+      },
+      {
+        "type": "aat:PerceptType",
+        "name": "RiskAssessment",
+        "description": "Risk evaluations for proposed actions"
+      }
+    ]
+  },
+
+  "actionSpace": {
+    "type": "aat:ActionSpace",
+    "allowed": [
+      {
+        "type": "aat:ActionType",
+        "id": "aat:Approve",
+        "name": "Approve",
+        "description": "Permit the proposed action to proceed",
+        "requiresCapability": "acg:ArbiterCapability"
+      },
+      {
+        "type": "aat:ActionType",
+        "id": "aat:Deny",
+        "name": "Deny",
+        "description": "Reject the proposed action with reason",
+        "requiresCapability": "acg:ArbiterCapability"
+      },
+      {
+        "type": "aat:ActionType",
+        "id": "aat:Modify",
+        "name": "Modify",
+        "description": "Transform the action to a compliant form",
+        "requiresCapability": "acg:ArbiterCapability"
+      },
+      {
+        "type": "aat:ActionType",
+        "id": "aat:Escalate",
+        "name": "Escalate",
+        "description": "Refer decision to higher authority",
+        "requiresCapability": null
+      },
+      {
+        "type": "aat:ActionType",
+        "id": "aat:RequestClarification",
+        "name": "RequestClarification",
+        "description": "Ask for more information before deciding",
+        "requiresCapability": null
+      }
+    ],
+    "forbidden": [
+      {
+        "type": "aat:ActionType",
+        "id": "aat:Execute",
+        "name": "Execute",
+        "description": "Directly executing actions",
+        "rationale": "Arbiter decides, it doesn't act"
+      },
+      {
+        "type": "aat:ActionType",
+        "id": "aat:SilentApproval",
+        "name": "SilentApproval",
+        "description": "Approving without decision record",
+        "rationale": "All decisions must be traceable"
+      },
+      {
+        "type": "aat:ActionType",
+        "id": "aat:ForbiddenActionPass",
+        "name": "ForbiddenActionPass",
+        "description": "Allowing forbidden action types",
+        "rationale": "Must enforce AAT constraints"
+      }
+    ]
+  },
+
+  "internalState": {
+    "type": "aat:InternalState",
+    "description": "Abstract state the arbiter may maintain",
+    "components": [
+      {
+        "type": "aat:StateComponent",
+        "name": "activePolicies",
+        "description": "Current policy set"
+      },
+      {
+        "type": "aat:StateComponent",
+        "name": "decisionHistory",
+        "description": "Previous approval/denial decisions"
+      },
+      {
+        "type": "aat:StateComponent",
+        "name": "escalationRules",
+        "description": "When to escalate vs decide locally"
+      }
+    ]
+  },
+
+  "behavioralInvariants": [
+    {
+      "type": "aat:BehavioralInvariant",
+      "id": "aat:ArbiterAgentType/invariant/no-forbidden-pass",
+      "name": "no-forbidden-pass",
+      "description": "Arbiter must never approve forbidden actions",
+      "formalRule": "∀ action ∈ Approve: action.type ∉ ForbiddenActionTypes",
+      "enforcement": "structural"
+    },
+    {
+      "type": "aat:BehavioralInvariant",
+      "id": "aat:ArbiterAgentType/invariant/decision-recorded",
+      "name": "decision-recorded",
+      "description": "Every decision must produce a decision record",
+      "formalRule": "∀ decision ∈ {Approve, Deny, Modify}: emitsDecisionRecord(decision)",
+      "enforcement": "structural"
+    },
+    {
+      "type": "aat:BehavioralInvariant",
+      "id": "aat:ArbiterAgentType/invariant/policy-compliance",
+      "name": "policy-compliance",
+      "description": "Decisions must comply with active policies",
+      "formalRule": "∀ decision: compliesWithPolicies(decision, activePolicies)",
+      "enforcement": "validation"
+    },
+    {
+      "type": "aat:BehavioralInvariant",
+      "id": "aat:ArbiterAgentType/invariant/fairness",
+      "name": "fairness",
+      "description": "Equivalent requests receive equivalent treatment",
+      "formalRule": "equivalent(req1, req2) → equivalent(decision(req1), decision(req2))",
+      "enforcement": "audit"
+    }
+  ],
+
+  "traceRequirements": {
+    "type": "acg:TracePolicy",
+    "mustEmitProvActivity": true,
+    "requiredFields": [
+      "contextSnapshot",
+      "proposedAction",
+      "decision",
+      "reason",
+      "policiesApplied"
+    ],
+    "retentionPolicy": "indefinite"
+  },
+
+  "livenessGuarantees": [
+    {
+      "type": "aat:LivenessGuarantee",
+      "id": "aat:ArbiterAgentType/liveness/eventual-decision",
+      "name": "eventual-decision",
+      "description": "Every proposed action eventually receives a decision or escalation",
+      "formalRule": "proposedAction ~> (Approve ∨ Deny ∨ Modify ∨ Escalate)"
+    }
+  ],
+
+  "compositionRules": {
+    "type": "aat:CompositionRules",
+    "canComposeBefore": ["aat:ExecutorAgentType", "aat:AnyAgentType"],
+    "canComposeAfter": ["aat:PlannerAgentType", "aat:ObserverAgentType", "aat:AnyAgentType"],
+    "notes": "Arbiter sits between any agent tiers as a safety gate."
+  }
+}

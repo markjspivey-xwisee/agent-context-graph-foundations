@@ -1,0 +1,755 @@
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix as: <https://www.w3.org/ns/activitystreams#> .
+@prefix acg: <https://agentcontextgraph.dev/ontology#> .
+@prefix fed: <https://agentcontextgraph.dev/federation#> .
+@prefix pb: <https://agentcontextgraph.dev/personal-broker#> .
+@prefix ch: <https://agentcontextgraph.dev/channel-bridge#> .
+
+# =============================================================================
+# Agent Context Graph Channel Bridge Protocol Ontology
+# =============================================================================
+# Defines the Channel Bridge Protocol - how external communication platforms
+# (WhatsApp, Telegram, Discord, etc.) connect to ACG personal brokers.
+# Channels act as federated bridges, translating platform-specific messages
+# to ACG messages and back.
+# =============================================================================
+
+<https://agentcontextgraph.dev/channel-bridge>
+    a owl:Ontology ;
+    owl:versionIRI <https://agentcontextgraph.dev/channel-bridge/1.0.0> ;
+    dcterms:title "Agent Context Graph Channel Bridge Protocol Ontology"@en ;
+    dcterms:description "Defines the Channel Bridge Protocol for connecting external communication platforms to ACG personal brokers. Enables multi-channel personal AI assistants that can receive and respond via any platform."@en ;
+    dcterms:created "2026-01-25"^^xsd:date ;
+    owl:imports <https://agentcontextgraph.dev/personal-broker> ;
+    owl:imports <https://agentcontextgraph.dev/federation> .
+
+# =============================================================================
+# Channel Bridge Core Classes
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# ChannelBridge - The bridge service connecting a platform to ACG
+# -----------------------------------------------------------------------------
+
+ch:ChannelBridge a owl:Class ;
+    rdfs:label "Channel Bridge"@en ;
+    rdfs:subClassOf fed:Broker ;
+    rdfs:comment "A specialized broker that bridges an external communication platform to ACG. Each bridge translates platform-specific messages to ACG format and routes them to the appropriate personal broker. Can be self-hosted or provided as a service."@en ;
+    rdfs:subClassOf [
+        a owl:Restriction ;
+        owl:onProperty ch:bridgesPlatform ;
+        owl:cardinality 1
+    ] .
+
+ch:BridgeStatus a owl:Class ;
+    rdfs:label "Bridge Status"@en ;
+    owl:oneOf (ch:BridgeOnline ch:BridgeOffline ch:BridgeDegraded ch:BridgeMaintenance) .
+
+ch:BridgeOnline a ch:BridgeStatus ;
+    rdfs:label "Online"@en ;
+    rdfs:comment "Bridge is fully operational."@en .
+
+ch:BridgeOffline a ch:BridgeStatus ;
+    rdfs:label "Offline"@en ;
+    rdfs:comment "Bridge is not operational."@en .
+
+ch:BridgeDegraded a ch:BridgeStatus ;
+    rdfs:label "Degraded"@en ;
+    rdfs:comment "Bridge is operational but with reduced functionality."@en .
+
+ch:BridgeMaintenance a ch:BridgeStatus ;
+    rdfs:label "Maintenance"@en ;
+    rdfs:comment "Bridge is undergoing maintenance."@en .
+
+# -----------------------------------------------------------------------------
+# Platform - The external communication platform
+# -----------------------------------------------------------------------------
+
+ch:Platform a owl:Class ;
+    rdfs:label "Platform"@en ;
+    rdfs:comment "An external communication platform that can be bridged to ACG."@en .
+
+ch:PlatformCapability a owl:Class ;
+    rdfs:label "Platform Capability"@en ;
+    rdfs:comment "A capability supported by a platform."@en ;
+    owl:oneOf (ch:TextMessages ch:RichMessages ch:MediaMessages ch:VoiceMessages
+               ch:VideoMessages ch:Reactions ch:Threads ch:EditMessages
+               ch:DeleteMessages ch:ReadReceipts ch:TypingIndicators
+               ch:GroupChats ch:DirectMessages ch:Channels ch:Webhooks
+               ch:BotAPI ch:UserAPI ch:EndToEndEncryption) .
+
+ch:TextMessages a ch:PlatformCapability ;
+    rdfs:label "Text Messages"@en ;
+    rdfs:comment "Plain text messaging."@en .
+
+ch:RichMessages a ch:PlatformCapability ;
+    rdfs:label "Rich Messages"@en ;
+    rdfs:comment "Formatted text with markdown, embeds, buttons."@en .
+
+ch:MediaMessages a ch:PlatformCapability ;
+    rdfs:label "Media Messages"@en ;
+    rdfs:comment "Images, files, and documents."@en .
+
+ch:VoiceMessages a ch:PlatformCapability ;
+    rdfs:label "Voice Messages"@en ;
+    rdfs:comment "Audio messages and voice notes."@en .
+
+ch:VideoMessages a ch:PlatformCapability ;
+    rdfs:label "Video Messages"@en ;
+    rdfs:comment "Video messages."@en .
+
+ch:Reactions a ch:PlatformCapability ;
+    rdfs:label "Reactions"@en ;
+    rdfs:comment "Emoji reactions to messages."@en .
+
+ch:Threads a ch:PlatformCapability ;
+    rdfs:label "Threads"@en ;
+    rdfs:comment "Threaded conversations/replies."@en .
+
+ch:EditMessages a ch:PlatformCapability ;
+    rdfs:label "Edit Messages"@en ;
+    rdfs:comment "Ability to edit sent messages."@en .
+
+ch:DeleteMessages a ch:PlatformCapability ;
+    rdfs:label "Delete Messages"@en ;
+    rdfs:comment "Ability to delete messages."@en .
+
+ch:ReadReceipts a ch:PlatformCapability ;
+    rdfs:label "Read Receipts"@en ;
+    rdfs:comment "Read status indicators."@en .
+
+ch:TypingIndicators a ch:PlatformCapability ;
+    rdfs:label "Typing Indicators"@en ;
+    rdfs:comment "Typing status indicators."@en .
+
+ch:GroupChats a ch:PlatformCapability ;
+    rdfs:label "Group Chats"@en ;
+    rdfs:comment "Multi-user group conversations."@en .
+
+ch:DirectMessages a ch:PlatformCapability ;
+    rdfs:label "Direct Messages"@en ;
+    rdfs:comment "One-on-one private messages."@en .
+
+ch:Channels a ch:PlatformCapability ;
+    rdfs:label "Channels"@en ;
+    rdfs:comment "Broadcast channels."@en .
+
+ch:Webhooks a ch:PlatformCapability ;
+    rdfs:label "Webhooks"@en ;
+    rdfs:comment "Webhook integration support."@en .
+
+ch:BotAPI a ch:PlatformCapability ;
+    rdfs:label "Bot API"@en ;
+    rdfs:comment "Official bot/automation API."@en .
+
+ch:UserAPI a ch:PlatformCapability ;
+    rdfs:label "User API"@en ;
+    rdfs:comment "User-level API access."@en .
+
+ch:EndToEndEncryption a ch:PlatformCapability ;
+    rdfs:label "End-to-End Encryption"@en ;
+    rdfs:comment "E2E encrypted messaging."@en .
+
+# -----------------------------------------------------------------------------
+# Pre-defined Platforms
+# -----------------------------------------------------------------------------
+
+ch:WhatsAppPlatform a ch:Platform ;
+    rdfs:label "WhatsApp"@en ;
+    ch:platformName "WhatsApp" ;
+    ch:hasCapability ch:TextMessages, ch:MediaMessages, ch:VoiceMessages,
+                     ch:VideoMessages, ch:Reactions, ch:GroupChats,
+                     ch:DirectMessages, ch:EndToEndEncryption, ch:BotAPI ;
+    ch:platformAuthMethod ch:PhoneNumberAuth ;
+    ch:platformAPISpec <https://developers.facebook.com/docs/whatsapp/cloud-api> .
+
+ch:TelegramPlatform a ch:Platform ;
+    rdfs:label "Telegram"@en ;
+    ch:platformName "Telegram" ;
+    ch:hasCapability ch:TextMessages, ch:RichMessages, ch:MediaMessages,
+                     ch:VoiceMessages, ch:VideoMessages, ch:Reactions,
+                     ch:Threads, ch:EditMessages, ch:DeleteMessages,
+                     ch:GroupChats, ch:DirectMessages, ch:Channels,
+                     ch:Webhooks, ch:BotAPI ;
+    ch:platformAuthMethod ch:BotTokenAuth ;
+    ch:platformAPISpec <https://core.telegram.org/bots/api> .
+
+ch:DiscordPlatform a ch:Platform ;
+    rdfs:label "Discord"@en ;
+    ch:platformName "Discord" ;
+    ch:hasCapability ch:TextMessages, ch:RichMessages, ch:MediaMessages,
+                     ch:VoiceMessages, ch:Reactions, ch:Threads,
+                     ch:EditMessages, ch:DeleteMessages, ch:GroupChats,
+                     ch:DirectMessages, ch:Channels, ch:Webhooks, ch:BotAPI ;
+    ch:platformAuthMethod ch:OAuth2Auth, ch:BotTokenAuth ;
+    ch:platformAPISpec <https://discord.com/developers/docs> .
+
+ch:SlackPlatform a ch:Platform ;
+    rdfs:label "Slack"@en ;
+    ch:platformName "Slack" ;
+    ch:hasCapability ch:TextMessages, ch:RichMessages, ch:MediaMessages,
+                     ch:Reactions, ch:Threads, ch:EditMessages,
+                     ch:DeleteMessages, ch:GroupChats, ch:DirectMessages,
+                     ch:Channels, ch:Webhooks, ch:BotAPI ;
+    ch:platformAuthMethod ch:OAuth2Auth ;
+    ch:platformAPISpec <https://api.slack.com/> .
+
+ch:MatrixPlatform a ch:Platform ;
+    rdfs:label "Matrix"@en ;
+    ch:platformName "Matrix" ;
+    ch:hasCapability ch:TextMessages, ch:RichMessages, ch:MediaMessages,
+                     ch:Reactions, ch:Threads, ch:EditMessages,
+                     ch:DeleteMessages, ch:GroupChats, ch:DirectMessages,
+                     ch:EndToEndEncryption, ch:UserAPI ;
+    ch:platformAuthMethod ch:MatrixAuth ;
+    ch:platformAPISpec <https://spec.matrix.org/latest/client-server-api/> .
+
+ch:SignalPlatform a ch:Platform ;
+    rdfs:label "Signal"@en ;
+    ch:platformName "Signal" ;
+    ch:hasCapability ch:TextMessages, ch:MediaMessages, ch:VoiceMessages,
+                     ch:VideoMessages, ch:Reactions, ch:GroupChats,
+                     ch:DirectMessages, ch:EndToEndEncryption ;
+    ch:platformAuthMethod ch:PhoneNumberAuth ;
+    ch:platformAPISpec <https://signal.org/docs/> .
+
+ch:iMessagePlatform a ch:Platform ;
+    rdfs:label "iMessage"@en ;
+    ch:platformName "iMessage" ;
+    ch:hasCapability ch:TextMessages, ch:RichMessages, ch:MediaMessages,
+                     ch:Reactions, ch:Threads, ch:GroupChats,
+                     ch:DirectMessages, ch:EndToEndEncryption ;
+    ch:platformAuthMethod ch:AppleIDAuth .
+
+ch:SMSPlatform a ch:Platform ;
+    rdfs:label "SMS"@en ;
+    ch:platformName "SMS" ;
+    ch:hasCapability ch:TextMessages, ch:DirectMessages ;
+    ch:platformAuthMethod ch:PhoneNumberAuth ;
+    ch:platformAPISpec <https://www.twilio.com/docs/sms> .
+
+ch:EmailPlatform a ch:Platform ;
+    rdfs:label "Email"@en ;
+    ch:platformName "Email" ;
+    ch:hasCapability ch:TextMessages, ch:RichMessages, ch:MediaMessages,
+                     ch:Threads, ch:DirectMessages ;
+    ch:platformAuthMethod ch:OAuth2Auth, ch:IMAPAuth .
+
+ch:WebChatPlatform a ch:Platform ;
+    rdfs:label "Web Chat"@en ;
+    ch:platformName "Web Chat" ;
+    ch:hasCapability ch:TextMessages, ch:RichMessages, ch:MediaMessages,
+                     ch:TypingIndicators, ch:DirectMessages, ch:Webhooks ;
+    ch:platformAuthMethod ch:SessionAuth, ch:OAuth2Auth .
+
+ch:CLIPlatform a ch:Platform ;
+    rdfs:label "CLI"@en ;
+    ch:platformName "Command Line Interface" ;
+    ch:hasCapability ch:TextMessages ;
+    ch:platformAuthMethod ch:LocalAuth .
+
+# -----------------------------------------------------------------------------
+# Authentication Methods
+# -----------------------------------------------------------------------------
+
+ch:AuthenticationMethod a owl:Class ;
+    rdfs:label "Authentication Method"@en ;
+    rdfs:comment "A method for authenticating with a platform."@en ;
+    owl:oneOf (ch:PhoneNumberAuth ch:BotTokenAuth ch:OAuth2Auth ch:APIKeyAuth
+               ch:MatrixAuth ch:AppleIDAuth ch:IMAPAuth ch:SessionAuth ch:LocalAuth
+               ch:WebhookSignature ch:MTLSAuth) .
+
+ch:PhoneNumberAuth a ch:AuthenticationMethod ;
+    rdfs:label "Phone Number Authentication"@en .
+
+ch:BotTokenAuth a ch:AuthenticationMethod ;
+    rdfs:label "Bot Token Authentication"@en .
+
+ch:OAuth2Auth a ch:AuthenticationMethod ;
+    rdfs:label "OAuth 2.0 Authentication"@en .
+
+ch:APIKeyAuth a ch:AuthenticationMethod ;
+    rdfs:label "API Key Authentication"@en .
+
+ch:MatrixAuth a ch:AuthenticationMethod ;
+    rdfs:label "Matrix Authentication"@en .
+
+ch:AppleIDAuth a ch:AuthenticationMethod ;
+    rdfs:label "Apple ID Authentication"@en .
+
+ch:IMAPAuth a ch:AuthenticationMethod ;
+    rdfs:label "IMAP Authentication"@en .
+
+ch:SessionAuth a ch:AuthenticationMethod ;
+    rdfs:label "Session Authentication"@en .
+
+ch:LocalAuth a ch:AuthenticationMethod ;
+    rdfs:label "Local Authentication"@en .
+
+ch:WebhookSignature a ch:AuthenticationMethod ;
+    rdfs:label "Webhook Signature Verification"@en .
+
+ch:MTLSAuth a ch:AuthenticationMethod ;
+    rdfs:label "Mutual TLS Authentication"@en .
+
+# -----------------------------------------------------------------------------
+# BridgeConnection - A user's connection through the bridge
+# -----------------------------------------------------------------------------
+
+ch:BridgeConnection a owl:Class ;
+    rdfs:label "Bridge Connection"@en ;
+    rdfs:comment "A connection between a user's personal broker and a platform through a channel bridge. Stores platform-specific credentials and mapping information."@en ;
+    rdfs:subClassOf [
+        a owl:Restriction ;
+        owl:onProperty ch:connectionBroker ;
+        owl:cardinality 1
+    ] ;
+    rdfs:subClassOf [
+        a owl:Restriction ;
+        owl:onProperty ch:connectionBridge ;
+        owl:cardinality 1
+    ] .
+
+ch:ConnectionStatus a owl:Class ;
+    rdfs:label "Connection Status"@en ;
+    owl:oneOf (ch:ConnectionActive ch:ConnectionInactive ch:ConnectionExpired
+               ch:ConnectionRevoked ch:ConnectionPending) .
+
+ch:ConnectionActive a ch:ConnectionStatus ;
+    rdfs:label "Active"@en ;
+    rdfs:comment "Connection is active and working."@en .
+
+ch:ConnectionInactive a ch:ConnectionStatus ;
+    rdfs:label "Inactive"@en ;
+    rdfs:comment "Connection is valid but not currently in use."@en .
+
+ch:ConnectionExpired a ch:ConnectionStatus ;
+    rdfs:label "Expired"@en ;
+    rdfs:comment "Connection credentials have expired."@en .
+
+ch:ConnectionRevoked a ch:ConnectionStatus ;
+    rdfs:label "Revoked"@en ;
+    rdfs:comment "Connection has been revoked by user or platform."@en .
+
+ch:ConnectionPending a ch:ConnectionStatus ;
+    rdfs:label "Pending"@en ;
+    rdfs:comment "Connection is being established."@en .
+
+# -----------------------------------------------------------------------------
+# InboundMessage - Message received from a platform
+# -----------------------------------------------------------------------------
+
+ch:InboundMessage a owl:Class ;
+    rdfs:label "Inbound Message"@en ;
+    rdfs:subClassOf as:Note ;
+    rdfs:comment "A message received from an external platform, being translated to ACG format."@en .
+
+ch:OutboundMessage a owl:Class ;
+    rdfs:label "Outbound Message"@en ;
+    rdfs:subClassOf as:Note ;
+    rdfs:comment "A message being sent to an external platform from ACG."@en .
+
+# -----------------------------------------------------------------------------
+# MessageTransform - Transformation rules for message content
+# -----------------------------------------------------------------------------
+
+ch:MessageTransform a owl:Class ;
+    rdfs:label "Message Transform"@en ;
+    rdfs:comment "A rule for transforming message content between ACG format and platform format."@en .
+
+ch:TransformDirection a owl:Class ;
+    rdfs:label "Transform Direction"@en ;
+    owl:oneOf (ch:InboundTransform ch:OutboundTransform ch:BidirectionalTransform) .
+
+ch:InboundTransform a ch:TransformDirection ;
+    rdfs:label "Inbound Transform"@en ;
+    rdfs:comment "Transforms platform messages to ACG format."@en .
+
+ch:OutboundTransform a ch:TransformDirection ;
+    rdfs:label "Outbound Transform"@en ;
+    rdfs:comment "Transforms ACG messages to platform format."@en .
+
+ch:BidirectionalTransform a ch:TransformDirection ;
+    rdfs:label "Bidirectional Transform"@en ;
+    rdfs:comment "Applies in both directions."@en .
+
+# -----------------------------------------------------------------------------
+# RateLimiter - Rate limiting for platform APIs
+# -----------------------------------------------------------------------------
+
+ch:RateLimiter a owl:Class ;
+    rdfs:label "Rate Limiter"@en ;
+    rdfs:comment "Rate limiting configuration for a platform API."@en .
+
+# -----------------------------------------------------------------------------
+# WebhookEndpoint - Endpoint for receiving platform webhooks
+# -----------------------------------------------------------------------------
+
+ch:WebhookEndpoint a owl:Class ;
+    rdfs:label "Webhook Endpoint"@en ;
+    rdfs:comment "An endpoint for receiving webhook callbacks from platforms."@en .
+
+# =============================================================================
+# Object Properties
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Channel Bridge Properties
+# -----------------------------------------------------------------------------
+
+ch:bridgesPlatform a owl:ObjectProperty, owl:FunctionalProperty ;
+    rdfs:label "bridges platform"@en ;
+    rdfs:domain ch:ChannelBridge ;
+    rdfs:range ch:Platform ;
+    rdfs:comment "The platform this bridge connects to ACG."@en .
+
+ch:bridgeStatus a owl:ObjectProperty ;
+    rdfs:label "bridge status"@en ;
+    rdfs:domain ch:ChannelBridge ;
+    rdfs:range ch:BridgeStatus ;
+    rdfs:comment "Current status of this bridge."@en .
+
+ch:hasConnection a owl:ObjectProperty ;
+    rdfs:label "has connection"@en ;
+    rdfs:domain ch:ChannelBridge ;
+    rdfs:range ch:BridgeConnection ;
+    rdfs:comment "A user connection through this bridge."@en .
+
+ch:hasTransform a owl:ObjectProperty ;
+    rdfs:label "has transform"@en ;
+    rdfs:domain ch:ChannelBridge ;
+    rdfs:range ch:MessageTransform ;
+    rdfs:comment "A message transformation rule for this bridge."@en .
+
+ch:hasRateLimiter a owl:ObjectProperty ;
+    rdfs:label "has rate limiter"@en ;
+    rdfs:domain ch:ChannelBridge ;
+    rdfs:range ch:RateLimiter ;
+    rdfs:comment "Rate limiter configuration for this bridge."@en .
+
+ch:hasWebhook a owl:ObjectProperty ;
+    rdfs:label "has webhook"@en ;
+    rdfs:domain ch:ChannelBridge ;
+    rdfs:range ch:WebhookEndpoint ;
+    rdfs:comment "Webhook endpoint for this bridge."@en .
+
+# -----------------------------------------------------------------------------
+# Platform Properties
+# -----------------------------------------------------------------------------
+
+ch:hasCapability a owl:ObjectProperty ;
+    rdfs:label "has capability"@en ;
+    rdfs:domain ch:Platform ;
+    rdfs:range ch:PlatformCapability ;
+    rdfs:comment "A capability supported by this platform."@en .
+
+ch:platformAuthMethod a owl:ObjectProperty ;
+    rdfs:label "platform auth method"@en ;
+    rdfs:domain ch:Platform ;
+    rdfs:range ch:AuthenticationMethod ;
+    rdfs:comment "An authentication method supported by this platform."@en .
+
+# -----------------------------------------------------------------------------
+# Connection Properties
+# -----------------------------------------------------------------------------
+
+ch:connectionBroker a owl:ObjectProperty, owl:FunctionalProperty ;
+    rdfs:label "connection broker"@en ;
+    rdfs:domain ch:BridgeConnection ;
+    rdfs:range pb:PersonalBroker ;
+    rdfs:comment "The personal broker this connection belongs to."@en .
+
+ch:connectionBridge a owl:ObjectProperty, owl:FunctionalProperty ;
+    rdfs:label "connection bridge"@en ;
+    rdfs:domain ch:BridgeConnection ;
+    rdfs:range ch:ChannelBridge ;
+    rdfs:comment "The channel bridge this connection uses."@en .
+
+ch:connectionStatus a owl:ObjectProperty ;
+    rdfs:label "connection status"@en ;
+    rdfs:domain ch:BridgeConnection ;
+    rdfs:range ch:ConnectionStatus ;
+    rdfs:comment "Current status of this connection."@en .
+
+ch:connectionChannel a owl:ObjectProperty ;
+    rdfs:label "connection channel"@en ;
+    rdfs:domain ch:BridgeConnection ;
+    rdfs:range pb:Channel ;
+    rdfs:comment "The channel on the personal broker for this connection."@en .
+
+# -----------------------------------------------------------------------------
+# Message Properties
+# -----------------------------------------------------------------------------
+
+ch:fromPlatform a owl:ObjectProperty ;
+    rdfs:label "from platform"@en ;
+    rdfs:domain ch:InboundMessage ;
+    rdfs:range ch:Platform ;
+    rdfs:comment "The platform this message originated from."@en .
+
+ch:toPlatform a owl:ObjectProperty ;
+    rdfs:label "to platform"@en ;
+    rdfs:domain ch:OutboundMessage ;
+    rdfs:range ch:Platform ;
+    rdfs:comment "The platform this message is being sent to."@en .
+
+ch:viaConnection a owl:ObjectProperty ;
+    rdfs:label "via connection"@en ;
+    rdfs:domain [ owl:unionOf (ch:InboundMessage ch:OutboundMessage) ] ;
+    rdfs:range ch:BridgeConnection ;
+    rdfs:comment "The connection this message was sent through."@en .
+
+ch:transformedTo a owl:ObjectProperty ;
+    rdfs:label "transformed to"@en ;
+    rdfs:domain ch:InboundMessage ;
+    rdfs:range pb:Message ;
+    rdfs:comment "The ACG message this inbound message was transformed to."@en .
+
+ch:transformedFrom a owl:ObjectProperty ;
+    rdfs:label "transformed from"@en ;
+    rdfs:domain ch:OutboundMessage ;
+    rdfs:range pb:Message ;
+    rdfs:comment "The ACG message this outbound message was transformed from."@en .
+
+# -----------------------------------------------------------------------------
+# Transform Properties
+# -----------------------------------------------------------------------------
+
+ch:transformDirection a owl:ObjectProperty ;
+    rdfs:label "transform direction"@en ;
+    rdfs:domain ch:MessageTransform ;
+    rdfs:range ch:TransformDirection ;
+    rdfs:comment "The direction this transform applies to."@en .
+
+ch:transformsCapability a owl:ObjectProperty ;
+    rdfs:label "transforms capability"@en ;
+    rdfs:domain ch:MessageTransform ;
+    rdfs:range ch:PlatformCapability ;
+    rdfs:comment "The platform capability this transform handles."@en .
+
+# =============================================================================
+# Datatype Properties
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Platform Datatype Properties
+# -----------------------------------------------------------------------------
+
+ch:platformName a owl:DatatypeProperty ;
+    rdfs:label "platform name"@en ;
+    rdfs:domain ch:Platform ;
+    rdfs:range xsd:string ;
+    rdfs:comment "Human-readable name of the platform."@en .
+
+ch:platformAPISpec a owl:ObjectProperty ;
+    rdfs:label "platform API spec"@en ;
+    rdfs:domain ch:Platform ;
+    rdfs:range rdfs:Resource ;
+    rdfs:comment "URL to the platform's API documentation."@en .
+
+ch:platformIcon a owl:DatatypeProperty ;
+    rdfs:label "platform icon"@en ;
+    rdfs:domain ch:Platform ;
+    rdfs:range xsd:anyURI ;
+    rdfs:comment "URL to the platform's icon/logo."@en .
+
+# -----------------------------------------------------------------------------
+# Bridge Datatype Properties
+# -----------------------------------------------------------------------------
+
+ch:bridgeName a owl:DatatypeProperty ;
+    rdfs:label "bridge name"@en ;
+    rdfs:domain ch:ChannelBridge ;
+    rdfs:range xsd:string ;
+    rdfs:comment "Human-readable name for this bridge."@en .
+
+ch:bridgeEndpoint a owl:DatatypeProperty ;
+    rdfs:label "bridge endpoint"@en ;
+    rdfs:domain ch:ChannelBridge ;
+    rdfs:range xsd:anyURI ;
+    rdfs:comment "API endpoint for this bridge."@en .
+
+ch:bridgeVersion a owl:DatatypeProperty ;
+    rdfs:label "bridge version"@en ;
+    rdfs:domain ch:ChannelBridge ;
+    rdfs:range xsd:string ;
+    rdfs:comment "Version of this bridge implementation."@en .
+
+# -----------------------------------------------------------------------------
+# Connection Datatype Properties
+# -----------------------------------------------------------------------------
+
+ch:platformUserId a owl:DatatypeProperty ;
+    rdfs:label "platform user ID"@en ;
+    rdfs:domain ch:BridgeConnection ;
+    rdfs:range xsd:string ;
+    rdfs:comment "User's ID on the platform."@en .
+
+ch:platformUserHandle a owl:DatatypeProperty ;
+    rdfs:label "platform user handle"@en ;
+    rdfs:domain ch:BridgeConnection ;
+    rdfs:range xsd:string ;
+    rdfs:comment "User's handle/username on the platform."@en .
+
+ch:accessToken a owl:DatatypeProperty ;
+    rdfs:label "access token"@en ;
+    rdfs:domain ch:BridgeConnection ;
+    rdfs:range xsd:string ;
+    rdfs:comment "Encrypted access token for the platform."@en .
+
+ch:refreshToken a owl:DatatypeProperty ;
+    rdfs:label "refresh token"@en ;
+    rdfs:domain ch:BridgeConnection ;
+    rdfs:range xsd:string ;
+    rdfs:comment "Encrypted refresh token for OAuth."@en .
+
+ch:tokenExpiry a owl:DatatypeProperty ;
+    rdfs:label "token expiry"@en ;
+    rdfs:domain ch:BridgeConnection ;
+    rdfs:range xsd:dateTime ;
+    rdfs:comment "When the access token expires."@en .
+
+ch:connectionCreated a owl:DatatypeProperty ;
+    rdfs:label "connection created"@en ;
+    rdfs:domain ch:BridgeConnection ;
+    rdfs:range xsd:dateTime ;
+    rdfs:comment "When this connection was created."@en .
+
+ch:lastActivity a owl:DatatypeProperty ;
+    rdfs:label "last activity"@en ;
+    rdfs:domain ch:BridgeConnection ;
+    rdfs:range xsd:dateTime ;
+    rdfs:comment "Last activity on this connection."@en .
+
+# -----------------------------------------------------------------------------
+# Message Datatype Properties
+# -----------------------------------------------------------------------------
+
+ch:platformMessageId a owl:DatatypeProperty ;
+    rdfs:label "platform message ID"@en ;
+    rdfs:domain [ owl:unionOf (ch:InboundMessage ch:OutboundMessage) ] ;
+    rdfs:range xsd:string ;
+    rdfs:comment "The message ID on the platform."@en .
+
+ch:platformChatId a owl:DatatypeProperty ;
+    rdfs:label "platform chat ID"@en ;
+    rdfs:domain [ owl:unionOf (ch:InboundMessage ch:OutboundMessage) ] ;
+    rdfs:range xsd:string ;
+    rdfs:comment "The chat/conversation ID on the platform."@en .
+
+ch:rawPayload a owl:DatatypeProperty ;
+    rdfs:label "raw payload"@en ;
+    rdfs:domain ch:InboundMessage ;
+    rdfs:range xsd:string ;
+    rdfs:comment "Raw message payload from the platform (for debugging)."@en .
+
+ch:deliveryStatus a owl:DatatypeProperty ;
+    rdfs:label "delivery status"@en ;
+    rdfs:domain ch:OutboundMessage ;
+    rdfs:range xsd:string ;
+    rdfs:comment "Delivery status of the outbound message."@en .
+
+# -----------------------------------------------------------------------------
+# Transform Datatype Properties
+# -----------------------------------------------------------------------------
+
+ch:transformName a owl:DatatypeProperty ;
+    rdfs:label "transform name"@en ;
+    rdfs:domain ch:MessageTransform ;
+    rdfs:range xsd:string ;
+    rdfs:comment "Name of this transform rule."@en .
+
+ch:transformScript a owl:DatatypeProperty ;
+    rdfs:label "transform script"@en ;
+    rdfs:domain ch:MessageTransform ;
+    rdfs:range xsd:string ;
+    rdfs:comment "Script/code implementing this transform."@en .
+
+ch:transformPriority a owl:DatatypeProperty ;
+    rdfs:label "transform priority"@en ;
+    rdfs:domain ch:MessageTransform ;
+    rdfs:range xsd:integer ;
+    rdfs:comment "Priority order for applying transforms."@en .
+
+# -----------------------------------------------------------------------------
+# Rate Limiter Datatype Properties
+# -----------------------------------------------------------------------------
+
+ch:requestsPerSecond a owl:DatatypeProperty ;
+    rdfs:label "requests per second"@en ;
+    rdfs:domain ch:RateLimiter ;
+    rdfs:range xsd:float ;
+    rdfs:comment "Maximum requests per second."@en .
+
+ch:requestsPerMinute a owl:DatatypeProperty ;
+    rdfs:label "requests per minute"@en ;
+    rdfs:domain ch:RateLimiter ;
+    rdfs:range xsd:integer ;
+    rdfs:comment "Maximum requests per minute."@en .
+
+ch:requestsPerDay a owl:DatatypeProperty ;
+    rdfs:label "requests per day"@en ;
+    rdfs:domain ch:RateLimiter ;
+    rdfs:range xsd:integer ;
+    rdfs:comment "Maximum requests per day."@en .
+
+ch:burstLimit a owl:DatatypeProperty ;
+    rdfs:label "burst limit"@en ;
+    rdfs:domain ch:RateLimiter ;
+    rdfs:range xsd:integer ;
+    rdfs:comment "Maximum burst of requests allowed."@en .
+
+# -----------------------------------------------------------------------------
+# Webhook Datatype Properties
+# -----------------------------------------------------------------------------
+
+ch:webhookUrl a owl:DatatypeProperty ;
+    rdfs:label "webhook URL"@en ;
+    rdfs:domain ch:WebhookEndpoint ;
+    rdfs:range xsd:anyURI ;
+    rdfs:comment "URL endpoint for receiving webhooks."@en .
+
+ch:webhookSecret a owl:DatatypeProperty ;
+    rdfs:label "webhook secret"@en ;
+    rdfs:domain ch:WebhookEndpoint ;
+    rdfs:range xsd:string ;
+    rdfs:comment "Secret for verifying webhook signatures."@en .
+
+ch:webhookEvents a owl:DatatypeProperty ;
+    rdfs:label "webhook events"@en ;
+    rdfs:domain ch:WebhookEndpoint ;
+    rdfs:range xsd:string ;
+    rdfs:comment "Comma-separated list of event types to receive."@en .
+
+# =============================================================================
+# Channel Bridge Actions
+# =============================================================================
+
+ch:ConnectPlatform a acg:ActionType ;
+    rdfs:label "Connect Platform"@en ;
+    rdfs:comment "Initiate connection to a platform through a bridge."@en .
+
+ch:DisconnectPlatform a acg:ActionType ;
+    rdfs:label "Disconnect Platform"@en ;
+    rdfs:comment "Disconnect from a platform."@en .
+
+ch:SendMessage a acg:ActionType ;
+    rdfs:label "Send Message"@en ;
+    rdfs:comment "Send a message through a platform bridge."@en .
+
+ch:ReceiveMessage a acg:ActionType ;
+    rdfs:label "Receive Message"@en ;
+    rdfs:comment "Receive and process a message from a platform."@en .
+
+ch:RefreshCredentials a acg:ActionType ;
+    rdfs:label "Refresh Credentials"@en ;
+    rdfs:comment "Refresh OAuth tokens or re-authenticate."@en .
+
+ch:SyncHistory a acg:ActionType ;
+    rdfs:label "Sync History"@en ;
+    rdfs:comment "Sync message history from a platform."@en .

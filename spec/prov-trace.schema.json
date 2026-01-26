@@ -1,0 +1,382 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agentcontextgraph.dev/schemas/prov-trace.schema.json",
+  "title": "PROV Trace Record (prov:Activity)",
+  "description": "Immutable provenance trace for affordance traversals. Extends W3C PROV-O Activity. See https://agentcontextgraph.dev/ontology# for full ontology.",
+  "$comment": "JSON-LD instances should include inline @context with vocabulary mappings to prov:, acg:, aat:, dcterms: namespaces",
+  "type": "object",
+  "required": ["@context", "id", "type", "wasAssociatedWith", "used", "generated", "startedAtTime", "endedAtTime"],
+  "properties": {
+    "@context": {
+      "description": "JSON-LD context array. Should include PROV-O and inline term definitions mapping to ACG ontology.",
+      "oneOf": [
+        {
+          "type": "array",
+          "items": {
+            "oneOf": [
+              { "type": "string", "format": "uri" },
+              { "type": "object" }
+            ]
+          },
+          "contains": {
+            "type": "string",
+            "pattern": "prov"
+          }
+        },
+        { "type": "string", "format": "uri" }
+      ],
+      "examples": [
+        [
+          "https://www.w3.org/ns/prov#",
+          "https://www.w3.org/2018/credentials/v1",
+          {
+            "acg": "https://agentcontextgraph.dev/ontology#",
+            "aat": "https://agentcontextgraph.dev/aat#",
+            "id": "@id",
+            "type": "@type",
+            "wasAssociatedWith": "prov:wasAssociatedWith",
+            "used": "prov:used",
+            "generated": "prov:generated"
+          }
+        ]
+      ]
+    },
+    "id": {
+      "type": "string",
+      "format": "uri",
+      "description": "Unique identifier for this trace record. Maps to @id in JSON-LD."
+    },
+    "type": {
+      "type": "array",
+      "items": { "type": "string" },
+      "default": ["prov:Activity", "aat:Decision"],
+      "description": "JSON-LD types. Must include prov:Activity. Maps to @type."
+    },
+    "wasAssociatedWith": {
+      "type": "object",
+      "description": "The agent that performed this action. Maps to prov:wasAssociatedWith.",
+      "required": ["agentDID", "agentType"],
+      "properties": {
+        "agentDID": {
+          "type": "string",
+          "pattern": "^did:[a-z0-9]+:.+$",
+          "description": "Maps to acg:hasDID (@type: @id)."
+        },
+        "agentType": {
+          "type": "string",
+          "description": "Reference to AAT type. Maps to acg:hasAgentType (@type: @id)."
+        },
+        "agentInstance": {
+          "type": "string",
+          "description": "Maps to acg:agentInstanceId."
+        }
+      }
+    },
+    "used": {
+      "type": "object",
+      "description": "Inputs to this activity. Maps to prov:used.",
+      "properties": {
+        "contextSnapshot": {
+          "type": "object",
+          "description": "Snapshot of context at decision time. Maps to acg:hasContextSnapshot.",
+          "properties": {
+            "contextId": {
+              "type": "string",
+              "description": "Maps to acg:contextId (@type: @id)."
+            },
+            "timestamp": {
+              "type": "string",
+              "format": "date-time",
+              "description": "Maps to acg:hasTimestamp (xsd:dateTime)."
+            },
+            "nonce": {
+              "type": "string",
+              "description": "Maps to acg:nonce."
+            },
+            "agentDID": {
+              "type": "string",
+              "description": "Maps to acg:hasDID (@type: @id)."
+            },
+            "affordanceCount": {
+              "type": "integer",
+              "description": "Maps to acg:affordanceCount (xsd:integer)."
+            }
+          }
+        },
+        "affordance": {
+          "type": "object",
+          "description": "The affordance that was traversed. Maps to acg:usedAffordance.",
+          "required": ["id", "rel", "actionType"],
+          "properties": {
+            "id": {
+              "type": "string",
+              "description": "Maps to @id."
+            },
+            "rel": {
+              "type": "string",
+              "description": "Maps to acg:relationType."
+            },
+            "relVersion": {
+              "type": "string",
+              "description": "Maps to acg:relationVersion."
+            },
+            "actionType": {
+              "type": "string",
+              "description": "AAT action type. Maps to acg:actionType (@type: @id)."
+            },
+            "targetType": {
+              "type": "string",
+              "description": "Maps to acg:targetType."
+            },
+            "targetHref": {
+              "type": "string",
+              "description": "Maps to acg:targetHref (@type: @id)."
+            }
+          }
+        },
+        "parameters": {
+          "type": "object",
+          "description": "Parameters provided for the action. Maps to acg:hasParameters."
+        },
+        "credentials": {
+          "type": "array",
+          "description": "Credentials used for authorization. Maps to acg:usedCredentials (@container: @set).",
+          "items": {
+            "type": "object",
+            "properties": {
+              "credentialId": {
+                "type": "string",
+                "description": "Maps to acg:credentialId (@type: @id)."
+              },
+              "credentialType": {
+                "type": "array",
+                "items": { "type": "string" },
+                "description": "Maps to acg:credentialType (@container: @set)."
+              },
+              "issuer": {
+                "type": "string",
+                "description": "Maps to acg:issuer (@type: @id)."
+              },
+              "validAt": {
+                "type": "string",
+                "format": "date-time",
+                "description": "Maps to acg:validAt (xsd:dateTime)."
+              }
+            }
+          }
+        }
+      }
+    },
+    "generated": {
+      "type": "object",
+      "description": "Outputs of this activity. Maps to prov:generated.",
+      "properties": {
+        "outcome": {
+          "type": "object",
+          "description": "Maps to acg:hasOutcome.",
+          "properties": {
+            "status": {
+              "type": "string",
+              "enum": ["success", "failure", "partial", "pending"],
+              "description": "Maps to acg:outcomeStatus."
+            },
+            "resultType": {
+              "type": "string",
+              "description": "Maps to acg:resultType."
+            },
+            "resultRef": {
+              "type": "string",
+              "format": "uri",
+              "description": "Maps to acg:resultRef (@type: @id)."
+            }
+          }
+        },
+        "stateChanges": {
+          "type": "array",
+          "description": "Maps to acg:stateChanges (@container: @set).",
+          "items": {
+            "type": "object",
+            "properties": {
+              "resource": {
+                "type": "string",
+                "description": "Maps to acg:affectedResource (@type: @id)."
+              },
+              "changeType": {
+                "type": "string",
+                "description": "Maps to acg:changeType."
+              },
+              "before": {
+                "type": "object",
+                "description": "Maps to acg:stateBefore."
+              },
+              "after": {
+                "type": "object",
+                "description": "Maps to acg:stateAfter."
+              }
+            }
+          }
+        },
+        "eventsEmitted": {
+          "type": "array",
+          "description": "Maps to acg:eventsEmitted (@container: @set).",
+          "items": {
+            "type": "object",
+            "properties": {
+              "eventType": {
+                "type": "string",
+                "description": "Maps to acg:eventType."
+              },
+              "eventId": {
+                "type": "string",
+                "description": "Maps to acg:eventId (@type: @id)."
+              },
+              "timestamp": {
+                "type": "string",
+                "format": "date-time",
+                "description": "Maps to acg:hasTimestamp (xsd:dateTime)."
+              }
+            }
+          }
+        },
+        "newContext": {
+          "type": "object",
+          "description": "Reference to new context after action. Maps to acg:generatedContext.",
+          "properties": {
+            "contextId": {
+              "type": "string",
+              "description": "Maps to acg:contextId (@type: @id)."
+            },
+            "affordancesDelta": {
+              "type": "object",
+              "description": "Maps to acg:affordancesDelta.",
+              "properties": {
+                "added": {
+                  "type": "array",
+                  "items": { "type": "string" },
+                  "description": "Maps to acg:addedAffordances (@container: @set)."
+                },
+                "removed": {
+                  "type": "array",
+                  "items": { "type": "string" },
+                  "description": "Maps to acg:removedAffordances (@container: @set)."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "usageEvent": {
+      "type": "object",
+      "description": "Usage telemetry event for semiotic analysis. Maps to acg:UsageEvent via acg:hasUsageEvent.",
+      "properties": {
+        "usageRel": {
+          "type": "string",
+          "description": "Maps to acg:usageRel."
+        },
+        "usageRelVersion": {
+          "type": "string",
+          "description": "Maps to acg:usageRelVersion."
+        },
+        "usageActionType": {
+          "type": "string",
+          "description": "Maps to acg:usageActionType."
+        },
+        "usageOutcomeStatus": {
+          "type": "string",
+          "description": "Maps to acg:usageOutcomeStatus."
+        },
+        "usageTimestamp": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Maps to acg:usageTimestamp."
+        },
+        "contextId": {
+          "type": "string",
+          "description": "Reference to the context id at usage time."
+        },
+        "traceId": {
+          "type": "string",
+          "description": "Reference to the trace id (this record)."
+        }
+      }
+    },
+    "interventionLabel": {
+      "type": "string",
+      "description": "The do(action, params) label for causal analysis. Maps to acg:interventionLabel."
+    },
+    "startedAtTime": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Maps to prov:startedAtTime (xsd:dateTime)."
+    },
+    "endedAtTime": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Maps to prov:endedAtTime (xsd:dateTime)."
+    },
+    "policyEvaluations": {
+      "type": "array",
+      "description": "Policy checks performed before traversal. Maps to acg:policyEvaluations (@container: @set).",
+      "items": {
+        "type": "object",
+        "properties": {
+          "policyRef": {
+            "type": "string",
+            "description": "Maps to acg:policyRef (@type: @id)."
+          },
+          "result": {
+            "type": "string",
+            "enum": ["permit", "deny", "escalate"],
+            "description": "Maps to acg:evaluationResult."
+          },
+          "reason": {
+            "type": "string",
+            "description": "Maps to acg:evaluationReason."
+          }
+        }
+      }
+    },
+    "causalEvaluation": {
+      "type": "object",
+      "description": "Causal model evaluation if performed. Maps to acg:causalEvaluation.",
+      "properties": {
+        "modelRef": {
+          "type": "string",
+          "description": "Maps to acg:causalModelRef (@type: @id)."
+        },
+        "predictedOutcomes": {
+          "type": "object",
+          "description": "Maps to acg:predictedOutcomes."
+        },
+        "confidence": {
+          "type": "number",
+          "description": "Maps to acg:confidence (xsd:decimal)."
+        }
+      }
+    },
+    "signature": {
+      "type": "object",
+      "description": "Cryptographic signature for integrity. Maps to acg:hasSignature.",
+      "properties": {
+        "type": {
+          "type": "string",
+          "description": "Signature type (e.g., Ed25519Signature2020)."
+        },
+        "created": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Maps to dcterms:created (xsd:dateTime)."
+        },
+        "verificationMethod": {
+          "type": "string",
+          "description": "Maps to acg:verificationMethod (@type: @id)."
+        },
+        "proofValue": {
+          "type": "string",
+          "description": "Maps to acg:proofValue."
+        }
+      }
+    }
+  }
+}

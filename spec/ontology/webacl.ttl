@@ -1,0 +1,215 @@
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix acl: <http://www.w3.org/ns/auth/acl#> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix acg: <https://agentcontextgraph.dev/ontology#> .
+@prefix ds: <https://agentcontextgraph.dev/data-space#> .
+@prefix id: <https://agentcontextgraph.dev/identity#> .
+@prefix wacl: <https://agentcontextgraph.dev/webacl#> .
+
+# =============================================================================
+# Agent Context Graph WebACL Integration Ontology
+# =============================================================================
+# Integrates W3C Web Access Control (WebACL) with ACG for fine-grained
+# access control over agent resources, contexts, and data spaces.
+#
+# Reference: https://www.w3.org/wiki/WebAccessControl
+# Solid WebACL: https://solidproject.org/TR/wac
+# =============================================================================
+
+<https://agentcontextgraph.dev/webacl>
+    a owl:Ontology ;
+    owl:versionIRI <https://agentcontextgraph.dev/webacl/1.0.0> ;
+    dcterms:title "Agent Context Graph WebACL Integration"@en ;
+    dcterms:description "Integrates W3C WebACL with ACG for fine-grained access control. Enables Solid-compatible authorization while extending for agent-specific needs."@en ;
+    dcterms:created "2026-01-25"^^xsd:date ;
+    owl:imports <http://www.w3.org/ns/auth/acl#> ;
+    owl:imports <https://agentcontextgraph.dev/ontology> ;
+    owl:imports <https://agentcontextgraph.dev/data-space> .
+
+# =============================================================================
+# Core WebACL Alignment
+# =============================================================================
+
+# ACG resources are ACL-protectable
+acg:ContextGraph rdfs:subClassOf acl:Resource .
+acg:ProvTrace rdfs:subClassOf acl:Resource .
+acg:Affordance rdfs:subClassOf acl:Resource .
+ds:DataSpace rdfs:subClassOf acl:Resource .
+ds:DataSpaceResource rdfs:subClassOf acl:Resource .
+
+# ACG agents can be ACL agents
+acg:Agent rdfs:subClassOf acl:Agent .
+
+# =============================================================================
+# ACG-Specific Access Modes (extending acl:Access)
+# =============================================================================
+
+wacl:TraverseAffordance a acl:Access ;
+    rdfs:label "Traverse Affordance"@en ;
+    rdfs:comment "Permission to traverse an affordance (invoke its action)."@en .
+
+wacl:RequestContext a acl:Access ;
+    rdfs:label "Request Context"@en ;
+    rdfs:comment "Permission to request a context graph from the broker."@en .
+
+wacl:EmitTrace a acl:Access ;
+    rdfs:label "Emit Trace"@en ;
+    rdfs:comment "Permission to emit provenance traces to a trace container."@en .
+
+wacl:QuerySPARQL a acl:Access ;
+    rdfs:label "Query SPARQL"@en ;
+    rdfs:comment "Permission to execute SPARQL queries against a data space."@en .
+
+wacl:Federate a acl:Access ;
+    rdfs:label "Federate"@en ;
+    rdfs:comment "Permission to federate with this broker/data space from external domains."@en .
+
+# =============================================================================
+# ACG Authorization Extensions
+# =============================================================================
+
+wacl:ACGAuthorization a owl:Class ;
+    rdfs:label "ACG Authorization"@en ;
+    rdfs:subClassOf acl:Authorization ;
+    rdfs:comment "An ACL authorization with ACG-specific extensions for agent types and constraints."@en .
+
+# -----------------------------------------------------------------------------
+# Agent Type-Based Authorization
+# -----------------------------------------------------------------------------
+
+wacl:agentType a owl:ObjectProperty ;
+    rdfs:label "agent type"@en ;
+    rdfs:domain wacl:ACGAuthorization ;
+    rdfs:range rdfs:Resource ;
+    rdfs:comment "Grants access to agents of a specific AAT type (e.g., aat:PlannerAgentType)."@en .
+
+# Example usage:
+# <#plannerAccess> a wacl:ACGAuthorization ;
+#     acl:accessTo </contexts/> ;
+#     acl:mode acl:Read, wacl:RequestContext ;
+#     wacl:agentType aat:PlannerAgentType .
+
+# -----------------------------------------------------------------------------
+# Credential-Based Authorization
+# -----------------------------------------------------------------------------
+
+wacl:requiresCredentialType a owl:ObjectProperty ;
+    rdfs:label "requires credential type"@en ;
+    rdfs:domain wacl:ACGAuthorization ;
+    rdfs:range rdfs:Resource ;
+    rdfs:comment "Grants access only to agents presenting a credential of this type."@en .
+
+wacl:requiresCredentialIssuer a owl:ObjectProperty ;
+    rdfs:label "requires credential issuer"@en ;
+    rdfs:domain wacl:ACGAuthorization ;
+    rdfs:range rdfs:Resource ;
+    rdfs:comment "Grants access only to agents with credentials from this issuer."@en .
+
+# -----------------------------------------------------------------------------
+# Temporal Authorization
+# -----------------------------------------------------------------------------
+
+wacl:validFrom a owl:DatatypeProperty ;
+    rdfs:label "valid from"@en ;
+    rdfs:domain wacl:ACGAuthorization ;
+    rdfs:range xsd:dateTime ;
+    rdfs:comment "Authorization is valid starting from this time."@en .
+
+wacl:validUntil a owl:DatatypeProperty ;
+    rdfs:label "valid until"@en ;
+    rdfs:domain wacl:ACGAuthorization ;
+    rdfs:range xsd:dateTime ;
+    rdfs:comment "Authorization expires at this time."@en .
+
+# -----------------------------------------------------------------------------
+# Delegation
+# -----------------------------------------------------------------------------
+
+wacl:delegatedBy a owl:ObjectProperty ;
+    rdfs:label "delegated by"@en ;
+    rdfs:domain wacl:ACGAuthorization ;
+    rdfs:range acl:Agent ;
+    rdfs:comment "This authorization was delegated by another agent."@en .
+
+wacl:delegationDepth a owl:DatatypeProperty ;
+    rdfs:label "delegation depth"@en ;
+    rdfs:domain wacl:ACGAuthorization ;
+    rdfs:range xsd:integer ;
+    rdfs:comment "Maximum depth of further delegation allowed (0 = no further delegation)."@en .
+
+# =============================================================================
+# Default ACL Documents
+# =============================================================================
+
+wacl:DefaultContextACL a owl:Class ;
+    rdfs:label "Default Context ACL"@en ;
+    rdfs:subClassOf acl:Authorization ;
+    rdfs:comment "Default ACL for context graph containers."@en .
+
+wacl:DefaultTraceACL a owl:Class ;
+    rdfs:label "Default Trace ACL"@en ;
+    rdfs:subClassOf acl:Authorization ;
+    rdfs:comment "Default ACL for trace containers (append-only by default)."@en .
+
+wacl:DefaultAffordanceACL a owl:Class ;
+    rdfs:label "Default Affordance ACL"@en ;
+    rdfs:subClassOf acl:Authorization ;
+    rdfs:comment "Default ACL for affordance traversal."@en .
+
+# =============================================================================
+# ACL Document Location
+# =============================================================================
+
+wacl:aclDocument a owl:ObjectProperty ;
+    rdfs:label "ACL document"@en ;
+    rdfs:domain acl:Resource ;
+    rdfs:range rdfs:Resource ;
+    rdfs:comment "The ACL document controlling access to this resource."@en .
+
+# Convention: ACL document is at {resource}.acl or {container}/.acl
+# Example: /contexts/ctx-123.acl or /contexts/.acl
+
+# =============================================================================
+# Public Access
+# =============================================================================
+
+wacl:PublicAgent a acl:AgentClass ;
+    rdfs:label "Public Agent"@en ;
+    rdfs:comment "Represents any agent (public access). Use with caution."@en ;
+    owl:equivalentClass foaf:Agent .
+
+# =============================================================================
+# Authenticated Agent Groups
+# =============================================================================
+
+wacl:AuthenticatedAgent a acl:AgentClass ;
+    rdfs:label "Authenticated Agent"@en ;
+    rdfs:comment "Any agent that has authenticated with valid credentials."@en .
+
+wacl:FederatedAgent a acl:AgentClass ;
+    rdfs:label "Federated Agent"@en ;
+    rdfs:comment "Any agent from a federated trust domain."@en .
+
+wacl:LocalAgent a acl:AgentClass ;
+    rdfs:label "Local Agent"@en ;
+    rdfs:comment "Any agent registered with this broker."@en .
+
+# =============================================================================
+# Inheritance
+# =============================================================================
+
+wacl:inheritACL a owl:ObjectProperty ;
+    rdfs:label "inherit ACL"@en ;
+    rdfs:domain acl:Resource ;
+    rdfs:range rdfs:Resource ;
+    rdfs:comment "This resource inherits ACL from another resource (typically parent container)."@en .
+
+wacl:defaultForNew a owl:ObjectProperty ;
+    rdfs:label "default for new"@en ;
+    rdfs:domain acl:Authorization ;
+    rdfs:range rdfs:Resource ;
+    rdfs:comment "This authorization becomes the default for new resources in this container."@en .
