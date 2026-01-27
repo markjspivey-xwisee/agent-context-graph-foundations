@@ -164,6 +164,15 @@
               }
             }
           }
+        },
+        "knowledgeGraphRef": {
+          "type": "object",
+          "description": "Knowledge graph reference used during the action.",
+          "properties": {
+            "id": { "type": "string", "format": "uri" },
+            "version": { "type": "string" },
+            "queryEndpoint": { "type": "string", "format": "uri" }
+          }
         }
       }
     },
@@ -262,6 +271,15 @@
                 }
               }
             }
+          }
+        },
+        "knowledgeGraphUpdate": {
+          "type": "object",
+          "description": "Knowledge graph update produced by this traversal.",
+          "properties": {
+            "graphId": { "type": "string", "format": "uri" },
+            "updateType": { "type": "string" },
+            "updateRef": { "type": "string", "format": "uri" }
           }
         }
       }

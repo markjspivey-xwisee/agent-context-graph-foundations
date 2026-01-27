@@ -126,3 +126,14 @@ This enables:
 - Outcome prediction before action
 - Policy evaluation based on predicted effects
 - Counterfactual analysis after action
+
+## Tool Authoring Affordances
+
+Agents may create or register tools, but only through explicit affordances (e.g., `RegisterTool`).
+This preserves the "absence = enforcement" rule:
+
+- No global tool list exists.
+- Tool creation is policy-gated and credentialed.
+- Tools are versioned, auditable, and traced like any other action.
+
+Tool authoring is a first-class capability, not an implicit privilege.

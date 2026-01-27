@@ -58,10 +58,31 @@ interface ICausalEvaluator {
 - Predict outcome variables given interventions
 - Check predicted outcomes against policy constraints
 
+## IKnowledgeGraphService
+
+Provides persistent, ontology-driven knowledge graphs alongside ephemeral Context Graphs.
+
+```typescript
+interface IKnowledgeGraphService {
+  listGraphs(): Promise<KnowledgeGraphRef[]>;
+  registerGraph(graph: KnowledgeGraphRef): Promise<KnowledgeGraphRef>;
+  getGraph(id: string): Promise<KnowledgeGraphRef | null>;
+  queryGraph(id: string, query: KnowledgeGraphQuery): Promise<unknown>;
+  registerMapping(id: string, mappingRef: string): Promise<KnowledgeGraphUpdate>;
+  updateGraph(id: string, update: KnowledgeGraphUpdate): Promise<KnowledgeGraphUpdate>;
+}
+```
+
+### Responsibilities
+- Register knowledge graph metadata and ontology refs
+- Provide query access (SPARQL or broker-defined queries)
+- Accept mapping definitions (e.g., R2RML)
+- Emit provenance-aware update records
+
 ### Implementation Notes
-- Causal models are external to this system
-- The interface abstracts over different causal inference methods
-- Confidence scores should reflect model uncertainty
+- Prefer persistent storage (RDF store) behind this interface
+- Keep update semantics auditable and append-only
+- Treat mapping registration as a policy-gated affordance
 
 ## IPolicyEngine
 

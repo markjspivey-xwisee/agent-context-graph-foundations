@@ -61,6 +61,16 @@ cg:ContextGraphShape a sh:NodeShape ;
         sh:path cg:category ;
         sh:node cg:CategoryShape ;
         sh:name "Category"
+    ] ;
+    sh:property [
+        sh:path cg:knowledgeGraphRef ;
+        sh:node cg:KnowledgeGraphRefShape ;
+        sh:name "Knowledge Graph Reference"
+    ] ;
+    sh:property [
+        sh:path cg:knowledgeGraphSnapshot ;
+        sh:node cg:KnowledgeGraphSnapshotShape ;
+        sh:name "Knowledge Graph Snapshot"
     ] .
 
 # -----------------------------------------------------------------------------
@@ -327,5 +337,47 @@ cg:UsageSemanticsShape a sh:NodeShape ;
     ] ;
     sh:property [
         sh:path cg:lastObservedAt ;
+        sh:datatype xsd:dateTime
+    ] .
+
+# -----------------------------------------------------------------------------
+# Knowledge Graph Shapes
+# -----------------------------------------------------------------------------
+
+cg:KnowledgeGraphRefShape a sh:NodeShape ;
+    sh:property [
+        sh:path cg:id ;
+        sh:minCount 1 ;
+        sh:nodeKind sh:IRI
+    ] ;
+    sh:property [
+        sh:path cg:version ;
+        sh:datatype xsd:string
+    ] ;
+    sh:property [
+        sh:path cg:ontologyRefs ;
+        sh:nodeKind sh:IRI
+    ] ;
+    sh:property [
+        sh:path cg:queryEndpoint ;
+        sh:nodeKind sh:IRI
+    ] ;
+    sh:property [
+        sh:path cg:updateEndpoint ;
+        sh:nodeKind sh:IRI
+    ] .
+
+cg:KnowledgeGraphSnapshotShape a sh:NodeShape ;
+    sh:property [
+        sh:path cg:graphId ;
+        sh:minCount 1 ;
+        sh:nodeKind sh:IRI
+    ] ;
+    sh:property [
+        sh:path cg:version ;
+        sh:datatype xsd:string
+    ] ;
+    sh:property [
+        sh:path cg:lastUpdated ;
         sh:datatype xsd:dateTime
     ] .

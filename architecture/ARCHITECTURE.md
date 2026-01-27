@@ -92,6 +92,19 @@ The central orchestrator that generates Context Graphs for agents:
 - **Causal Evaluator**: do-calculus intervention tracking
 - **Semiotics Telemetry**: records usage events for stability/drift analysis
 
+#### Knowledge Graph Service
+Persistent, ontology-driven memory used alongside ephemeral Context Graphs:
+- Register knowledge graph metadata and endpoints
+- Accept mappings (e.g., R2RML) from source systems
+- Provide query/update APIs
+- Emit provenance for graph updates
+
+#### Tool Registry
+Allow agents to register and use tools through explicit affordances:
+- Store tool definitions and schemas
+- Enforce policy/credential gating on registration
+- Expose registered tools via broker endpoints
+
 #### Hypergraph + Category Semantics
 Context Graphs can be rendered as hypergraphs and categories for formal reasoning:
 - **Hypergraph View**: affordances are hyperedges binding agent, target, credentials, and constraints in one relation.
@@ -114,7 +127,7 @@ Broker-to-broker social networking:
 - Discovery via DID, WebID, or search
 
 #### Shared Context
-Collaborative knowledge graphs:
+Collaborative context graphs:
 - CRDT-based conflict-free replication
 - Access control (read/write/admin)
 - Vector clocks for causal ordering

@@ -233,6 +233,43 @@ No feature is considered complete unless its pillar mapping is explicit.
 
 ---
 
+## Pillar M — Knowledge Graphs & Persistent Memory
+
+**Purpose:** Durable, ontology-driven knowledge base alongside ephemeral Context Graphs.
+
+### Requirements
+- Knowledge Graphs are persistent and versioned.
+- Context Graphs MAY reference Knowledge Graphs.
+- Updates to Knowledge Graphs MUST be traced and policy-gated.
+- Ontology alignment is explicit (e.g., DCAT, DPROD, R2RML mappings).
+
+### Artifacts
+- `../principles/knowledge-graphs.md`
+- `../spec/knowledge-graph.md`
+- `../spec/ontology/acg-core.ttl`
+- `../spec/shacl/context.ttl`
+- `../protocol/API.md`
+- `agent-context-graph-implementation/examples/knowledge-graph/*`
+
+---
+
+## Pillar N — Tool Authoring & Registry
+
+**Purpose:** Agents can create and use tools through explicit, auditable affordances.
+
+### Requirements
+- Tools are registered via affordances (no global tool list).
+- Tool registration is policy-gated and credentialed.
+- Tool definitions are versioned and traced.
+
+### Artifacts
+- `../principles/affordances.md`
+- `../protocol/API.md`
+- `../spec/context-graph.schema.json`
+- `agent-context-graph-implementation/examples/tool-authoring/*`
+
+---
+
 ## Coverage Table (Required)
 
 | Pillar | Spec | Schema | Example | Test |
@@ -249,5 +286,7 @@ No feature is considered complete unless its pillar mapping is explicit.
 | Threat Model | :white_check_mark: | — | — | :white_check_mark: |
 | Hypergraph | :white_check_mark: | :white_check_mark: | :white_check_mark: | — |
 | Category Theory | :white_check_mark: | :white_check_mark: | :white_check_mark: | — |
+| Knowledge Graphs | :white_check_mark: | :white_check_mark: | :white_check_mark: | — |
+| Tool Authoring | :white_check_mark: | :white_check_mark: | :white_check_mark: | — |
 
 **No pull request may be merged unless this table is updated.**

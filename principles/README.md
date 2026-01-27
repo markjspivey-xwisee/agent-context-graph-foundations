@@ -7,6 +7,7 @@ Foundational design principles for the Agent Context Graph.
 - hypermedia-principles.md
 - hypergraph.md
 - category-theory.md
+- knowledge-graphs.md
 - prov.md
 - policy.md
 - semiotics.md

@@ -26,7 +26,11 @@
         api:ProvTrace,
         api:AATCollection,
         api:AbstractAgentType,
-        api:OntologyCollection .
+        api:OntologyCollection,
+        api:KnowledgeGraphCollection,
+        api:KnowledgeGraph,
+        api:KnowledgeGraphQuery,
+        api:ToolCollection .
 
 # =============================================================================
 # Entry Point
@@ -63,7 +67,77 @@ api:EntryPoint a hydra:Class ;
         hydra:title "Ontology"@en ;
         hydra:readable true ;
         hydra:required true
+    ] ;
+    hydra:supportedProperty [
+        hydra:property api:knowledgeGraphs ;
+        hydra:title "Knowledge Graphs"@en ;
+        hydra:readable true ;
+        hydra:required false
+    ] ;
+    hydra:supportedProperty [
+        hydra:property api:tools ;
+        hydra:title "Tools"@en ;
+        hydra:readable true ;
+        hydra:required false
     ] .
+
+# =============================================================================
+# Knowledge Graph Resources
+# =============================================================================
+
+api:KnowledgeGraphCollection a hydra:Class ;
+    rdfs:label "Knowledge Graph Collection"@en ;
+    rdfs:subClassOf hydra:Collection ;
+    hydra:supportedOperation [
+        a hydra:Operation ;
+        hydra:method "GET" ;
+        hydra:title "List Knowledge Graphs"@en ;
+        hydra:returns api:KnowledgeGraphCollection
+    ] ;
+    hydra:supportedOperation [
+        a hydra:Operation ;
+        hydra:method "POST" ;
+        hydra:title "Register Knowledge Graph"@en ;
+        hydra:expects api:KnowledgeGraph ;
+        hydra:returns api:KnowledgeGraph
+    ] .
+
+api:KnowledgeGraph a hydra:Class ;
+    rdfs:label "Knowledge Graph"@en ;
+    hydra:supportedOperation [
+        a hydra:Operation ;
+        hydra:method "POST" ;
+        hydra:title "Query Knowledge Graph"@en ;
+        hydra:expects api:KnowledgeGraphQuery ;
+        hydra:returns hydra:Collection
+    ] .
+
+api:KnowledgeGraphQuery a hydra:Class ;
+    rdfs:label "Knowledge Graph Query"@en .
+
+# =============================================================================
+# Tool Registry Resources
+# =============================================================================
+
+api:ToolCollection a hydra:Class ;
+    rdfs:label "Tool Collection"@en ;
+    rdfs:subClassOf hydra:Collection ;
+    hydra:supportedOperation [
+        a hydra:Operation ;
+        hydra:method "GET" ;
+        hydra:title "List Tools"@en ;
+        hydra:returns api:ToolCollection
+    ] ;
+    hydra:supportedOperation [
+        a hydra:Operation ;
+        hydra:method "POST" ;
+        hydra:title "Register Tool"@en ;
+        hydra:expects api:ToolDefinition ;
+        hydra:returns api:ToolDefinition
+    ] .
+
+api:ToolDefinition a hydra:Class ;
+    rdfs:label "Tool Definition"@en .
 
 # =============================================================================
 # Context Graph Resources
@@ -322,6 +396,14 @@ api:aats a hydra:Link ;
 api:ontology a hydra:Link ;
     rdfs:label "ontology"@en ;
     rdfs:range api:OntologyCollection .
+
+api:knowledgeGraphs a hydra:Link ;
+    rdfs:label "knowledgeGraphs"@en ;
+    rdfs:range api:KnowledgeGraphCollection .
+
+api:tools a hydra:Link ;
+    rdfs:label "tools"@en ;
+    rdfs:range api:ToolCollection .
 
 api:agentDID a rdf:Property ;
     rdfs:label "agentDID"@en ;

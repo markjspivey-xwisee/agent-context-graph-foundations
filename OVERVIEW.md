@@ -4,7 +4,7 @@ This repo is the canonical contract for Agent Context Graph (ACG). It defines th
 
 ## Executive summary
 
-ACG formalizes how agents discover and execute affordances via a Context Graph. The contract is expressed in JSON Schema, SHACL, OWL ontology, and protocol docs. The aim is to make agent behavior auditable, composable, and policy-bounded. Hypergraph semantics model multi-party actions; category-theoretic composition formalizes workflow composition; usage-based semiotics captures meaning from observed usage.
+ACG formalizes how agents discover and execute affordances via ephemeral Context Graphs and how they consult persistent Knowledge Graphs for long-term memory. The contract is expressed in JSON Schema, SHACL, OWL ontology, and protocol docs. The aim is to make agent behavior auditable, composable, and policy-bounded. Hypergraph semantics model multi-party actions; category-theoretic composition formalizes workflow composition; usage-based semiotics captures meaning from observed usage; tool authoring is explicit and policy-gated.
 
 ## Why a separate foundations repo
 
@@ -16,9 +16,11 @@ ACG formalizes how agents discover and execute affordances via a Context Graph. 
 ## Core mental model
 
 - A Context Graph is the runtime contract exposed to agents.
+- A Knowledge Graph is persistent, ontology-aligned memory referenced by contexts.
 - Affordances are hyperedges binding agents, targets, credentials, and constraints.
 - Traversals emit PROV traces for accountability and reproducibility.
 - Usage semantics are derived from observed usage and shape future affordances.
+- Tools are created and discovered via affordances, not global lists.
 
 ## What lives here
 
@@ -37,6 +39,7 @@ flowchart LR
   S --> I[Implementation Repo]
   I --> R[Runtime Behavior]
   R --> T[PROV Traces]
+  R --> KG[Knowledge Graph Updates]
 ```
 
 ## Change management expectations

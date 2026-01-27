@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agentcontextgraph.dev/schemas/knowledge-graph.schema.json",
+  "title": "Knowledge Graph Reference",
+  "type": "object",
+  "required": ["id"],
+  "properties": {
+    "id": { "type": "string", "format": "uri" },
+    "label": { "type": "string" },
+    "version": { "type": "string" },
+    "ontologyRefs": {
+      "type": "array",
+      "items": { "type": "string", "format": "uri" }
+    },
+    "queryEndpoint": { "type": "string", "format": "uri" },
+    "updateEndpoint": { "type": "string", "format": "uri" },
+    "mappingsRef": { "type": "string", "format": "uri" }
+  }
+}

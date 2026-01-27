@@ -5,6 +5,7 @@ Complete API documentation for the ACG federated personal assistant system.
 ## Table of Contents
 
 - [Core Endpoints](#core-endpoints)
+- [Knowledge Graphs](#knowledge-graphs)
 - [Personal Broker](#personal-broker)
 - [Social Federation](#social-federation)
 - [Shared Contexts](#shared-contexts)
@@ -28,6 +29,8 @@ API entry point with Hydra hypermedia controls.
   "contexts": "/context",
   "traverse": "/traverse",
   "traces": "/traces",
+  "knowledgeGraphs": "/knowledge-graphs",
+  "tools": "/broker/tools",
   "social": { ... },
   "sharedContexts": "/contexts"
 }
@@ -63,12 +66,15 @@ Generate a Context Graph for an agent based on goal and capabilities.
 **Optional structural views:**
 - `hypergraph`: explicit hypergraph representation (hypernodes + hyperedges)
 - `category`: category-theoretic view (objects + morphisms + composition)
- - `usageSemantics`: usage-based semantics on affordances (stability, drift, polysemy)
+- `usageSemantics`: usage-based semantics on affordances (stability, drift, polysemy)
+- `knowledgeGraphRef`: reference to persistent knowledge graph
+- `knowledgeGraphSnapshot`: lightweight KG summary for the context
 
 Example (abridged):
 ```json
 {
   "id": "urn:uuid:ctx-123",
+  "knowledgeGraphRef": { "id": "urn:kg:default", "version": "2026.01" },
   "affordances": [ ... ],
   "hypergraph": { "nodes": [ ... ], "hyperedges": [ ... ] },
   "category": { "objects": [ ... ], "morphisms": [ ... ], "composition": [] }
@@ -104,6 +110,53 @@ Affordance traversals SHOULD emit usage telemetry embedded in the trace:
 }
 ```
 
+If an affordance updates the knowledge graph, the trace SHOULD also include:
+```json
+{
+  "generated": {
+    "knowledgeGraphUpdate": {
+      "graphId": "urn:kg:enterprise",
+      "updateType": "mapping",
+      "updateRef": "https://broker.example.com/knowledge-graphs/enterprise/mappings"
+    }
+  }
+}
+```
+
+---
+
+## Knowledge Graphs
+
+Persistent, ontology-driven knowledge graphs used as long-term memory alongside Context Graphs.
+
+### GET /knowledge-graphs
+List known knowledge graphs.
+
+### POST /knowledge-graphs
+Register a knowledge graph (metadata, endpoints, ontology refs).
+
+### POST /knowledge-graphs/{id}/query
+Query a knowledge graph (SPARQL or broker-defined query payload).
+
+### POST /knowledge-graphs/{id}/mappings
+Register or update mappings (e.g., R2RML) for a source system.
+
+Example metadata:
+```json
+{
+  "id": "urn:kg:enterprise",
+  "label": "Enterprise Knowledge Graph",
+  "version": "2026.01",
+  "ontologyRefs": [
+    "https://www.w3.org/ns/dcat#",
+    "https://www.omg.org/spec/DPROD/",
+    "https://www.w3.org/ns/r2rml#"
+  ],
+  "queryEndpoint": "https://broker.example.com/knowledge-graphs/enterprise/query",
+  "updateEndpoint": "https://broker.example.com/knowledge-graphs/enterprise/update"
+}
+```
+
 ---
 
 ## Personal Broker
@@ -126,6 +179,12 @@ Get broker information and status.
   }
 }
 ```
+
+### GET /broker/tools
+List registered tools for the broker.
+
+### POST /broker/tools
+Register a new tool definition for agents to use (policy-gated).
 
 ### GET /broker/conversations
 List all conversations.

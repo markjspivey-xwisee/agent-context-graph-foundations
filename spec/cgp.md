@@ -20,6 +20,10 @@ A Context Graph MUST include:
 - `timestamp`
 - `affordances`
 
+Context Graphs MAY include:
+- `knowledgeGraphRef` (reference to persistent knowledge graph)
+- `knowledgeGraphSnapshot` (lightweight KG summary)
+
 ## Affordances
 
 - Every affordance MUST include `id`, `rel`, `actionType`, and `target`.
@@ -36,6 +40,11 @@ credentials, and constraints.
 
 If the `category` field is present, it MUST conform to `spec/CATEGORY-THEORY.md`.
 Morphism composition MUST be explicit.
+
+## Knowledge Graph Reference (Optional)
+
+If `knowledgeGraphRef` is present, it MUST conform to `spec/knowledge-graph.schema.json`.
+The reference links the ephemeral Context Graph to a persistent knowledge graph used for long-term memory.
 
 ## Provenance
 

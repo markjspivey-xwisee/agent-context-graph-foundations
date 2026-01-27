@@ -129,6 +129,14 @@
     "category": {
       "$ref": "#/$defs/ContextCategory",
       "description": "Optional category-theoretic view of the context graph (objects, morphisms, composition)."
+    },
+    "knowledgeGraphRef": {
+      "$ref": "#/$defs/KnowledgeGraphRef",
+      "description": "Reference to a persistent ontology-driven knowledge graph."
+    },
+    "knowledgeGraphSnapshot": {
+      "$ref": "#/$defs/KnowledgeGraphSnapshot",
+      "description": "Optional lightweight snapshot of the knowledge graph for this context."
     }
   },
   "$defs": {
@@ -351,6 +359,10 @@
           "$ref": "#/$defs/UsageSemantics",
           "description": "Usage-based semantics derived from observed traversals. Maps to acg:hasUsageSemantics."
         },
+        "mcpMapping": {
+          "$ref": "#/$defs/MCPToolMapping",
+          "description": "Optional MCP tool mapping for this affordance."
+        },
         "preconditions": {
           "type": "array",
           "items": { "type": "string" },
@@ -513,6 +525,17 @@
           "type": "string",
           "description": "Free-form notes about usage semantics."
         }
+      }
+    },
+    "MCPToolMapping": {
+      "type": "object",
+      "description": "Mapping from an affordance to an MCP tool definition.",
+      "required": ["toolName", "description"],
+      "properties": {
+        "toolName": { "type": "string" },
+        "description": { "type": "string" },
+        "schema": { "type": "object" },
+        "version": { "type": "string" }
       }
     },
     "TracePolicy": {
@@ -721,6 +744,43 @@
           "type": "string",
           "description": "The resulting morphism id."
         }
+      }
+    },
+    "KnowledgeGraphRef": {
+      "type": "object",
+      "description": "Reference to a persistent knowledge graph.",
+      "required": ["id"],
+      "properties": {
+        "id": { "type": "string", "format": "uri" },
+        "label": { "type": "string" },
+        "version": { "type": "string" },
+        "ontologyRefs": {
+          "type": "array",
+          "items": { "type": "string", "format": "uri" }
+        },
+        "queryEndpoint": { "type": "string", "format": "uri" },
+        "updateEndpoint": { "type": "string", "format": "uri" },
+        "mappingsRef": { "type": "string", "format": "uri" }
+      }
+    },
+    "KnowledgeGraphSnapshot": {
+      "type": "object",
+      "description": "Lightweight summary of a knowledge graph at context time.",
+      "required": ["graphId", "version", "lastUpdated"],
+      "properties": {
+        "graphId": { "type": "string", "format": "uri" },
+        "version": { "type": "string" },
+        "lastUpdated": { "type": "string", "format": "date-time" },
+        "summary": { "$ref": "#/$defs/KnowledgeGraphSummary" }
+      }
+    },
+    "KnowledgeGraphSummary": {
+      "type": "object",
+      "properties": {
+        "nodes": { "type": "integer" },
+        "edges": { "type": "integer" },
+        "datasets": { "type": "integer" },
+        "dataProducts": { "type": "integer" }
       }
     }
   }

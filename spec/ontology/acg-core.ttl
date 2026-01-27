@@ -821,3 +821,160 @@ acg:checkpointSignature a owl:DatatypeProperty ;
     rdfs:domain acg:ContextCheckpoint ;
     rdfs:range xsd:string ;
     rdfs:comment "Agent's cryptographic signature of the checkpoint."@en .
+
+# =============================================================================
+# Knowledge Graphs (Persistent Memory)
+# =============================================================================
+
+acg:KnowledgeGraph a owl:Class ;
+    rdfs:label "Knowledge Graph"@en ;
+    rdfs:comment "Persistent, ontology-driven knowledge graph used as long-term memory."@en ;
+    rdfs:subClassOf prov:Entity .
+
+acg:KnowledgeGraphRef a owl:Class ;
+    rdfs:label "Knowledge Graph Reference"@en ;
+    rdfs:comment "Reference metadata for a knowledge graph (endpoints, ontology refs, version)."@en .
+
+acg:KnowledgeGraphSnapshot a owl:Class ;
+    rdfs:label "Knowledge Graph Snapshot"@en ;
+    rdfs:comment "Lightweight summary of a knowledge graph for a specific context."@en ;
+    rdfs:subClassOf prov:Entity .
+
+acg:KnowledgeGraphUpdate a owl:Class ;
+    rdfs:label "Knowledge Graph Update"@en ;
+    rdfs:comment "Update activity for knowledge graph content, traceable via PROV."@en ;
+    rdfs:subClassOf prov:Activity .
+
+acg:knowledgeGraphRef a owl:ObjectProperty ;
+    rdfs:label "knowledgeGraphRef"@en ;
+    rdfs:comment "Associates a Context Graph with a Knowledge Graph reference."@en ;
+    rdfs:domain acg:ContextGraph ;
+    rdfs:range acg:KnowledgeGraphRef .
+
+acg:knowledgeGraphSnapshot a owl:ObjectProperty ;
+    rdfs:label "knowledgeGraphSnapshot"@en ;
+    rdfs:comment "Associates a Context Graph with a Knowledge Graph snapshot."@en ;
+    rdfs:domain acg:ContextGraph ;
+    rdfs:range acg:KnowledgeGraphSnapshot .
+
+acg:knowledgeGraphVersion a owl:DatatypeProperty ;
+    rdfs:label "knowledgeGraphVersion"@en ;
+    rdfs:comment "Version of the knowledge graph reference or snapshot."@en ;
+    rdfs:domain acg:KnowledgeGraphRef ;
+    rdfs:range xsd:string .
+
+acg:knowledgeGraphEndpoint a owl:DatatypeProperty ;
+    rdfs:label "knowledgeGraphEndpoint"@en ;
+    rdfs:comment "Endpoint for querying or updating the knowledge graph."@en ;
+    rdfs:domain acg:KnowledgeGraphRef ;
+    rdfs:range xsd:anyURI .
+
+acg:knowledgeGraphQueryEndpoint a owl:DatatypeProperty ;
+    rdfs:label "knowledgeGraphQueryEndpoint"@en ;
+    rdfs:comment "Endpoint for querying the knowledge graph."@en ;
+    rdfs:domain acg:KnowledgeGraphRef ;
+    rdfs:range xsd:anyURI .
+
+acg:knowledgeGraphUpdateEndpoint a owl:DatatypeProperty ;
+    rdfs:label "knowledgeGraphUpdateEndpoint"@en ;
+    rdfs:comment "Endpoint for updating the knowledge graph."@en ;
+    rdfs:domain acg:KnowledgeGraphRef ;
+    rdfs:range xsd:anyURI .
+
+acg:knowledgeGraphId a owl:DatatypeProperty ;
+    rdfs:label "knowledgeGraphId"@en ;
+    rdfs:comment "Identifier for a knowledge graph snapshot."@en ;
+    rdfs:domain acg:KnowledgeGraphSnapshot ;
+    rdfs:range xsd:anyURI .
+
+acg:knowledgeGraphLastUpdated a owl:DatatypeProperty ;
+    rdfs:label "knowledgeGraphLastUpdated"@en ;
+    rdfs:comment "Timestamp of last knowledge graph update."@en ;
+    rdfs:domain acg:KnowledgeGraphSnapshot ;
+    rdfs:range xsd:dateTime .
+
+acg:knowledgeGraphSummary a owl:DatatypeProperty ;
+    rdfs:label "knowledgeGraphSummary"@en ;
+    rdfs:comment "Summary statistics for a knowledge graph snapshot."@en ;
+    rdfs:domain acg:KnowledgeGraphSnapshot ;
+    rdfs:range xsd:string .
+
+acg:knowledgeGraphNodes a owl:DatatypeProperty ;
+    rdfs:label "knowledgeGraphNodes"@en ;
+    rdfs:comment "Node count in a knowledge graph snapshot."@en ;
+    rdfs:domain acg:KnowledgeGraphSnapshot ;
+    rdfs:range xsd:integer .
+
+acg:knowledgeGraphEdges a owl:DatatypeProperty ;
+    rdfs:label "knowledgeGraphEdges"@en ;
+    rdfs:comment "Edge count in a knowledge graph snapshot."@en ;
+    rdfs:domain acg:KnowledgeGraphSnapshot ;
+    rdfs:range xsd:integer .
+
+acg:knowledgeGraphDatasets a owl:DatatypeProperty ;
+    rdfs:label "knowledgeGraphDatasets"@en ;
+    rdfs:comment "Dataset count in a knowledge graph snapshot."@en ;
+    rdfs:domain acg:KnowledgeGraphSnapshot ;
+    rdfs:range xsd:integer .
+
+acg:knowledgeGraphDataProducts a owl:DatatypeProperty ;
+    rdfs:label "knowledgeGraphDataProducts"@en ;
+    rdfs:comment "Data product count in a knowledge graph snapshot."@en ;
+    rdfs:domain acg:KnowledgeGraphSnapshot ;
+    rdfs:range xsd:integer .
+
+acg:knowledgeGraphOntologyRef a owl:DatatypeProperty ;
+    rdfs:label "knowledgeGraphOntologyRef"@en ;
+    rdfs:comment "Ontology reference used for the knowledge graph (e.g., DCAT, DPROD, R2RML)."@en ;
+    rdfs:domain acg:KnowledgeGraphRef ;
+    rdfs:range xsd:anyURI .
+
+acg:knowledgeGraphMappingsRef a owl:DatatypeProperty ;
+    rdfs:label "knowledgeGraphMappingsRef"@en ;
+    rdfs:comment "Reference to mapping definitions (e.g., R2RML)."@en ;
+    rdfs:domain acg:KnowledgeGraphRef ;
+    rdfs:range xsd:anyURI .
+
+# =============================================================================
+# Tool Authoring
+# =============================================================================
+
+acg:ToolDefinition a owl:Class ;
+    rdfs:label "Tool Definition"@en ;
+    rdfs:comment "Definition of a tool registered by an agent."@en ;
+    rdfs:subClassOf prov:Entity .
+
+acg:ToolRegistration a owl:Class ;
+    rdfs:label "Tool Registration"@en ;
+    rdfs:comment "Registration event for a tool, emitted via affordance traversal."@en ;
+    rdfs:subClassOf prov:Activity .
+
+acg:toolName a owl:DatatypeProperty ;
+    rdfs:label "toolName"@en ;
+    rdfs:comment "Name of a registered tool."@en ;
+    rdfs:domain acg:ToolDefinition ;
+    rdfs:range xsd:string .
+
+acg:toolSchema a owl:DatatypeProperty ;
+    rdfs:label "toolSchema"@en ;
+    rdfs:comment "JSON Schema for tool parameters."@en ;
+    rdfs:domain acg:ToolDefinition ;
+    rdfs:range xsd:string .
+
+acg:toolDescription a owl:DatatypeProperty ;
+    rdfs:label "toolDescription"@en ;
+    rdfs:comment "Human-readable description of a tool."@en ;
+    rdfs:domain acg:ToolDefinition ;
+    rdfs:range xsd:string .
+
+acg:toolCategory a owl:DatatypeProperty ;
+    rdfs:label "toolCategory"@en ;
+    rdfs:comment "Category label for tool grouping."@en ;
+    rdfs:domain acg:ToolDefinition ;
+    rdfs:range xsd:string .
+
+acg:toolEndpoint a owl:DatatypeProperty ;
+    rdfs:label "toolEndpoint"@en ;
+    rdfs:comment "Endpoint or invocation target for the tool."@en ;
+    rdfs:domain acg:ToolDefinition ;
+    rdfs:range xsd:anyURI .
