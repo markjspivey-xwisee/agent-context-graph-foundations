@@ -7,7 +7,7 @@ This repo is the source of truth for the theory and formal artifacts that the im
 ## What's here
 
 - principles/  
-  Core principles: AAT, affordances, hypermedia, hypergraph, category theory, semiotics, policy, PROV, DI/VC, threat model, knowledge graphs.
+  Core principles: AAT, affordances, hypermedia, hypergraph, category theory, semiotics, policy, PROV, DI/VC, threat model, knowledge graphs, semantic layer.
 - architecture/  
   System architecture, interfaces, and inspiration notes.
 - protocol/  
@@ -22,14 +22,18 @@ This repo is the source of truth for the theory and formal artifacts that the im
 - adr/README.md
 - principles/README.md
 - principles/knowledge-graphs.md
+- principles/semantic-layer.md
 - architecture/ARCHITECTURE_INDEX.md
 - protocol/API.md
 - spec/context-graph.schema.json
 - spec/prov-trace.schema.json
 - spec/knowledge-graph.md
 - spec/knowledge-graph.schema.json
+- spec/semantic-layer.md
 - spec/ontology/acg-core.ttl
+- spec/ontology/semantic-layer.ttl
 - spec/shacl/context.ttl
+- spec/shacl/semantic-layer.ttl
 - spec/hydra/api.ttl
 - spec/HYPERGRAPH.md
 - spec/CATEGORY-THEORY.md
@@ -43,6 +47,7 @@ This repo is the source of truth for the theory and formal artifacts that the im
 - Category-theoretic composition of affordance workflows
 - Usage-based semiotics (meaning emerges from usage)
 - Ephemeral Context Graphs + persistent Knowledge Graphs
+- HyprCat upper ontology for semantic catalogs (DCAT + DPROD + Hydra + SHACL)
 - Tool authoring through explicit affordances
 - PROV tracing, DID/VC, and causal affordance semantics
 

@@ -1,0 +1,157 @@
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix dcat: <http://www.w3.org/ns/dcat#> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix dprod: <https://ekgf.github.io/data-product-spec/dprod#> .
+@prefix hydra: <http://www.w3.org/ns/hydra/core#> .
+@prefix rr: <http://www.w3.org/ns/r2rml#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix sl: <https://agentcontextgraph.dev/semantic-layer#> .
+
+# =============================================================================
+# Semantic Layer SHACL Shapes
+# =============================================================================
+# Shapes for Hydra-enabled catalogs, data products, and SHACL-based contracts.
+# =============================================================================
+
+sl:SemanticCatalogShape
+    a sh:NodeShape ;
+    sh:targetClass sl:SemanticCatalog ;
+    sh:property [
+        sh:path dcterms:title ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+        sh:message "A semantic catalog must have a title."@en ;
+    ] ;
+    sh:property [
+        sh:path dcterms:description ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+        sh:message "A semantic catalog must have a description."@en ;
+    ] ;
+    sh:property [
+        sh:path dcat:dataset ;
+        sh:class dcat:Dataset ;
+        sh:message "Catalog datasets must be dcat:Dataset."@en ;
+    ] ;
+    sh:property [
+        sh:path dcat:service ;
+        sh:class dcat:DataService ;
+        sh:message "Catalog services must be dcat:DataService."@en ;
+    ] ;
+    sh:property [
+        sh:path sl:hasDataProduct ;
+        sh:class dprod:DataProduct ;
+        sh:message "Catalog data products must be dprod:DataProduct."@en ;
+    ] .
+
+sl:SemanticDatasetShape
+    a sh:NodeShape ;
+    sh:targetClass dcat:Dataset ;
+    sh:property [
+        sh:path dcterms:title ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+        sh:message "A dataset must have a title."@en ;
+    ] ;
+    sh:property [
+        sh:path dcterms:description ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+        sh:message "A dataset must have a description."@en ;
+    ] ;
+    sh:property [
+        sh:path sl:hasMapping ;
+        sh:class rr:TriplesMap ;
+        sh:message "Dataset mappings should be R2RML triples maps."@en ;
+    ] .
+
+sl:SemanticServiceShape
+    a sh:NodeShape ;
+    sh:targetClass dcat:DataService ;
+    sh:property [
+        sh:path dcterms:title ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+        sh:message "A data service must have a title."@en ;
+    ] ;
+    sh:property [
+        sh:path dcat:endpointURL ;
+        sh:minCount 1 ;
+        sh:nodeKind sh:IRI ;
+        sh:message "A data service must have an endpoint URL."@en ;
+    ] ;
+    sh:property [
+        sh:path dcat:servesDataset ;
+        sh:class dcat:Dataset ;
+        sh:message "Served datasets must be dcat:Dataset."@en ;
+    ] ;
+    sh:property [
+        sh:path sl:servesProduct ;
+        sh:class dprod:DataProduct ;
+        sh:message "Served products must be dprod:DataProduct."@en ;
+    ] .
+
+sl:DataProductShape
+    a sh:NodeShape ;
+    sh:targetClass dprod:DataProduct ;
+    sh:property [
+        sh:path dcterms:title ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+        sh:message "A data product must have a title."@en ;
+    ] ;
+    sh:property [
+        sh:path dcterms:description ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+        sh:message "A data product must have a description."@en ;
+    ] ;
+    sh:property [
+        sh:path dprod:domain ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+        sh:message "A data product must declare a domain."@en ;
+    ] ;
+    sh:property [
+        sh:path sl:hasDataContract ;
+        sh:class sl:DataContract ;
+        sh:message "Data products should reference a data contract."@en ;
+    ] .
+
+sl:DataContractShape
+    a sh:NodeShape ;
+    sh:targetClass sl:DataContract ;
+    sh:property [
+        sh:path dcterms:title ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+        sh:message "A data contract must have a title."@en ;
+    ] ;
+    sh:property [
+        sh:path dcterms:description ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+        sh:message "A data contract must have a description."@en ;
+    ] ;
+    sh:property [
+        sh:path sl:contractFor ;
+        sh:minCount 1 ;
+        sh:class dprod:DataProduct ;
+        sh:message "A data contract must reference a data product."@en ;
+    ] ;
+    sh:property [
+        sh:path sl:contractShape ;
+        sh:minCount 1 ;
+        sh:class sh:NodeShape ;
+        sh:message "A data contract must reference a SHACL shape."@en ;
+    ] ;
+    sh:property [
+        sh:path sl:contractVersion ;
+        sh:datatype xsd:string ;
+        sh:message "Contract version must be a string."@en ;
+    ] ;
+    sh:property [
+        sh:path sl:contractStatus ;
+        sh:class sl:ContractStatus ;
+        sh:message "Contract status must be a defined status value."@en ;
+    ] .

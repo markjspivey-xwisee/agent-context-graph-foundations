@@ -241,7 +241,7 @@ No feature is considered complete unless its pillar mapping is explicit.
 - Knowledge Graphs are persistent and versioned.
 - Context Graphs MAY reference Knowledge Graphs.
 - Updates to Knowledge Graphs MUST be traced and policy-gated.
-- Ontology alignment is explicit (e.g., DCAT, DPROD, R2RML mappings).
+- Ontology alignment is explicit (HyprCat-aligned DCAT/DPROD + R2RML mappings).
 
 ### Artifacts
 - `../principles/knowledge-graphs.md`
@@ -253,7 +253,30 @@ No feature is considered complete unless its pillar mapping is explicit.
 
 ---
 
-## Pillar N — Tool Authoring & Registry
+## Pillar N — Semantic Virtualization Layer
+
+**Purpose:** Virtual RDF semantic layer with hypermedia catalogs and SHACL contracts.
+
+### Requirements
+- Semantic layer is RDF/OWL based (virtual, zero-copy)
+- SPARQL is the canonical query language
+- Federated mappings are explicit (R2RML/OBDA)
+- Data products and datasets are described with HyprCat-aligned DCAT/DPROD
+- HyprCat is the upper ontology for catalog + product + hypermedia semantics
+- Hydra hypermedia describes catalog/product/contract operations
+- Data contracts are SHACL shapes linked from products
+
+### Artifacts
+- `../principles/semantic-layer.md`
+- `../spec/semantic-layer.md`
+- `../spec/ontology/semantic-layer.ttl`
+- `../spec/shacl/semantic-layer.ttl`
+- `../protocol/API.md`
+- `agent-context-graph-implementation/examples/semantic-layer/*`
+
+---
+
+## Pillar O — Tool Authoring & Registry
 
 **Purpose:** Agents can create and use tools through explicit, auditable affordances.
 
@@ -287,6 +310,7 @@ No feature is considered complete unless its pillar mapping is explicit.
 | Hypergraph | :white_check_mark: | :white_check_mark: | :white_check_mark: | — |
 | Category Theory | :white_check_mark: | :white_check_mark: | :white_check_mark: | — |
 | Knowledge Graphs | :white_check_mark: | :white_check_mark: | :white_check_mark: | — |
+| Semantic Layer | :white_check_mark: | :white_check_mark: | :white_check_mark: | — |
 | Tool Authoring | :white_check_mark: | :white_check_mark: | :white_check_mark: | — |
 
 **No pull request may be merged unless this table is updated.**

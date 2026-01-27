@@ -925,7 +925,7 @@ acg:knowledgeGraphDataProducts a owl:DatatypeProperty ;
 
 acg:knowledgeGraphOntologyRef a owl:DatatypeProperty ;
     rdfs:label "knowledgeGraphOntologyRef"@en ;
-    rdfs:comment "Ontology reference used for the knowledge graph (e.g., DCAT, DPROD, R2RML)."@en ;
+    rdfs:comment "Ontology reference used for the knowledge graph (e.g., HyprCat, DCAT, DPROD, R2RML)."@en ;
     rdfs:domain acg:KnowledgeGraphRef ;
     rdfs:range xsd:anyURI .
 

@@ -83,6 +83,15 @@ aat:RequestInfo a aat:CommunicativeAction ;
     aat:hasParamsShape <https://agentcontextgraph.dev/shacl/RequestInfoParamsShape> .
 
 # =============================================================================
+# Analyst Actions
+# =============================================================================
+
+aat:QueryData a aat:PerceptualAction ;
+    rdfs:label "Query Data"@en ;
+    rdfs:comment "Query a data source via the semantic layer (SPARQL is canonical; adapters may provide additional query languages)."@en ;
+    aat:hasParamsShape <https://agentcontextgraph.dev/shacl/params#QueryDataParamsShape> .
+
+# =============================================================================
 # Executor Actions
 # =============================================================================
 

@@ -30,6 +30,10 @@ API entry point with Hydra hypermedia controls.
   "traverse": "/traverse",
   "traces": "/traces",
   "knowledgeGraphs": "/knowledge-graphs",
+  "dataCatalog": "/data/catalog",
+  "dataProducts": "/data/products",
+  "dataContracts": "/data/contracts",
+  "dataQuery": "/data/query",
   "tools": "/broker/tools",
   "social": { ... },
   "sharedContexts": "/contexts"
@@ -150,10 +154,74 @@ Example metadata:
   "ontologyRefs": [
     "https://www.w3.org/ns/dcat#",
     "https://www.omg.org/spec/DPROD/",
+    "https://hyprcat.io/vocab#",
     "https://www.w3.org/ns/r2rml#"
   ],
   "queryEndpoint": "https://broker.example.com/knowledge-graphs/enterprise/query",
   "updateEndpoint": "https://broker.example.com/knowledge-graphs/enterprise/update"
+}
+```
+
+---
+
+## Semantic Layer
+
+Hydra-enabled virtual semantic layer for federated data access (HyprCat-aligned: DCAT + DPROD + Hydra + SHACL).
+
+### GET /data/catalog
+Retrieve the Hydra-enabled semantic catalog (datasets, products, contracts).
+
+**Response (JSON-LD):**
+```json
+{
+  "@context": {
+    "dcat": "http://www.w3.org/ns/dcat#",
+    "dcterms": "http://purl.org/dc/terms/",
+    "dprod": "https://ekgf.github.io/data-product-spec/dprod#",
+    "hydra": "http://www.w3.org/ns/hydra/core#",
+    "hyprcat": "https://hyprcat.io/vocab#",
+    "sl": "https://agentcontextgraph.dev/semantic-layer#"
+  },
+  "@id": "/data/catalog",
+  "@type": ["dcat:Catalog", "hyprcat:Catalog", "sl:SemanticCatalog"],
+  "dcterms:title": "ACG Semantic Catalog",
+  "dcterms:description": "Hydra-enabled catalog of datasets, products, and contracts.",
+  "dcat:dataset": [{ "@id": "urn:acg:dataset:sales-orders" }],
+  "sl:hasDataProduct": [{ "@id": "urn:acg:data-product:sales-insights" }]
+}
+```
+
+### GET /data/products
+List data products in the catalog.
+
+### GET /data/products/{id}
+Fetch a specific data product by ID.
+
+### GET /data/contracts
+List data contracts in the catalog.
+
+### GET /data/contracts/{id}
+Fetch a specific data contract by ID (SHACL-based).
+
+### GET /data/contracts/{id}/shape
+Fetch the SHACL shape for a contract.
+
+**Notes:**
+- Data contracts MUST reference SHACL shapes (OWL/SHACL are canonical; JSON Schema is non-normative).
+
+### POST /data/query
+Execute a semantic query against the virtual RDF layer. SPARQL is canonical; adapters MAY support additional query languages.
+
+**Request (SPARQL):**
+```json
+{
+  "query": "SELECT ?s ?p ?o WHERE { ?s ?p ?o } LIMIT 5",
+  "queryLanguage": "sparql",
+  "semanticLayerRef": "https://semantic-layer.example.com/sparql",
+  "sourceRef": "urn:dcat:dataset:example",
+  "mappingRef": "urn:r2rml:mapping:example",
+  "timeoutSeconds": 60,
+  "resultFormat": "application/sparql-results+json"
 }
 ```
 

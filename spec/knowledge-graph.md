@@ -13,7 +13,7 @@ This document defines how ACG distinguishes ephemeral Context Graphs from persis
 
 Knowledge Graphs MUST:
 - be versioned and persist across sessions,
-- declare ontology alignment (e.g., DCAT, DPROD),
+- declare ontology alignment (e.g., HyprCat-aligned DCAT/DPROD),
 - allow mapping links (e.g., R2RML definitions),
 - emit provenance on updates.
 
@@ -22,6 +22,7 @@ Context Graphs MAY reference a Knowledge Graph using `knowledgeGraphRef` and MAY
 ## Ontology Alignment
 
 Common ontologies include:
+- **HyprCat** as the upper ontology aligning DCAT, DPROD, Hydra, and SHACL.
 - **DCAT** for catalogs, datasets, distributions, and access services.
 - **DPROD** for data product concepts and lifecycle.
 - **R2RML** for relational-to-RDF mappings.
@@ -36,6 +37,7 @@ Common ontologies include:
   "ontologyRefs": [
     "https://www.w3.org/ns/dcat#",
     "https://www.omg.org/spec/DPROD/",
+    "https://hyprcat.io/vocab#",
     "https://www.w3.org/ns/r2rml#"
   ],
   "queryEndpoint": "https://broker.example.com/kg/query",

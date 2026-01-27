@@ -4,6 +4,11 @@
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 @prefix hydra: <http://www.w3.org/ns/hydra/core#> .
 @prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix dcat: <http://www.w3.org/ns/dcat#> .
+@prefix dprod: <https://ekgf.github.io/data-product-spec/dprod#> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix hyprcat: <https://hyprcat.io/vocab#> .
+@prefix sl: <https://agentcontextgraph.dev/semantic-layer#> .
 @prefix acg: <https://agentcontextgraph.dev/ontology#> .
 @prefix aat: <https://agentcontextgraph.dev/aat#> .
 @prefix api: <https://agentcontextgraph.dev/api#> .
@@ -30,7 +35,15 @@
         api:KnowledgeGraphCollection,
         api:KnowledgeGraph,
         api:KnowledgeGraphQuery,
-        api:ToolCollection .
+        api:ToolCollection,
+        api:DataCatalog,
+        api:DataProductCollection,
+        api:DataProduct,
+        api:DataContractCollection,
+        api:DataContract,
+        api:DataQueryEndpoint,
+        api:DataQueryRequest,
+        api:DataQueryResult .
 
 # =============================================================================
 # Entry Point
@@ -79,6 +92,30 @@ api:EntryPoint a hydra:Class ;
         hydra:title "Tools"@en ;
         hydra:readable true ;
         hydra:required false
+    ] ;
+    hydra:supportedProperty [
+        hydra:property api:dataCatalog ;
+        hydra:title "Data Catalog"@en ;
+        hydra:readable true ;
+        hydra:required false
+    ] ;
+    hydra:supportedProperty [
+        hydra:property api:dataProducts ;
+        hydra:title "Data Products"@en ;
+        hydra:readable true ;
+        hydra:required false
+    ] ;
+    hydra:supportedProperty [
+        hydra:property api:dataContracts ;
+        hydra:title "Data Contracts"@en ;
+        hydra:readable true ;
+        hydra:required false
+    ] ;
+    hydra:supportedProperty [
+        hydra:property api:dataQuery ;
+        hydra:title "Data Query"@en ;
+        hydra:readable true ;
+        hydra:required false
     ] .
 
 # =============================================================================
@@ -114,6 +151,214 @@ api:KnowledgeGraph a hydra:Class ;
 
 api:KnowledgeGraphQuery a hydra:Class ;
     rdfs:label "Knowledge Graph Query"@en .
+
+# =============================================================================
+# Semantic Layer Resources
+# =============================================================================
+
+api:DataCatalog a hydra:Class ;
+    rdfs:label "Data Catalog"@en ;
+    rdfs:subClassOf dcat:Catalog, hyprcat:Catalog ;
+    hydra:supportedOperation [
+        a hydra:Operation ;
+        hydra:method "GET" ;
+        hydra:title "Get Data Catalog"@en ;
+        hydra:description "Retrieve the HyprCat-aligned semantic catalog (DCAT + DPROD + contracts)."@en ;
+        hydra:returns api:DataCatalog
+    ] ;
+    hydra:supportedProperty [
+        hydra:property dcat:dataset ;
+        hydra:title "Datasets"@en ;
+        hydra:readable true
+    ] ;
+    hydra:supportedProperty [
+        hydra:property dcat:service ;
+        hydra:title "Services"@en ;
+        hydra:readable true
+    ] ;
+    hydra:supportedProperty [
+        hydra:property sl:hasDataProduct ;
+        hydra:title "Data Products"@en ;
+        hydra:readable true
+    ] .
+
+api:DataProductCollection a hydra:Class ;
+    rdfs:label "Data Product Collection"@en ;
+    rdfs:subClassOf hydra:Collection ;
+    hydra:supportedOperation [
+        a hydra:Operation ;
+        hydra:method "GET" ;
+        hydra:title "List Data Products"@en ;
+        hydra:description "List data products described in the semantic catalog."@en ;
+        hydra:returns api:DataProductCollection
+    ] ;
+    hydra:supportedProperty [
+        hydra:property hydra:member ;
+        hydra:title "Data Products"@en ;
+        hydra:readable true
+    ] .
+
+api:DataProduct a hydra:Class ;
+    rdfs:label "Data Product"@en ;
+    rdfs:subClassOf dprod:DataProduct, hyprcat:DataProduct ;
+    hydra:supportedOperation [
+        a hydra:Operation ;
+        hydra:method "GET" ;
+        hydra:title "Get Data Product"@en ;
+        hydra:description "Retrieve a specific data product from the catalog."@en ;
+        hydra:returns api:DataProduct
+    ] ;
+    hydra:supportedProperty [
+        hydra:property sl:hasDataContract ;
+        hydra:title "Data Contract"@en ;
+        hydra:readable true
+    ] ;
+    hydra:supportedProperty [
+        hydra:property hydra:operation ;
+        hydra:title "Operations"@en ;
+        hydra:readable true
+    ] .
+
+api:DataContractCollection a hydra:Class ;
+    rdfs:label "Data Contract Collection"@en ;
+    rdfs:subClassOf hydra:Collection ;
+    hydra:supportedOperation [
+        a hydra:Operation ;
+        hydra:method "GET" ;
+        hydra:title "List Data Contracts"@en ;
+        hydra:description "List SHACL-based data contracts for cataloged products."@en ;
+        hydra:returns api:DataContractCollection
+    ] ;
+    hydra:supportedProperty [
+        hydra:property hydra:member ;
+        hydra:title "Data Contracts"@en ;
+        hydra:readable true
+    ] .
+
+api:DataContract a hydra:Class ;
+    rdfs:label "Data Contract"@en ;
+    rdfs:subClassOf sl:DataContract, hyprcat:DataContract ;
+    hydra:supportedOperation [
+        a hydra:Operation ;
+        hydra:method "GET" ;
+        hydra:title "Get Data Contract"@en ;
+        hydra:description "Retrieve a specific data contract and its SHACL shape reference."@en ;
+        hydra:returns api:DataContract
+    ] ;
+    hydra:supportedProperty [
+        hydra:property sl:contractShape ;
+        hydra:title "Contract Shape"@en ;
+        hydra:readable true
+    ] .
+
+api:DataQueryEndpoint a hydra:Class ;
+    rdfs:label "Data Query Endpoint"@en ;
+    hydra:supportedOperation [
+        a hydra:Operation ;
+        hydra:method "POST" ;
+        hydra:title "Query Data"@en ;
+        hydra:description "Execute a semantic query against the virtual semantic layer."@en ;
+        hydra:expects api:DataQueryRequest ;
+        hydra:returns api:DataQueryResult ;
+        hydra:statusCodes [
+            hydra:code 200 ;
+            hydra:description "Query executed successfully"
+        ] , [
+            hydra:code 400 ;
+            hydra:description "Invalid query or parameters"
+        ]
+    ] .
+
+api:DataQueryRequest a hydra:Class ;
+    rdfs:label "Data Query Request"@en ;
+    rdfs:comment "Request payload for semantic data queries."@en ;
+    hydra:supportedProperty [
+        hydra:property api:query ;
+        hydra:title "Query"@en ;
+        hydra:required true ;
+        hydra:readable true ;
+        hydra:writeable true
+    ] ;
+    hydra:supportedProperty [
+        hydra:property api:queryLanguage ;
+        hydra:title "Query Language"@en ;
+        hydra:required false ;
+        hydra:readable true ;
+        hydra:writeable true
+    ] ;
+    hydra:supportedProperty [
+        hydra:property api:semanticLayerRef ;
+        hydra:title "Semantic Layer Reference"@en ;
+        hydra:required false ;
+        hydra:readable true ;
+        hydra:writeable true
+    ] ;
+    hydra:supportedProperty [
+        hydra:property api:sourceRef ;
+        hydra:title "Source Reference"@en ;
+        hydra:required false ;
+        hydra:readable true ;
+        hydra:writeable true
+    ] ;
+    hydra:supportedProperty [
+        hydra:property api:mappingRef ;
+        hydra:title "Mapping Reference"@en ;
+        hydra:required false ;
+        hydra:readable true ;
+        hydra:writeable true
+    ] ;
+    hydra:supportedProperty [
+        hydra:property api:federationProfileRef ;
+        hydra:title "Federation Profile Reference"@en ;
+        hydra:required false ;
+        hydra:readable true ;
+        hydra:writeable true
+    ] ;
+    hydra:supportedProperty [
+        hydra:property api:resultFormat ;
+        hydra:title "Result Format"@en ;
+        hydra:required false ;
+        hydra:readable true ;
+        hydra:writeable true
+    ] ;
+    hydra:supportedProperty [
+        hydra:property api:timeoutSeconds ;
+        hydra:title "Timeout Seconds"@en ;
+        hydra:required false ;
+        hydra:readable true ;
+        hydra:writeable true
+    ] ;
+    hydra:supportedProperty [
+        hydra:property api:maxRows ;
+        hydra:title "Max Rows"@en ;
+        hydra:required false ;
+        hydra:readable true ;
+        hydra:writeable true
+    ] .
+
+api:DataQueryResult a hydra:Class ;
+    rdfs:label "Data Query Result"@en ;
+    rdfs:comment "Result payload for semantic data queries."@en ;
+    hydra:supportedProperty [
+        hydra:property api:queryId ;
+        hydra:title "Query ID"@en ;
+        hydra:readable true
+    ] ;
+    hydra:supportedProperty [
+        hydra:property api:status ;
+        hydra:title "Status"@en ;
+        hydra:readable true
+    ] ;
+    hydra:supportedProperty [
+        hydra:property api:results ;
+        hydra:title "Results"@en ;
+        hydra:readable true
+    ] ;
+    hydra:supportedProperty [
+        hydra:property api:contentType ;
+        hydra:title "Content Type"@en ;
+        hydra:readable true
+    ] .
 
 # =============================================================================
 # Tool Registry Resources
@@ -405,6 +650,22 @@ api:tools a hydra:Link ;
     rdfs:label "tools"@en ;
     rdfs:range api:ToolCollection .
 
+api:dataCatalog a hydra:Link ;
+    rdfs:label "dataCatalog"@en ;
+    rdfs:range api:DataCatalog .
+
+api:dataProducts a hydra:Link ;
+    rdfs:label "dataProducts"@en ;
+    rdfs:range api:DataProductCollection .
+
+api:dataContracts a hydra:Link ;
+    rdfs:label "dataContracts"@en ;
+    rdfs:range api:DataContractCollection .
+
+api:dataQuery a hydra:Link ;
+    rdfs:label "dataQuery"@en ;
+    rdfs:range api:DataQueryEndpoint .
+
 api:agentDID a rdf:Property ;
     rdfs:label "agentDID"@en ;
     rdfs:range xsd:string .
@@ -452,3 +713,53 @@ api:hypergraph a rdf:Property ;
 api:category a rdf:Property ;
     rdfs:label "category"@en ;
     rdfs:range acg:ContextCategory .
+
+api:query a rdf:Property ;
+    rdfs:label "query"@en ;
+    rdfs:range xsd:string .
+
+api:queryLanguage a rdf:Property ;
+    rdfs:label "queryLanguage"@en ;
+    rdfs:range xsd:string .
+
+api:semanticLayerRef a rdf:Property ;
+    rdfs:label "semanticLayerRef"@en ;
+    rdfs:range xsd:anyURI .
+
+api:sourceRef a rdf:Property ;
+    rdfs:label "sourceRef"@en ;
+    rdfs:range xsd:string .
+
+api:mappingRef a rdf:Property ;
+    rdfs:label "mappingRef"@en ;
+    rdfs:range xsd:string .
+
+api:federationProfileRef a rdf:Property ;
+    rdfs:label "federationProfileRef"@en ;
+    rdfs:range xsd:string .
+
+api:resultFormat a rdf:Property ;
+    rdfs:label "resultFormat"@en ;
+    rdfs:range xsd:string .
+
+api:timeoutSeconds a rdf:Property ;
+    rdfs:label "timeoutSeconds"@en ;
+    rdfs:range xsd:integer .
+
+api:maxRows a rdf:Property ;
+    rdfs:label "maxRows"@en ;
+    rdfs:range xsd:integer .
+
+api:queryId a rdf:Property ;
+    rdfs:label "queryId"@en ;
+    rdfs:range xsd:string .
+
+api:status a rdf:Property ;
+    rdfs:label "status"@en .
+
+api:results a rdf:Property ;
+    rdfs:label "results"@en .
+
+api:contentType a rdf:Property ;
+    rdfs:label "contentType"@en ;
+    rdfs:range xsd:string .

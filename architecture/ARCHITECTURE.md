@@ -99,6 +99,15 @@ Persistent, ontology-driven memory used alongside ephemeral Context Graphs:
 - Provide query/update APIs
 - Emit provenance for graph updates
 
+#### Semantic Virtualization Layer
+Virtual, zero-copy semantic layer that exposes a SPARQL interface over heterogeneous sources:
+- RDF Knowledge Graph (OWL + SHACL)
+- Federated query via explicit R2RML/OBDA mappings
+- HyprCat-aligned DCAT + DPROD metadata for datasets and data products
+- Hydra catalog with hypermedia operations for browsing/querying
+- SHACL data contracts linked to products
+- Adapters are implementation details
+
 #### Tool Registry
 Allow agents to register and use tools through explicit affordances:
 - Store tool definitions and schemas

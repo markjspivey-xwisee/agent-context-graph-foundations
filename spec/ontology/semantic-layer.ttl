@@ -1,0 +1,171 @@
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix dcat: <http://www.w3.org/ns/dcat#> .
+@prefix dprod: <https://ekgf.github.io/data-product-spec/dprod#> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix hydra: <http://www.w3.org/ns/hydra/core#> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix rr: <http://www.w3.org/ns/r2rml#> .
+@prefix hyprcat: <https://hyprcat.io/vocab#> .
+@prefix sl: <https://agentcontextgraph.dev/semantic-layer#> .
+
+# =============================================================================
+# Agent Context Graph Semantic Layer Ontology
+# =============================================================================
+# Defines the virtual RDF semantic layer, data catalog, and data contracts.
+# Extends DCAT (datasets/services), DPROD (data products), R2RML (mappings),
+# Hydra (hypermedia), and SHACL (contracts).
+# =============================================================================
+
+<https://agentcontextgraph.dev/semantic-layer>
+    a owl:Ontology ;
+    owl:versionIRI <https://agentcontextgraph.dev/semantic-layer/1.0.0> ;
+    dcterms:title "Agent Context Graph Semantic Layer Ontology"@en ;
+    dcterms:description "Ontology for the virtual semantic layer, Hydra-enabled data catalog, and SHACL-based data contracts. Extends DCAT, DPROD, R2RML, and Hydra."@en ;
+    dcterms:created "2026-01-27"^^xsd:date ;
+    rdfs:comment "HyprCat is the upper ontology for catalog + product + hypermedia semantics; this ontology aligns to hyprcat."@en ;
+    owl:imports <http://www.w3.org/ns/dcat#> ;
+    owl:imports <https://ekgf.github.io/data-product-spec/dprod> ;
+    owl:imports <http://www.w3.org/ns/hydra/core> ;
+    owl:imports <http://www.w3.org/ns/r2rml#> ;
+    owl:imports <http://www.w3.org/ns/shacl#> ;
+    owl:imports <https://hyprcat.io/vocab> .
+
+# =============================================================================
+# Classes
+# =============================================================================
+
+sl:SemanticLayer a owl:Class ;
+    rdfs:label "Semantic Layer"@en ;
+    rdfs:comment "A virtual, zero-copy RDF layer that federates sources through explicit mappings and exposes a SPARQL interface."@en ;
+    rdfs:subClassOf dcat:DataService, prov:SoftwareAgent .
+
+sl:SemanticCatalog a owl:Class ;
+    rdfs:label "Semantic Catalog"@en ;
+    rdfs:comment "A Hydra-enabled data catalog describing datasets, products, and contracts in the semantic layer."@en ;
+    rdfs:subClassOf dcat:Catalog, hyprcat:Catalog .
+
+sl:SemanticDataset a owl:Class ;
+    rdfs:label "Semantic Dataset"@en ;
+    rdfs:comment "A dataset exposed through the semantic layer."@en ;
+    rdfs:subClassOf dcat:Dataset .
+
+sl:DataProduct a owl:Class ;
+    rdfs:label "Semantic Data Product"@en ;
+    rdfs:comment "A data product in the semantic layer catalog."@en ;
+    rdfs:subClassOf dprod:DataProduct, hyprcat:DataProduct .
+
+sl:DataContract a owl:Class ;
+    rdfs:label "Data Contract"@en ;
+    rdfs:comment "A SHACL/OWL-defined contract describing expected data shapes and constraints."@en ;
+    rdfs:subClassOf dcterms:Standard, hyprcat:DataContract .
+
+sl:ContractStatus a owl:Class ;
+    rdfs:label "Contract Status"@en ;
+    rdfs:comment "Lifecycle status for a data contract."@en ;
+    owl:oneOf (sl:ContractDraft sl:ContractActive sl:ContractDeprecated) .
+
+sl:ContractDraft a sl:ContractStatus ;
+    rdfs:label "Draft"@en .
+
+sl:ContractActive a sl:ContractStatus ;
+    rdfs:label "Active"@en .
+
+sl:ContractDeprecated a sl:ContractStatus ;
+    rdfs:label "Deprecated"@en .
+
+# =============================================================================
+# HyprCat Contract Extensions
+# =============================================================================
+
+hyprcat:DataContract a owl:Class ;
+    rdfs:label "HyprCat Data Contract"@en ;
+    rdfs:comment "Upper-ontology contract concept for HyprCat-aligned catalogs."@en ;
+    rdfs:subClassOf dcterms:Standard .
+
+hyprcat:contractShape a owl:ObjectProperty ;
+    rdfs:label "contract shape"@en ;
+    rdfs:domain hyprcat:DataContract ;
+    rdfs:range sh:NodeShape ;
+    rdfs:comment "SHACL shape that encodes the contract constraints."@en .
+
+hyprcat:contractStatus a owl:ObjectProperty ;
+    rdfs:label "contract status"@en ;
+    rdfs:domain hyprcat:DataContract ;
+    rdfs:range sl:ContractStatus ;
+    rdfs:comment "Lifecycle status of the contract."@en .
+
+hyprcat:contractVersion a owl:DatatypeProperty ;
+    rdfs:label "contract version"@en ;
+    rdfs:domain hyprcat:DataContract ;
+    rdfs:range xsd:string ;
+    rdfs:comment "Version identifier for the data contract."@en .
+
+# =============================================================================
+# Object Properties
+# =============================================================================
+
+sl:hasDataProduct a owl:ObjectProperty ;
+    rdfs:label "has data product"@en ;
+    rdfs:domain sl:SemanticCatalog ;
+    rdfs:range dprod:DataProduct ;
+    rdfs:comment "Links a semantic catalog to the data products it lists."@en .
+
+sl:hasDataContract a owl:ObjectProperty ;
+    rdfs:label "has data contract"@en ;
+    rdfs:domain dprod:DataProduct ;
+    rdfs:range sl:DataContract ;
+    rdfs:comment "Links a data product to its governing data contract."@en .
+
+sl:contractFor a owl:ObjectProperty ;
+    rdfs:label "contract for"@en ;
+    rdfs:domain sl:DataContract ;
+    rdfs:range dprod:DataProduct ;
+    rdfs:comment "The data product governed by this contract."@en .
+
+sl:contractShape a owl:ObjectProperty ;
+    rdfs:label "contract shape"@en ;
+    rdfs:domain sl:DataContract ;
+    rdfs:range sh:NodeShape ;
+    rdfs:subPropertyOf hyprcat:contractShape ;
+    rdfs:comment "SHACL shape that encodes the contract constraints."@en .
+
+sl:contractStatus a owl:ObjectProperty ;
+    rdfs:label "contract status"@en ;
+    rdfs:domain sl:DataContract ;
+    rdfs:range sl:ContractStatus ;
+    rdfs:subPropertyOf hyprcat:contractStatus ;
+    rdfs:comment "Lifecycle status of the contract."@en .
+
+sl:hasMapping a owl:ObjectProperty ;
+    rdfs:label "has mapping"@en ;
+    rdfs:domain dcat:Dataset ;
+    rdfs:range rr:TriplesMap ;
+    rdfs:comment "Links a dataset to its R2RML/OBDA mapping."@en .
+
+sl:servesProduct a owl:ObjectProperty ;
+    rdfs:label "serves product"@en ;
+    rdfs:domain dcat:DataService ;
+    rdfs:range dprod:DataProduct ;
+    rdfs:comment "Indicates that a semantic service serves a data product."@en .
+
+# =============================================================================
+# Datatype Properties
+# =============================================================================
+
+sl:semanticEndpoint a owl:DatatypeProperty ;
+    rdfs:label "semantic endpoint"@en ;
+    rdfs:domain dcat:DataService ;
+    rdfs:range xsd:anyURI ;
+    rdfs:subPropertyOf dcat:endpointURL ;
+    rdfs:comment "Endpoint URL for SPARQL access to the semantic layer."@en .
+
+sl:contractVersion a owl:DatatypeProperty ;
+    rdfs:label "contract version"@en ;
+    rdfs:domain sl:DataContract ;
+    rdfs:range xsd:string ;
+    rdfs:subPropertyOf hyprcat:contractVersion ;
+    rdfs:comment "Version identifier for the data contract."@en .

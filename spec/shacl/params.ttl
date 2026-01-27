@@ -1971,6 +1971,91 @@ params:GenerateReportParamsShape a sh:NodeShape ;
     ] .
 
 # -----------------------------------------------------------------------------
+# QueryData Parameters
+# -----------------------------------------------------------------------------
+
+params:QueryDataParamsShape a sh:NodeShape ;
+    sh:targetClass params:QueryDataParams ;
+    rdfs:label "QueryData Parameters Shape"@en ;
+    rdfs:comment "Parameters for semantic layer queries (SPARQL canonical)."@en ;
+
+    sh:property [
+        sh:path params:query ;
+        sh:name "query" ;
+        sh:description "SPARQL query string" ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:minLength 1
+    ] ;
+
+    sh:property [
+        sh:path params:queryLanguage ;
+        sh:name "queryLanguage" ;
+        sh:description "Query language (sparql canonical; adapters may extend)" ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string
+    ] ;
+
+    sh:property [
+        sh:path params:semanticLayerRef ;
+        sh:name "semanticLayerRef" ;
+        sh:description "Reference to the semantic layer SPARQL endpoint" ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string
+    ] ;
+
+    sh:property [
+        sh:path params:sourceRef ;
+        sh:name "sourceRef" ;
+        sh:description "HyprCat-aligned DCAT dataset or DPROD product reference" ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string
+    ] ;
+
+    sh:property [
+        sh:path params:mappingRef ;
+        sh:name "mappingRef" ;
+        sh:description "R2RML/OBDA mapping reference" ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string
+    ] ;
+
+    sh:property [
+        sh:path params:federationProfileRef ;
+        sh:name "federationProfileRef" ;
+        sh:description "Federation profile or plan reference" ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string
+    ] ;
+
+    sh:property [
+        sh:path params:resultFormat ;
+        sh:name "resultFormat" ;
+        sh:description "Preferred result format (e.g., application/sparql-results+json)" ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string
+    ] ;
+
+    sh:property [
+        sh:path params:timeoutSeconds ;
+        sh:name "timeoutSeconds" ;
+        sh:description "Query timeout in seconds" ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:integer ;
+        sh:minInclusive 1
+    ] ;
+
+    sh:property [
+        sh:path params:maxRows ;
+        sh:name "maxRows" ;
+        sh:description "Adapter-specific row limit" ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:integer ;
+        sh:minInclusive 1
+    ] .
+
+# -----------------------------------------------------------------------------
 # Coordinator/Analyst Properties
 # -----------------------------------------------------------------------------
 
@@ -2066,3 +2151,24 @@ params:sections a rdf:Property ;
 
 params:includeCharts a rdf:Property ;
     rdfs:label "includeCharts" .
+
+params:queryLanguage a rdf:Property ;
+    rdfs:label "queryLanguage" .
+
+params:semanticLayerRef a rdf:Property ;
+    rdfs:label "semanticLayerRef" .
+
+params:sourceRef a rdf:Property ;
+    rdfs:label "sourceRef" .
+
+params:mappingRef a rdf:Property ;
+    rdfs:label "mappingRef" .
+
+params:federationProfileRef a rdf:Property ;
+    rdfs:label "federationProfileRef" .
+
+params:resultFormat a rdf:Property ;
+    rdfs:label "resultFormat" .
+
+params:maxRows a rdf:Property ;
+    rdfs:label "maxRows" .
