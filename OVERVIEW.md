@@ -4,7 +4,7 @@ This repo is the canonical contract for Agent Context Graph (ACG). It defines th
 
 ## Executive summary
 
-ACG formalizes how agents discover and execute affordances via ephemeral Context Graphs and how they consult persistent Knowledge Graphs for long-term memory. A virtual semantic layer exposes federated data through HyprCat-aligned Hydra catalogs and SHACL-based contracts. The contract is expressed in JSON Schema, SHACL, OWL ontology, and protocol docs. The aim is to make agent behavior auditable, composable, and policy-bounded. Hypergraph semantics model multi-party actions; category-theoretic composition formalizes workflow composition; usage-based semiotics captures meaning from observed usage; tool authoring is explicit and policy-gated.
+ACG formalizes how agents discover and execute affordances via ephemeral Context Graphs and how they consult persistent Knowledge Graphs for long-term memory. A virtual semantic layer exposes federated data through HyprCat-aligned Hydra catalogs and SHACL-based contracts, with SPARQL translated to source queries at runtime (zero-copy). The contract is expressed in JSON Schema, SHACL, OWL ontology, and protocol docs. The aim is to make agent behavior auditable, composable, and policy-bounded. Hypergraph semantics model multi-party actions; category-theoretic composition formalizes workflow composition; usage-based semiotics captures meaning from observed usage; tool authoring is explicit and policy-gated.
 
 ## Why a separate foundations repo
 

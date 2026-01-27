@@ -215,6 +215,18 @@ SQLite storage for federation data:
 6. Context Graph returned with affordances
 ```
 
+### Semantic Data Chat Flow (Zero-copy example)
+
+```
+1. Human asks a data question (e.g., "Revenue by region, Q3")
+2. Planner/Analyst agent requests /context
+3. Broker returns Context Graph with QueryData affordance + KG/catalog refs
+4. Agent browses Hydra catalog (DCAT/DPROD) + SHACL contracts
+5. Agent traverses QueryData with SPARQL (canonical)
+6. Semantic layer maps SPARQL -> Databricks SQL via R2RML/OBDA (no data copy)
+7. Results returned; PROV trace emitted; usage semantics updated
+```
+
 ### Federation Message Flow
 
 ```

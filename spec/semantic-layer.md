@@ -48,8 +48,15 @@ and MAY be versioned and status-tagged.
 
 1. Agent traverses `QueryData` affordance.
 2. Broker routes to the configured **semantic layer** SPARQL endpoint.
-3. Semantic layer resolves mappings and federates to sources (e.g., SQL warehouses).
+3. Semantic layer resolves mappings and federates to sources (e.g., SQL warehouses), translating SPARQL to source queries.
 4. Results returned as SPARQL result sets (or mapped formats).
+
+## Zero-copy federation example (Non-normative)
+
+- A Databricks warehouse is described as a DCAT dataset / DPROD data product in the HyprCat catalog.
+- R2RML/OBDA mappings define how relational tables map to RDF classes and predicates.
+- The semantic layer translates SPARQL to Databricks SQL at query time.
+- No data is copied into ACG; Databricks remains the source of truth.
 
 ## Implementation Notes (Non-normative)
 
