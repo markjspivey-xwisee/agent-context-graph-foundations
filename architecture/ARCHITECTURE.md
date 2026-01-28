@@ -217,14 +217,27 @@ SQLite storage for federation data:
 
 ### Semantic Data Chat Flow (Zero-copy example)
 
-```
-1. Human asks a data question (e.g., "Revenue by region, Q3")
-2. Planner/Analyst agent requests /context
-3. Broker returns Context Graph with QueryData affordance + KG/catalog refs
-4. Agent browses Hydra catalog (DCAT/DPROD) + SHACL contracts
-5. Agent traverses QueryData with SPARQL (canonical)
-6. Semantic layer maps SPARQL -> Databricks SQL via R2RML/OBDA (no data copy)
-7. Results returned; PROV trace emitted; usage semantics updated
+```mermaid
+sequenceDiagram
+  participant Human
+  participant Agent as Agent Team
+  participant Broker as ACG Broker
+  participant Catalog as Hydra/HyprCat Catalog
+  participant Semantic as Semantic Layer
+  participant DB as Databricks SQL
+
+  Human->>Agent: Ask data question
+  Agent->>Broker: POST /context
+  Broker-->>Agent: Context Graph + QueryData affordance
+  Agent->>Catalog: Browse catalog + products
+  Agent->>Catalog: Inspect contracts + SHACL shapes
+  Agent->>Broker: POST /traverse (QueryData, SPARQL)
+  Broker->>Semantic: SPARQL query
+  Semantic->>DB: SPARQL -> SQL via R2RML/OBDA
+  DB-->>Semantic: SQL results
+  Semantic-->>Broker: SPARQL results
+  Broker-->>Agent: Results + PROV trace
+  Agent-->>Human: Response + rationale
 ```
 
 ### Federation Message Flow
