@@ -98,6 +98,13 @@
       },
       {
         "type": "aat:ActionType",
+        "id": "aat:RegisterDataSource",
+        "name": "RegisterDataSource",
+        "description": "Register a runtime data source with the broker",
+        "requiresCapability": "acg:ExecutorCapability"
+      },
+      {
+        "type": "aat:ActionType",
         "id": "aat:ReportOutcome",
         "name": "ReportOutcome",
         "description": "Report the result of an action",

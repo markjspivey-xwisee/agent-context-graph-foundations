@@ -2172,3 +2172,184 @@ params:resultFormat a rdf:Property ;
 
 params:maxRows a rdf:Property ;
     rdfs:label "maxRows" .
+
+# =============================================================================
+# Data Source Registry Parameters
+# =============================================================================
+
+params:RegisterDataSourceParamsShape a sh:NodeShape ;
+    sh:targetClass params:RegisterDataSourceParams ;
+    rdfs:label "Register Data Source Parameters Shape"@en ;
+    rdfs:comment "Validates parameters for registering a runtime data source."@en ;
+
+    sh:property [
+        sh:path params:name ;
+        sh:name "name" ;
+        sh:description "Display name for the data source" ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:minLength 1
+    ] ;
+
+    sh:property [
+        sh:path params:type ;
+        sh:name "type" ;
+        sh:description "Data source type" ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:in ( "databricks" "sparql" "lrs" "custom" )
+    ] ;
+
+    sh:property [
+        sh:path params:id ;
+        sh:name "id" ;
+        sh:description "Optional stable identifier" ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string
+    ] ;
+
+    sh:property [
+        sh:path params:description ;
+        sh:name "description" ;
+        sh:description "Optional description" ;
+        sh:datatype xsd:string
+    ] ;
+
+    sh:property [
+        sh:path params:refresh ;
+        sh:name "refresh" ;
+        sh:description "If true, trigger an immediate refresh" ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:boolean
+    ] ;
+
+    sh:property [
+        sh:path params:databricks ;
+        sh:name "databricks" ;
+        sh:description "Databricks-specific connection settings" ;
+        sh:node params:DatabricksSourceShape
+    ] ;
+
+    sh:property [
+        sh:path params:semanticLayer ;
+        sh:name "semanticLayer" ;
+        sh:description "Semantic layer configuration overrides" ;
+        sh:node params:SemanticLayerConfigShape
+    ] .
+
+params:DatabricksSourceShape a sh:NodeShape ;
+    rdfs:label "Databricks Source Shape"@en ;
+
+    sh:property [
+        sh:path params:host ;
+        sh:name "host" ;
+        sh:datatype xsd:string
+    ] ;
+    sh:property [
+        sh:path params:token ;
+        sh:name "token" ;
+        sh:datatype xsd:string
+    ] ;
+    sh:property [
+        sh:path params:warehouseId ;
+        sh:name "warehouseId" ;
+        sh:datatype xsd:string
+    ] ;
+    sh:property [
+        sh:path params:catalog ;
+        sh:name "catalog" ;
+        sh:datatype xsd:string
+    ] ;
+    sh:property [
+        sh:path params:schema ;
+        sh:name "schema" ;
+        sh:datatype xsd:string
+    ] ;
+    sh:property [
+        sh:path params:httpPath ;
+        sh:name "httpPath" ;
+        sh:datatype xsd:string
+    ] ;
+    sh:property [
+        sh:path params:jdbcUrl ;
+        sh:name "jdbcUrl" ;
+        sh:datatype xsd:string
+    ] ;
+    sh:property [
+        sh:path params:driverClass ;
+        sh:name "driverClass" ;
+        sh:datatype xsd:string
+    ] .
+
+params:SemanticLayerConfigShape a sh:NodeShape ;
+    rdfs:label "Semantic Layer Config Shape"@en ;
+
+    sh:property [
+        sh:path params:sparqlEndpoint ;
+        sh:name "sparqlEndpoint" ;
+        sh:datatype xsd:anyURI
+    ] ;
+    sh:property [
+        sh:path params:planEndpoint ;
+        sh:name "planEndpoint" ;
+        sh:datatype xsd:anyURI
+    ] ;
+    sh:property [
+        sh:path params:mappingPath ;
+        sh:name "mappingPath" ;
+        sh:datatype xsd:string
+    ] ;
+    sh:property [
+        sh:path params:baseIri ;
+        sh:name "baseIri" ;
+        sh:datatype xsd:string
+    ] .
+
+params:id a rdf:Property ;
+    rdfs:label "id" .
+
+params:refresh a rdf:Property ;
+    rdfs:label "refresh" .
+
+params:databricks a rdf:Property ;
+    rdfs:label "databricks" .
+
+params:semanticLayer a rdf:Property ;
+    rdfs:label "semanticLayer" .
+
+params:host a rdf:Property ;
+    rdfs:label "host" .
+
+params:token a rdf:Property ;
+    rdfs:label "token" .
+
+params:warehouseId a rdf:Property ;
+    rdfs:label "warehouseId" .
+
+params:catalog a rdf:Property ;
+    rdfs:label "catalog" .
+
+params:schema a rdf:Property ;
+    rdfs:label "schema" .
+
+params:httpPath a rdf:Property ;
+    rdfs:label "httpPath" .
+
+params:jdbcUrl a rdf:Property ;
+    rdfs:label "jdbcUrl" .
+
+params:driverClass a rdf:Property ;
+    rdfs:label "driverClass" .
+
+params:sparqlEndpoint a rdf:Property ;
+    rdfs:label "sparqlEndpoint" .
+
+params:planEndpoint a rdf:Property ;
+    rdfs:label "planEndpoint" .
+
+params:mappingPath a rdf:Property ;
+    rdfs:label "mappingPath" .
+
+params:baseIri a rdf:Property ;
+    rdfs:label "baseIri" .
